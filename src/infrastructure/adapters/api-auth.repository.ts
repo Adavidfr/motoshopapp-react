@@ -7,15 +7,15 @@ import { httpClient } from '../http/axios-client';
 export class ApiAuthRepository implements AuthRepository {
   private mapUser(data: any): User {
     return {
-      id: data.id,
-      username: data.username,
-      email: data.email,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      isStaff: data.is_staff,
-      isActive: data.is_active,
-      dateJoined: data.date_joined,
-      role: data.role,
+      id: data.user_id !== undefined ? Number(data.user_id) : (data.id !== undefined ? Number(data.id) : 0),
+      username: data.username || '',
+      email: data.email || '',
+      firstName: data.first_name || '',
+      lastName: data.last_name || '',
+      isStaff: data.is_staff || false,
+      isActive: data.is_active !== undefined ? data.is_active : true,
+      dateJoined: data.date_joined || '',
+      role: data.role || 'client',
       numOrders: data.num_orders ? Number(data.num_orders) : 0,
     };
   }
@@ -26,11 +26,11 @@ export class ApiAuthRepository implements AuthRepository {
       password: dto.password,
     });
     
-    // El backend devuelve tokens y detalles del usuario
-    const { access, refresh, user } = response.data;
+    // El backend devuelve tokens y detalles del usuario de forma plana
+    const { access, refresh } = response.data;
     return {
       tokens: { access, refresh },
-      user: this.mapUser(user),
+      user: this.mapUser(response.data),
     };
   }
 
