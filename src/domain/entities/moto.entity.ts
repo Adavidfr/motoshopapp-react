@@ -11,6 +11,6 @@ export interface Moto {
   estado: string;
   imagen: string | null;
   fechaRegistro: string;
-  categoria: number; // ID de categoría
-  marca: number;      // ID de marca
+  categoria: any; // ID o Nombre de categoría
+  marca: any;      // ID o Nombre de marca
 }

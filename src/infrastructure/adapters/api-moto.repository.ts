@@ -5,6 +5,15 @@ import { httpClient } from '../http/axios-client';
 
 export class ApiMotoRepository implements MotoRepository {
   private mapMoto(data: any): Moto {
+    const getNestedName = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object') {
+        return val.nombre || val.nombre_marca || val.nombre_categoria || val.nombre_completo || '';
+      }
+      return String(val);
+    };
+
     return {
       idMoto: data.id_moto,
       modelo: data.modelo,
@@ -16,8 +25,8 @@ export class ApiMotoRepository implements MotoRepository {
       estado: data.estado,
       imagen: data.imagen || null,
       fechaRegistro: data.fecha_registro,
-      categoria: data.categoria,
-      marca: data.marca,
+      categoria: getNestedName(data.categoria),
+      marca: getNestedName(data.marca),
     };
   }
 
