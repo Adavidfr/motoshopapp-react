@@ -1,0 +1,13 @@
+// src/application/use-cases/auth/logout.use-case.ts
+import type { AuthRepository } from '../../../domain/ports/auth.repository';
+
+export class LogoutUseCase {
+  private authRepository: AuthRepository;
+  constructor(authRepository: AuthRepository) {
+    this.authRepository = authRepository;
+  }
+
+  async execute(): Promise<void> {
+    return this.authRepository.logout();
+  }
+}
