@@ -160,11 +160,11 @@ export default function ProductDetailPage() {
 
             <Button
               size="lg"
-              className="w-full gap-2 text-base font-bold shadow-md rounded-xl btn-primary-gradient"
+              className="w-full gap-2 text-xs font-bold uppercase tracking-widest rounded-none bg-primary hover:bg-primary/95 text-white py-6"
               disabled={selectedMoto.stock === 0 || isCartLoading}
               onClick={handleAddToCart}
             >
-              <ShoppingCart className="size-5" />
+              <ShoppingCart className="size-4" />
               {selectedMoto.stock === 0 ? 'Agotado Temporalmente' : 'Agregar al Carrito'}
             </Button>
           </div>
