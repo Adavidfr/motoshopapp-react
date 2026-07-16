@@ -41,9 +41,9 @@ export default function Layout({ children }: LayoutProps) {
           
           {/* Logo */}
           <div className="flex items-center gap-10">
-            <Link to="/" className="flex items-center space-x-2 font-black text-2xl tracking-tighter text-white">
-              <span className="text-primary font-black">🏍️</span>
-              <span className="uppercase font-black text-2xl">MOTO<span className="text-primary">SHOP</span></span>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/logo.png" alt="Aura Rider Logo" className="h-12 w-12 object-cover rounded-full border border-neutral-700/50" />
+              <span className="uppercase font-black text-xl tracking-tighter text-white">AURA<span className="text-primary">RIDER</span></span>
             </Link>
             
             {/* Links de navegación */}
@@ -127,9 +127,9 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
             <div className="space-y-4">
-              <Link to="/" className="flex items-center space-x-2 font-black text-xl tracking-tighter text-white">
-                <span>🏍️</span>
-                <span className="uppercase">MOTO<span className="text-primary">SHOP</span></span>
+              <Link to="/" className="flex items-center gap-3">
+                <img src="/logo.png" alt="Aura Rider Logo" className="h-8 w-8 object-cover rounded-full" />
+                <span className="uppercase font-black text-lg tracking-tighter text-white">AURA<span className="text-primary">RIDER</span></span>
               </Link>
               <p className="text-neutral-500 leading-relaxed">
                 Libertad sin límites.<br />El camino es tuyo.
@@ -167,11 +167,12 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           
           <div className="border-t border-neutral-900 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-neutral-600 font-semibold">
-            <p>© 2026 MotoShop. Todos los derechos reservados.</p>
-            <div className="flex gap-4">
-              <span>Visa</span>
-              <span>Mastercard</span>
-              <span>Amex</span>
+            <p>© 2026 Aura Rider. Todos los derechos reservados.</p>
+            <div className="flex items-center gap-7 opacity-75 hover:opacity-100 transition-opacity duration-300">
+              <img src="/visa_logo.png" alt="Visa" className="h-5 w-auto object-contain brightness-0 invert" />
+              <img src="/mastercard_logo.png" alt="Mastercard" className="h-6 w-auto object-contain" />
+              <img src="/diners_logo.png" alt="Diners Club" className="h-5 w-auto object-contain brightness-0 invert" />
+              <img src="/discover_logo.png" alt="Discover" className="h-4 w-auto object-contain brightness-0 invert" />
             </div>
           </div>
         </div>

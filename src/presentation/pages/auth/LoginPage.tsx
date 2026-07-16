@@ -5,11 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '../../../application/dtos/auth.dto';
 import type { LoginDto } from '../../../application/dtos/auth.dto';
 import { useAuthStore } from '../../store/auth.store';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '../../components/ui/card';
-import { Label } from '../../components/ui/label';
-import { User, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import { User, Lock, ShieldAlert } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -28,83 +24,121 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[75vh] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <Card className="w-full max-w-md glass-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-primary/10">
-        <CardHeader className="space-y-2 text-center pb-4">
-          <div className="mx-auto bg-primary/10 text-primary w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner border border-primary/20">
-            🏍️
+    <div className="relative flex min-h-[90vh] items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-[#070708] overflow-hidden">
+      {/* Background Grid & Ambient Red Glow */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,rgba(255,26,26,0.12)_0%,rgba(7,7,8,0)_70%)] pointer-events-none z-0 blur-xl animate-pulse duration-[8000ms]" />
+      
+      {/* Split Design Card */}
+      <div className="relative w-full max-w-[1050px] min-h-[580px] bg-[#0c0c0e] rounded-[2.5rem] shadow-[0_0_80px_rgba(255,26,26,0.05),0_30px_70px_rgba(0,0,0,0.85)] border border-neutral-900/60 overflow-hidden z-10 grid grid-cols-1 md:grid-cols-2">
+        
+        {/* Left Side: Form */}
+        <div className="p-10 sm:p-14 flex flex-col justify-center">
+          {/* Brand header */}
+          <div className="flex items-center gap-2 mb-8">
+            <img src="/logo.png" alt="Aura Rider Logo" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-black tracking-widest text-white uppercase">AURA RIDER</span>
           </div>
-          <CardTitle className="text-3xl font-black tracking-tight text-white mt-2">
-            BIENVENIDO DE VUELTA
-          </CardTitle>
-          <CardDescription className="text-neutral-400 text-sm font-medium">
-            Ingresa a tu cuenta para gestionar tus motocicletas
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
+          {/* User Avatar Circle */}
+          <div className="flex justify-center mb-8">
+            <div className="size-16 rounded-full border border-primary/20 bg-primary/5 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(255,26,26,0.1)]">
+              <User className="size-8" />
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (
-              <div className="p-3.5 text-xs bg-destructive/10 border border-destructive/25 text-destructive rounded-xl flex items-center gap-2 font-semibold">
+              <div className="p-3.5 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-full flex items-center gap-2 font-semibold justify-center">
                 <ShieldAlert className="size-4 shrink-0" />
                 {error}
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-xs font-bold text-neutral-300 flex items-center gap-1.5 uppercase tracking-wider">
-                <User className="size-3.5 text-primary" />
-                Usuario
-              </Label>
-              <div className="relative">
-                <Input
+            {/* Username Input */}
+            <div className="space-y-1">
+              <div className="relative flex items-center group">
+                <User className="absolute left-5 size-4.5 text-neutral-500 group-focus-within:text-primary transition-colors" />
+                <input
                   id="username"
                   type="text"
-                  placeholder="juan_perez"
-                  className="bg-neutral-900/40 border-neutral-800 focus:border-primary/50 rounded-xl py-5"
+                  placeholder="Usuario"
+                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-4.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   {...register('username')}
                   aria-invalid={errors.username ? 'true' : 'false'}
                 />
               </div>
               {errors.username && (
-                <p className="text-xs text-destructive font-semibold">{errors.username.message}</p>
+                <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.username.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs font-bold text-neutral-300 flex items-center gap-1.5 uppercase tracking-wider">
-                <Lock className="size-3.5 text-primary" />
-                Contraseña
-              </Label>
-              <div className="relative">
-                <Input
+            {/* Password Input */}
+            <div className="space-y-1">
+              <div className="relative flex items-center group">
+                <Lock className="absolute left-5 size-4.5 text-neutral-500" />
+                <input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
-                  className="bg-neutral-900/40 border-neutral-800 focus:border-primary/50 rounded-xl py-5"
+                  placeholder="Contraseña"
+                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-4.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   {...register('password')}
                   aria-invalid={errors.password ? 'true' : 'false'}
                 />
               </div>
               {errors.password && (
-                <p className="text-xs text-destructive font-semibold">{errors.password.message}</p>
+                <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.password.message}</p>
               )}
             </div>
 
-            <Button type="submit" className="w-full mt-6 btn-primary-gradient font-bold rounded-xl py-6 flex items-center justify-center gap-2 text-sm shadow-lg" disabled={isLoading}>
-              {isLoading ? 'Iniciando Sesión...' : 'Ingresar'}
-              <ArrowRight className="size-4.5" />
-            </Button>
+            {/* Remember / Forgot */}
+            <div className="flex items-center justify-between text-xs text-neutral-500 font-semibold px-3 pt-1">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none hover:text-neutral-400 transition-colors">
+                <input 
+                  type="checkbox" 
+                  className="rounded bg-neutral-900 border-neutral-800 text-primary focus:ring-0 focus:ring-offset-0 size-4 cursor-pointer"
+                />
+                Recordarme
+              </label>
+              <Link to="#" className="hover:text-primary transition-colors">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              className="w-full mt-8 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-widest rounded-full py-4.5 transition-all duration-300 shadow-[0_4px_25px_rgba(255,26,26,0.3)] hover:shadow-[0_6px_30px_rgba(255,26,26,0.5)] disabled:opacity-50"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Iniciando...' : 'INGRESAR'}
+            </button>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2 text-center text-xs text-neutral-400 border-t border-border/20 pt-4 mt-2">
-          <div>
-            ¿Aún no tienes cuenta?{' '}
-            <Link to="/register" onClick={clearError} className="text-primary hover:underline font-bold transition-all">
-              Crea una cuenta aquí
-            </Link>
+        </div>
+
+        {/* Right Side: Spectacular Image Banner with Welcome Text */}
+        <div className="relative hidden md:block w-full h-full bg-[url('https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center">
+          {/* Glossy gradient overlay overlay */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-primary/10" />
+          
+          {/* Welcome Text elements */}
+          <div className="absolute inset-0 flex flex-col justify-end p-14 text-left space-y-4 z-20">
+            <h2 className="text-5xl sm:text-6xl font-black text-white leading-none uppercase tracking-tighter">
+              BIENVENIDO.
+            </h2>
+            <p className="text-neutral-350 text-sm max-w-sm font-semibold leading-relaxed">
+              Siente la verdadera adrenalina y domina el camino con nuestras motos deportivas de alta gama.
+            </p>
+            <div className="pt-4 text-sm font-semibold text-neutral-400">
+              ¿No tienes una cuenta?{' '}
+              <Link to="/register" onClick={clearError} className="text-white hover:text-primary underline font-bold transition-all ml-1">
+                Registrate ahora
+              </Link>
+            </div>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+
+      </div>
     </div>
   );
 }
