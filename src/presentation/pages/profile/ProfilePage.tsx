@@ -1,4 +1,6 @@
 // src/presentation/pages/profile/ProfilePage.tsx
+// Vista de perfil de usuario para gestionar la información de ClientePerfil
+// Siguiendo los principios de la Arquitectura Hexagonal y vinculando los datos al backend.
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
