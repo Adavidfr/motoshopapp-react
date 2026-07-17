@@ -14,6 +14,11 @@ import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import OrderDetailPage from '../pages/orders/OrderDetailPage';
 
+// Páginas de Administración (Fase 2)
+import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
+import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
+import MotosAdminPage from '../pages/admin/MotosAdminPage';
+
 // Componente para proteger rutas privadas
 interface PrivateRouteProps {
   element: React.ReactElement;
@@ -44,10 +49,11 @@ export default function AppRouter() {
           <Route path="/orders/:id" element={<PrivateRoute element={<OrderDetailPage />} />} />
           <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
 
-          {/* Admin — Placeholder por ahora (Módulos 9 a 13) */}
-          <Route path="/admin" element={<PrivateRoute element={<PlaceholderPage title="Admin Dashboard — Módulo 9" />} />} />
-          <Route path="/admin/categories" element={<PrivateRoute element={<PlaceholderPage title="Admin Categorías — Módulo 10" />} />} />
-          <Route path="/admin/products" element={<PrivateRoute element={<PlaceholderPage title="Admin Productos — Módulo 11" />} />} />
+          {/* Admin — Páginas Reales */}
+          <Route path="/admin" element={<PrivateRoute element={<MotosAdminPage />} />} />
+          <Route path="/admin/brands" element={<PrivateRoute element={<BrandsAdminPage />} />} />
+          <Route path="/admin/categories" element={<PrivateRoute element={<CategoriesAdminPage />} />} />
+          <Route path="/admin/motos" element={<PrivateRoute element={<MotosAdminPage />} />} />
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
           <Route path="/admin/users" element={<PrivateRoute element={<PlaceholderPage title="Admin Usuarios — Módulo 13" />} />} />
 
