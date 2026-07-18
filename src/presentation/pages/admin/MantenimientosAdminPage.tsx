@@ -1,5 +1,6 @@
 import {
   type FormEvent,
+  type ReactNode,
   useEffect,
   useMemo,
   useState,
@@ -9,6 +10,19 @@ import type {
   Mantenimiento,
   MantenimientoEstado,
 } from '../../../domain/entities/mantenimiento.entity';
+
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Edit,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  Wrench,
+  X,
+} from 'lucide-react';
 
 import type {
   MantenimientoDto,
@@ -110,19 +124,19 @@ const getEstadoClasses = (
 ): string => {
   switch (estado) {
     case 'Pendiente':
-      return 'bg-amber-100 text-amber-800';
+      return 'border border-amber-500/20 bg-amber-500/10 text-amber-400';
 
     case 'En proceso':
-      return 'bg-blue-100 text-blue-800';
+      return 'border border-blue-500/20 bg-blue-500/10 text-blue-400';
 
     case 'Finalizado':
-      return 'bg-green-100 text-green-800';
+      return 'border border-green-500/20 bg-green-500/10 text-green-400';
 
     case 'Cancelado':
-      return 'bg-red-100 text-red-800';
+      return 'border border-destructive/20 bg-destructive/10 text-destructive';
 
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'border border-neutral-700 bg-neutral-800 text-neutral-300';
   }
 };
 
@@ -612,539 +626,408 @@ export default function MantenimientosAdminPage() {
     return getUserName(user);
   };
 
+  const displayedRange = useMemo(() => {
+    if (count === 0) {
+      return '0 resultados';
+    }
+
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, count);
+
+    return `${start}-${end} de ${count}`;
+  }, [count, page, pageSize]);
+
   return (
-    <main className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="mx-auto max-w-7xl">
-        <section className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Mantenimientos
-            </h1>
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.3em] text-primary">
+            Taller
+          </p>
 
-            <p className="mt-1 text-sm text-gray-600">
-              Administra los mantenimientos,
-              servicios y estados de las motos.
-            </p>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+            Administrar mantenimientos
+          </h1>
+
+          <p className="mt-2 text-sm text-neutral-400">
+            Administra los mantenimientos, servicios y estados de las motos.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleOpenCreateModal}
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+        >
+          <Plus className="size-4" />
+          Nuevo mantenimiento
+        </button>
+      </section>
+
+      {successMessage && (
+        <div className="rounded-full border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-xs font-semibold text-green-400">
+          {successMessage}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
+          {error}
+        </div>
+      )}
+
+      {usersError && (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-center text-xs font-semibold text-amber-400">
+          {usersError}
+        </div>
+      )}
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <StatCard
+          title="Total"
+          value={stats?.total ?? count}
+          icon={<ClipboardList className="size-5" />}
+        />
+
+        <StatCard
+          title="Pendientes"
+          value={stats?.pendientes ?? 0}
+          icon={<Wrench className="size-5" />}
+        />
+
+        <StatCard
+          title="En proceso"
+          value={stats?.enProceso ?? 0}
+          icon={<Loader2 className="size-5" />}
+        />
+
+        <StatCard
+          title="Finalizados"
+          value={stats?.finalizados ?? 0}
+          icon={<Wrench className="size-5" />}
+        />
+
+        <StatCard
+          title="Cancelados"
+          value={stats?.cancelados ?? 0}
+          icon={<X className="size-5" />}
+        />
+      </section>
+
+      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+        <form
+          onSubmit={handleSearch}
+          className="grid grid-cols-1 gap-3 xl:grid-cols-5"
+        >
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
+
+            <input
+              id="search"
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+              }}
+              placeholder="Cliente, moto, servicio..."
+              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+            />
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenCreateModal}
-            className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700"
+          <select
+            id="filter-estado"
+            value={estadoFilter}
+            onChange={(event) => {
+              setEstadoFilter(event.target.value);
+            }}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
           >
-            Nuevo mantenimiento
-          </button>
-        </section>
+            <option value="">Todos los estados</option>
 
-        {successMessage && (
-          <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-            {successMessage}
-          </div>
-        )}
+            {estados.map((estado) => (
+              <option key={estado} value={estado}>
+                {estado}
+              </option>
+            ))}
+          </select>
 
-        {error && (
-          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
-          </div>
-        )}
-
-        {usersError && (
-          <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            {usersError}
-          </div>
-        )}
-
-        <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Total
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              {stats?.total ?? 0}
-            </p>
-          </article>
-
-          <article className="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-            <p className="text-sm text-amber-700">
-              Pendientes
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-amber-900">
-              {stats?.pendientes ?? 0}
-            </p>
-          </article>
-
-          <article className="rounded-xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-            <p className="text-sm text-blue-700">
-              En proceso
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-blue-900">
-              {stats?.enProceso ?? 0}
-            </p>
-          </article>
-
-          <article className="rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm">
-            <p className="text-sm text-green-700">
-              Finalizados
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-green-900">
-              {stats?.finalizados ?? 0}
-            </p>
-          </article>
-
-          <article className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
-            <p className="text-sm text-red-700">
-              Cancelados
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-red-900">
-              {stats?.cancelados ?? 0}
-            </p>
-          </article>
-        </section>
-
-        <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <form
-            onSubmit={handleSearch}
-            className="grid gap-4 md:grid-cols-2 xl:grid-cols-5"
+          <select
+            id="filter-moto"
+            value={motoFilter}
+            onChange={(event) => {
+              setMotoFilter(event.target.value);
+            }}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
           >
-            <div>
-              <label
-                htmlFor="search"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Buscar
-              </label>
+            <option value="">Todas las motos</option>
 
-              <input
-                id="search"
-                type="search"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                }}
-                placeholder="Cliente, moto, servicio..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-gray-600"
-              />
-            </div>
+            {motos.map((moto) => (
+              <option key={moto.idMoto} value={moto.idMoto}>
+                {getMotoLabel(moto.idMoto)}
+              </option>
+            ))}
+          </select>
 
-            <div>
-              <label
-                htmlFor="filter-estado"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Estado
-              </label>
+          <select
+            id="filter-servicio"
+            value={servicioFilter}
+            onChange={(event) => {
+              setServicioFilter(event.target.value);
+            }}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="">Todos los servicios</option>
 
-              <select
-                id="filter-estado"
-                value={estadoFilter}
-                onChange={(event) => {
-                  setEstadoFilter(
-                    event.target.value,
-                  );
-                }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-gray-600"
-              >
-                <option value="">
-                  Todos
-                </option>
+            {servicios.map((servicio) => (
+              <option key={servicio.id} value={servicio.id}>
+                {servicio.nombre}
+              </option>
+            ))}
+          </select>
 
-                {estados.map((estado) => (
-                  <option
-                    key={estado}
-                    value={estado}
-                  >
-                    {estado}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 rounded-full bg-primary px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Filtrar
+            </button>
 
-            <div>
-              <label
-                htmlFor="filter-moto"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Moto
-              </label>
+            <button
+              type="button"
+              onClick={() => {
+                void handleClearFilters();
+              }}
+              disabled={isLoading}
+              className="rounded-full bg-neutral-800 px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
+            >
+              Limpiar
+            </button>
+          </div>
+        </form>
+      </section>
 
-              <select
-                id="filter-moto"
-                value={motoFilter}
-                onChange={(event) => {
-                  setMotoFilter(
-                    event.target.value,
-                  );
-                }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-gray-600"
-              >
-                <option value="">
-                  Todas
-                </option>
+      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+        {isLoading && mantenimientos.length === 0 ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="size-10 animate-spin text-primary" />
+          </div>
+        ) : mantenimientos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+            <Wrench className="mb-4 size-12 text-neutral-700" />
 
-                {motos.map((moto) => (
-                  <option
-                    key={moto.idMoto}
-                    value={moto.idMoto}
-                  >
-                    {getMotoLabel(
-                      moto.idMoto,
-                    )}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h2 className="text-lg font-black uppercase text-white">
+              No existen mantenimientos
+            </h2>
 
-            <div>
-              <label
-                htmlFor="filter-servicio"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Servicio
-              </label>
-
-              <select
-                id="filter-servicio"
-                value={servicioFilter}
-                onChange={(event) => {
-                  setServicioFilter(
-                    event.target.value,
-                  );
-                }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-gray-600"
-              >
-                <option value="">
-                  Todos
-                </option>
-
-                {servicios.map(
-                  (servicio) => (
-                    <option
-                      key={servicio.id}
-                      value={servicio.id}
-                    >
-                      {servicio.nombre}
-                    </option>
-                  ),
-                )}
-              </select>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Filtrar
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  void handleClearFilters();
-                }}
-                disabled={isLoading}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
-              >
-                Limpiar
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <p className="mt-2 max-w-md text-sm text-neutral-500">
+              Modifica los filtros o registra un nuevo mantenimiento.
+            </p>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    ID
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Moto
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Cliente
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Servicio
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Kilometraje
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Costo
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Estado
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Fecha
-                  </th>
-
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Acciones
-                  </th>
+            <table className="w-full min-w-[1250px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                  <th className="px-6 py-4">Mantenimiento</th>
+                  <th className="px-6 py-4">Moto</th>
+                  <th className="px-6 py-4">Cliente</th>
+                  <th className="px-6 py-4">Servicio</th>
+                  <th className="px-6 py-4">Kilometraje</th>
+                  <th className="px-6 py-4">Costo</th>
+                  <th className="px-6 py-4 text-center">Estado</th>
+                  <th className="px-6 py-4">Fecha</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="px-4 py-12 text-center text-sm text-gray-500"
-                    >
-                      Cargando mantenimientos...
+              <tbody className="divide-y divide-neutral-950 text-sm">
+                {mantenimientos.map((mantenimiento) => (
+                  <tr
+                    key={mantenimiento.idMantenimiento}
+                    className="transition-colors hover:bg-neutral-900/20"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+                          <Wrench className="size-4" />
+                        </div>
+
+                        <p className="font-bold text-white">
+                          #{mantenimiento.idMantenimiento}
+                        </p>
+                      </div>
                     </td>
-                  </tr>
-                ) : mantenimientos.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="px-4 py-12 text-center text-sm text-gray-500"
-                    >
-                      No existen mantenimientos
-                      registrados.
+
+                    <td className="px-6 py-4 font-semibold text-white">
+                      {getMotoLabel(mantenimiento.moto)}
                     </td>
-                  </tr>
-                ) : (
-                  mantenimientos.map(
-                    (mantenimiento) => (
-                      <tr
-                        key={
-                          mantenimiento.idMantenimiento
-                        }
-                        className="hover:bg-gray-50"
+
+                    <td className="px-6 py-4 text-neutral-400">
+                      {getClienteLabel(
+                        mantenimiento.usuarioCliente,
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 text-neutral-400">
+                      {getServicioLabel(mantenimiento.servicio)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-neutral-300">
+                      {mantenimiento.kilometrajeActual.toLocaleString(
+                        'es-EC',
+                      )}{' '}
+                      km
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 font-bold text-white">
+                      {formatCurrency(mantenimiento.costoFinal)}
+                    </td>
+
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${getEstadoClasses(
+                          mantenimiento.estado,
+                        )}`}
                       >
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
-                          #
-                          {
-                            mantenimiento.idMantenimiento
-                          }
-                        </td>
+                        {mantenimiento.estado}
+                      </span>
+                    </td>
 
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          {getMotoLabel(
-                            mantenimiento.moto,
-                          )}
-                        </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-neutral-500">
+                      {formatDate(mantenimiento.fechaRegistro)}
+                    </td>
 
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          {getClienteLabel(
-                            mantenimiento.usuarioCliente,
-                          )}
-                        </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleOpenEditModal(mantenimiento);
+                          }}
+                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          title="Editar mantenimiento"
+                        >
+                          <Edit className="size-4" />
+                        </button>
 
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          {getServicioLabel(
-                            mantenimiento.servicio,
-                          )}
-                        </td>
-
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
-                          {mantenimiento.kilometrajeActual.toLocaleString(
-                            'es-EC',
-                          )}{' '}
-                          km
-                        </td>
-
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
-                          {formatCurrency(
-                            mantenimiento.costoFinal,
-                          )}
-                        </td>
-
-                        <td className="whitespace-nowrap px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getEstadoClasses(
-                              mantenimiento.estado,
-                            )}`}
-                          >
-                            {
-                              mantenimiento.estado
-                            }
-                          </span>
-                        </td>
-
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                          {formatDate(
-                            mantenimiento.fechaRegistro,
-                          )}
-                        </td>
-
-                        <td className="whitespace-nowrap px-4 py-3 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleOpenEditModal(
-                                  mantenimiento,
-                                );
-                              }}
-                              className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
-                            >
-                              Editar
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDeleteTarget(
-                                  mantenimiento,
-                                );
-                              }}
-                              className="rounded-md border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ),
-                  )
-                )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteTarget(mantenimiento);
+                          }}
+                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20"
+                          title="Eliminar mantenimiento"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+        )}
 
-          <div className="flex flex-col gap-3 border-t border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-gray-600">
-              Página {page} de {totalPages}.
-              Total: {count} registros.
-            </p>
+        <div className="flex flex-col gap-3 border-t border-neutral-950 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-neutral-500">
+            Mostrando {displayedRange}
+          </p>
 
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={
-                  page <= 1 || isLoading
-                }
-                onClick={() => {
-                  void handleChangePage(
-                    page - 1,
-                  );
-                }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1 || isLoading}
+              onClick={() => {
+                void handleChangePage(page - 1);
+              }}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página anterior"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
 
-              <button
-                type="button"
-                disabled={
-                  page >= totalPages ||
-                  isLoading
-                }
-                onClick={() => {
-                  void handleChangePage(
-                    page + 1,
-                  );
-                }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Siguiente
-              </button>
-            </div>
+            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+              Página {page} de {totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={page >= totalPages || isLoading}
+              onClick={() => {
+                void handleChangePage(page + 1);
+              }}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página siguiente"
+            >
+              <ChevronRight className="size-4" />
+            </button>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
+                  Taller
+                </p>
+
+                <h2 className="mt-2 text-2xl font-black uppercase text-white">
                   {editingMantenimiento
                     ? 'Editar mantenimiento'
                     : 'Nuevo mantenimiento'}
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  Completa la información del
-                  mantenimiento.
+                <p className="mt-2 text-sm text-neutral-500">
+                  Completa la información del mantenimiento.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="rounded-lg px-3 py-2 text-xl text-gray-500 transition hover:bg-gray-100"
+                disabled={isSaving}
+                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
                 aria-label="Cerrar"
               >
-                ×
+                <X className="size-5" />
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="p-6"
-            >
+            <form onSubmit={handleSubmit} className="space-y-5">
               {(formError || error) && (
-                <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
                   {formError || error}
                 </div>
               )}
 
-              <div className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="mantenimiento-moto"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Moto *
-                  </label>
-
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <FormField label="Moto" required>
                   <select
                     id="mantenimiento-moto"
                     required
                     value={form.moto}
                     onChange={(event) => {
-                      handleFormChange(
-                        'moto',
-                        event.target.value,
-                      );
+                      handleFormChange('moto', event.target.value);
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
+                    className={inputClass()}
                   >
-                    <option value="">
-                      Selecciona una moto
-                    </option>
+                    <option value="">Selecciona una moto</option>
 
                     {motos.map((moto) => (
-                      <option
-                        key={moto.idMoto}
-                        value={moto.idMoto}
-                      >
-                        {getMotoLabel(
-                          moto.idMoto,
-                        )}
+                      <option key={moto.idMoto} value={moto.idMoto}>
+                        {getMotoLabel(moto.idMoto)}
                       </option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label
-                    htmlFor="mantenimiento-cliente"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Cliente *
-                  </label>
-
+                <FormField label="Cliente" required>
                   <select
                     id="mantenimiento-cliente"
                     required
@@ -1156,7 +1039,7 @@ export default function MantenimientosAdminPage() {
                         event.target.value,
                       );
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600 disabled:bg-gray-100"
+                    className={inputClass()}
                   >
                     <option value="">
                       {isLoadingUsers
@@ -1165,48 +1048,31 @@ export default function MantenimientosAdminPage() {
                     </option>
 
                     {users.map((user) => (
-                      <option
-                        key={user.id}
-                        value={user.id}
-                      >
+                      <option key={user.id} value={user.id}>
                         {getUserName(user)}
-                        {user.email
-                          ? ` - ${user.email}`
-                          : ''}
+                        {user.email ? ` - ${user.email}` : ''}
                       </option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label
-                    htmlFor="mantenimiento-servicio"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Servicio *
-                  </label>
-
+                <FormField label="Servicio" required>
                   <select
                     id="mantenimiento-servicio"
                     required
                     value={form.servicio}
                     onChange={(event) => {
-                      handleServicioChange(
-                        event.target.value,
-                      );
+                      handleServicioChange(event.target.value);
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
+                    className={inputClass()}
                   >
-                    <option value="">
-                      Selecciona un servicio
-                    </option>
+                    <option value="">Selecciona un servicio</option>
 
                     {servicios
                       .filter(
                         (servicio) =>
                           servicio.estado ||
-                          String(servicio.id) ===
-                            form.servicio,
+                          String(servicio.id) === form.servicio,
                       )
                       .map((servicio) => (
                         <option
@@ -1215,32 +1081,21 @@ export default function MantenimientosAdminPage() {
                         >
                           {servicio.nombre} -{' '}
                           {formatCurrency(
-                            Number(
-                              servicio.precio_base,
-                            ),
+                            Number(servicio.precio_base),
                           )}
                         </option>
                       ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label
-                    htmlFor="mantenimiento-kilometraje"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Kilometraje actual *
-                  </label>
-
+                <FormField label="Kilometraje actual" required>
                   <input
                     id="mantenimiento-kilometraje"
                     type="number"
                     min="0"
                     step="1"
                     required
-                    value={
-                      form.kilometrajeActual
-                    }
+                    value={form.kilometrajeActual}
                     onChange={(event) => {
                       handleFormChange(
                         'kilometrajeActual',
@@ -1248,18 +1103,11 @@ export default function MantenimientosAdminPage() {
                       );
                     }}
                     placeholder="Ej. 18500"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
+                    className={inputClass()}
                   />
-                </div>
+                </FormField>
 
-                <div>
-                  <label
-                    htmlFor="mantenimiento-costo"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Costo final *
-                  </label>
-
+                <FormField label="Costo final" required>
                   <input
                     id="mantenimiento-costo"
                     type="number"
@@ -1274,18 +1122,11 @@ export default function MantenimientosAdminPage() {
                       );
                     }}
                     placeholder="0.00"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
+                    className={inputClass()}
                   />
-                </div>
+                </FormField>
 
-                <div>
-                  <label
-                    htmlFor="mantenimiento-estado"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Estado *
-                  </label>
-
+                <FormField label="Estado" required>
                   <select
                     id="mantenimiento-estado"
                     required
@@ -1296,51 +1137,41 @@ export default function MantenimientosAdminPage() {
                         event.target.value,
                       );
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
+                    className={inputClass()}
                   >
                     {estados.map((estado) => (
-                      <option
-                        key={estado}
-                        value={estado}
-                      >
+                      <option key={estado} value={estado}>
                         {estado}
                       </option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
                 <div className="md:col-span-2">
-                  <label
-                    htmlFor="mantenimiento-diagnostico"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Diagnóstico inicial
-                  </label>
-
-                  <textarea
-                    id="mantenimiento-diagnostico"
-                    rows={4}
-                    value={
-                      form.diagnosticoInicial
-                    }
-                    onChange={(event) => {
-                      handleFormChange(
-                        'diagnosticoInicial',
-                        event.target.value,
-                      );
-                    }}
-                    placeholder="Describe el diagnóstico inicial de la moto..."
-                    className="w-full resize-y rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-gray-600"
-                  />
+                  <FormField label="Diagnóstico inicial">
+                    <textarea
+                      id="mantenimiento-diagnostico"
+                      rows={4}
+                      value={form.diagnosticoInicial}
+                      onChange={(event) => {
+                        handleFormChange(
+                          'diagnosticoInicial',
+                          event.target.value,
+                        );
+                      }}
+                      placeholder="Describe el diagnóstico inicial de la moto..."
+                      className={textareaClass()}
+                    />
+                  </FormField>
                 </div>
               </div>
 
-              <div className="mt-7 flex justify-end gap-3 border-t border-gray-200 pt-5">
+              <div className="flex flex-col gap-3 pt-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSaving}
-                  className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
+                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -1348,8 +1179,12 @@ export default function MantenimientosAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
+                  {isSaving && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+
                   {isSaving
                     ? 'Guardando...'
                     : editingMantenimiento
@@ -1363,33 +1198,32 @@ export default function MantenimientosAdminPage() {
       )}
 
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+              <Trash2 className="size-6" />
+            </div>
+
+            <h2 className="text-center text-xl font-black uppercase text-white">
               Eliminar mantenimiento
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-gray-600">
-              ¿Estás seguro de eliminar el
-              mantenimiento{' '}
-              <strong>
-                #
-                {
-                  deleteTarget.idMantenimiento
-                }
-              </strong>
-              ? Esta acción no se puede
-              deshacer.
+            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+              Se eliminará el mantenimiento{' '}
+              <span className="font-bold text-white">
+                #{deleteTarget.idMantenimiento}
+              </span>
+              . Esta acción no se puede deshacer.
             </p>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-7 flex gap-3">
               <button
                 type="button"
                 disabled={isSaving}
                 onClick={() => {
                   setDeleteTarget(null);
                 }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
+                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -1400,11 +1234,12 @@ export default function MantenimientosAdminPage() {
                 onClick={() => {
                   void handleConfirmDelete();
                 }}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {isSaving
-                  ? 'Eliminando...'
-                  : 'Eliminar'}
+                {isSaving && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                Eliminar
               </button>
             </div>
           </div>
@@ -1412,4 +1247,75 @@ export default function MantenimientosAdminPage() {
       )}
     </main>
   );
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: ReactNode;
+}
+
+function StatCard({ title, value, icon }: StatCardProps) {
+  return (
+    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-white">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex size-11 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+          {icon}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  children: ReactNode;
+}
+
+function FormField({
+  label,
+  required = false,
+  children,
+}: FormFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+        {label}
+
+        {required && (
+          <span className="ml-1 text-primary">*</span>
+        )}
+      </label>
+
+      {children}
+    </div>
+  );
+}
+
+function inputClass(): string {
+  return [
+    'w-full rounded-full border border-neutral-800 bg-[#141417] px-5 py-3',
+    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'outline-none transition focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
+    'disabled:cursor-not-allowed disabled:bg-neutral-900 disabled:text-neutral-600',
+  ].join(' ');
+}
+
+function textareaClass(): string {
+  return [
+    'w-full resize-y rounded-3xl border border-neutral-800 bg-[#141417] px-5 py-4',
+    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'outline-none transition focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
+  ].join(' ');
 }

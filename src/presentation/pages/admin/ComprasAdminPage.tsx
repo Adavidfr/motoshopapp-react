@@ -9,6 +9,20 @@ import type {
   FormEvent,
 } from 'react';
 
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Edit,
+  Loader2,
+  PackageCheck,
+  Plus,
+  Search,
+  ShoppingCart,
+  Trash2,
+  X,
+} from 'lucide-react';
+
 import type {
   Compra,
   CompraEstado,
@@ -569,402 +583,308 @@ export default function ComprasAdminPage() {
     switch (estado) {
       case 'Recibida':
         return (
-          'bg-green-100 text-green-700 ' +
-          'border-green-200'
+          'border-green-500/20 bg-green-500/10 ' +
+          'text-green-400'
         );
 
       case 'Cancelada':
         return (
-          'bg-red-100 text-red-700 ' +
-          'border-red-200'
+          'border-destructive/20 bg-destructive/10 ' +
+          'text-destructive'
         );
 
       default:
         return (
-          'bg-amber-100 text-amber-700 ' +
-          'border-amber-200'
+          'border-amber-500/20 bg-amber-500/10 ' +
+          'text-amber-400'
         );
     }
   };
 
+  const displayedRange = useMemo(() => {
+    if (count === 0) {
+      return '0 resultados';
+    }
+
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, count);
+
+    return `${start}-${end} de ${count}`;
+  }, [count, page, pageSize]);
+
+  const clearFilters = () => {
+    setSearch('');
+
+    void fetchCompras({
+      page: 1,
+      search: undefined,
+      estado: undefined,
+      fechaCompraAfter: undefined,
+      fechaCompraBefore: undefined,
+      ordering: '-fecha_compra',
+    });
+  };
+
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Administración de compras
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.3em] text-primary">
+            Abastecimiento
+          </p>
+
+          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+            Administrar compras
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Gestiona las compras de motos y
-            repuestos realizadas a proveedores.
+          <p className="mt-2 text-sm text-neutral-400">
+            Gestiona las compras de motos y repuestos realizadas a proveedores.
           </p>
         </div>
 
         <button
           type="button"
           onClick={openCreateModal}
-          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
+          <Plus className="size-4" />
           Nueva compra
         </button>
-      </header>
+      </section>
 
       {successMessage && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-full border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-xs font-semibold text-green-400">
           {successMessage}
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
           {error}
         </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">
-            Total de compras
-          </p>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Total de compras"
+          value={stats?.total ?? count}
+          icon={<ClipboardList className="size-5" />}
+        />
 
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            {stats?.total ?? 0}
-          </p>
-        </article>
+        <StatCard
+          title="Pendientes"
+          value={stats?.pendientes ?? 0}
+          icon={<ShoppingCart className="size-5" />}
+        />
 
-        <article className="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-amber-700">
-            Pendientes
-          </p>
+        <StatCard
+          title="Recibidas"
+          value={stats?.recibidas ?? 0}
+          icon={<PackageCheck className="size-5" />}
+        />
 
-          <p className="mt-2 text-3xl font-bold text-amber-800">
-            {stats?.pendientes ?? 0}
-          </p>
-        </article>
-
-        <article className="rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-green-700">
-            Recibidas
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-green-800">
-            {stats?.recibidas ?? 0}
-          </p>
-        </article>
-
-        <article className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-red-700">
-            Canceladas
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-red-800">
-            {stats?.canceladas ?? 0}
-          </p>
-        </article>
+        <StatCard
+          title="Canceladas"
+          value={stats?.canceladas ?? 0}
+          icon={<X className="size-5" />}
+        />
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <div className="xl:col-span-2">
-            <label
-              htmlFor="search"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Buscar
-            </label>
+      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
+          <div className="relative xl:col-span-2">
+            <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
 
             <input
               id="search"
               type="search"
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Proveedor, moto, repuesto o estado"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Proveedor, moto, repuesto o estado..."
+              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
 
-          <div>
-            <label
-              htmlFor="estado-filter"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Estado
-            </label>
+          <select
+            id="estado-filter"
+            value={filters.estado ?? ''}
+            onChange={(event) =>
+              handleFilterChange({
+                estado:
+                  (event.target.value || undefined) as
+                    | CompraEstado
+                    | undefined,
+              })
+            }
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="">Todos los estados</option>
 
-            <select
-              id="estado-filter"
-              value={filters.estado ?? ''}
-              onChange={(event) =>
-                handleFilterChange({
-                  estado:
-                    (event.target.value ||
-                      undefined) as
-                      | CompraEstado
-                      | undefined,
-                })
-              }
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-            >
-              <option value="">
-                Todos
+            {estadoOptions.map((estado) => (
+              <option key={estado} value={estado}>
+                {estado}
               </option>
+            ))}
+          </select>
 
-              {estadoOptions.map((estado) => (
-                <option
-                  key={estado}
-                  value={estado}
-                >
-                  {estado}
-                </option>
-              ))}
-            </select>
-          </div>
+          <input
+            id="fecha-after"
+            type="date"
+            value={filters.fechaCompraAfter ?? ''}
+            onChange={(event) =>
+              handleFilterChange({
+                fechaCompraAfter:
+                  event.target.value || undefined,
+              })
+            }
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            title="Fecha desde"
+          />
 
-          <div>
-            <label
-              htmlFor="fecha-after"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Desde
-            </label>
-
-            <input
-              id="fecha-after"
-              type="date"
-              value={
-                filters.fechaCompraAfter ?? ''
-              }
-              onChange={(event) =>
-                handleFilterChange({
-                  fechaCompraAfter:
-                    event.target.value ||
-                    undefined,
-                })
-              }
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="fecha-before"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Hasta
-            </label>
-
-            <input
-              id="fecha-before"
-              type="date"
-              value={
-                filters.fechaCompraBefore ?? ''
-              }
-              onChange={(event) =>
-                handleFilterChange({
-                  fechaCompraBefore:
-                    event.target.value ||
-                    undefined,
-                })
-              }
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-            />
-          </div>
+          <input
+            id="fecha-before"
+            type="date"
+            value={filters.fechaCompraBefore ?? ''}
+            onChange={(event) =>
+              handleFilterChange({
+                fechaCompraBefore:
+                  event.target.value || undefined,
+              })
+            }
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            title="Fecha hasta"
+          />
         </div>
 
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="w-full sm:max-w-xs">
-            <label
-              htmlFor="ordering"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Ordenar por
-            </label>
-
-            <select
-              id="ordering"
-              value={
-                filters.ordering ??
-                '-fecha_compra'
-              }
-              onChange={(event) =>
-                handleFilterChange({
-                  ordering:
-                    event.target
-                      .value as CompraFilters['ordering'],
-                })
-              }
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-            >
-              <option value="-fecha_compra">
-                Más recientes
-              </option>
-
-              <option value="fecha_compra">
-                Más antiguas
-              </option>
-
-              <option value="-subtotal">
-                Mayor subtotal
-              </option>
-
-              <option value="subtotal">
-                Menor subtotal
-              </option>
-
-              <option value="-cantidad">
-                Mayor cantidad
-              </option>
-
-              <option value="cantidad">
-                Menor cantidad
-              </option>
-
-              <option value="estado">
-                Estado A-Z
-              </option>
-            </select>
-          </div>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <select
+            id="ordering"
+            value={filters.ordering ?? '-fecha_compra'}
+            onChange={(event) =>
+              handleFilterChange({
+                ordering:
+                  event.target.value as CompraFilters['ordering'],
+              })
+            }
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary sm:min-w-64"
+          >
+            <option value="-fecha_compra">Más recientes</option>
+            <option value="fecha_compra">Más antiguas</option>
+            <option value="-subtotal">Mayor subtotal</option>
+            <option value="subtotal">Menor subtotal</option>
+            <option value="-cantidad">Mayor cantidad</option>
+            <option value="cantidad">Menor cantidad</option>
+            <option value="estado">Estado A-Z</option>
+          </select>
 
           <button
             type="button"
-            onClick={() => {
-              setSearch('');
-
-              void fetchCompras({
-                page: 1,
-                search: undefined,
-                estado: undefined,
-                fechaCompraAfter: undefined,
-                fechaCompraBefore: undefined,
-                ordering: '-fecha_compra',
-              });
-            }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            onClick={clearFilters}
+            className="rounded-full bg-neutral-800 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700"
           >
             Limpiar filtros
           </button>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Compra
-                </th>
+      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+        {isLoading && compras.length === 0 ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="size-10 animate-spin text-primary" />
+          </div>
+        ) : compras.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+            <ShoppingCart className="mb-4 size-12 text-neutral-700" />
 
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Proveedor
-                </th>
+            <h2 className="text-lg font-black uppercase text-white">
+              No se encontraron compras
+            </h2>
 
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Producto
-                </th>
-
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Cantidad
-                </th>
-
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Precio
-                </th>
-
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Subtotal
-                </th>
-
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Estado
-                </th>
-
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
-                  >
-                    Cargando compras...
-                  </td>
+            <p className="mt-2 max-w-md text-sm text-neutral-500">
+              Modifica los filtros o registra una nueva compra.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1150px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                  <th className="px-6 py-4">Compra</th>
+                  <th className="px-6 py-4">Proveedor</th>
+                  <th className="px-6 py-4">Producto</th>
+                  <th className="px-6 py-4 text-right">Cantidad</th>
+                  <th className="px-6 py-4 text-right">Precio</th>
+                  <th className="px-6 py-4 text-right">Subtotal</th>
+                  <th className="px-6 py-4 text-center">Estado</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
-              ) : compras.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
-                  >
-                    No se encontraron compras.
-                  </td>
-                </tr>
-              ) : (
-                compras.map((compra) => (
+              </thead>
+
+              <tbody className="divide-y divide-neutral-950 text-sm">
+                {compras.map((compra) => (
                   <tr
                     key={compra.id_compra}
-                    className="transition hover:bg-slate-50"
+                    className="transition-colors hover:bg-neutral-900/20"
                   >
-                    <td className="whitespace-nowrap px-4 py-4">
-                      <p className="font-semibold text-slate-900">
-                        #{compra.id_compra}
-                      </p>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+                          <ShoppingCart className="size-4" />
+                        </div>
 
-                      <p className="text-xs text-slate-500">
-                        {formatDate(
-                          compra.fecha_compra,
-                        )}
-                      </p>
+                        <div>
+                          <p className="font-bold text-white">
+                            #{compra.id_compra}
+                          </p>
+
+                          <p className="mt-1 text-xs text-neutral-600">
+                            {formatDate(compra.fecha_compra)}
+                          </p>
+                        </div>
+                      </div>
                     </td>
 
-                    <td className="px-4 py-4 text-sm text-slate-700">
-                      {proveedoresMap.get(
-                        compra.proveedor,
-                      ) ??
+                    <td className="px-6 py-4 text-neutral-400">
+                      {proveedoresMap.get(compra.proveedor) ??
                         `Proveedor #${compra.proveedor}`}
                     </td>
 
-                    <td className="px-4 py-4 text-sm text-slate-700">
-                      <p className="font-medium text-slate-800">
-                        {getProductoDescription(
-                          compra,
-                        )}
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-white">
+                        {getProductoDescription(compra)}
                       </p>
 
-                      <p className="text-xs text-slate-500">
-                        {compra.moto !== null
-                          ? 'Moto'
-                          : 'Repuesto'}
+                      <p className="mt-1 text-xs text-neutral-600">
+                        {compra.moto !== null ? 'Moto' : 'Repuesto'}
                       </p>
                     </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-slate-700">
+                    <td className="px-6 py-4 text-right text-neutral-300">
                       {compra.cantidad}
                     </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-slate-700">
-                      {formatCurrency(
-                        compra.precio_unitario,
-                      )}
+                    <td className="px-6 py-4 text-right text-neutral-300">
+                      {formatCurrency(compra.precio_unitario)}
                     </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-slate-900">
-                      {formatCurrency(
-                        compra.subtotal,
-                      )}
+                    <td className="px-6 py-4 text-right font-bold text-white">
+                      {formatCurrency(compra.subtotal)}
                     </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-center">
+                    <td className="px-6 py-4 text-center">
                       <span
-                        className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getEstadoClasses(
+                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase ${getEstadoClasses(
                           compra.estado,
                         )}`}
                       >
@@ -972,118 +892,109 @@ export default function ComprasAdminPage() {
                       </span>
                     </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() =>
-                            openEditModal(compra)
-                          }
-                          className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                          onClick={() => openEditModal(compra)}
+                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          title="Editar compra"
                         >
-                          Editar
+                          <Edit className="size-4" />
                         </button>
 
                         <button
                           type="button"
-                          onClick={() =>
-                            setDeletingCompra(
-                              compra,
-                            )
-                          }
-                          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                          onClick={() => setDeletingCompra(compra)}
+                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20"
+                          title="Eliminar compra"
                         >
-                          Eliminar
+                          <Trash2 className="size-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">
-            Página {page} de {totalPages} ·{' '}
-            {count} compras
+        <div className="flex flex-col gap-3 border-t border-neutral-950 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-neutral-500">
+            Mostrando {displayedRange}
           </p>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={page <= 1 || isLoading}
-              onClick={() =>
-                handlePageChange(page - 1)
-              }
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => handlePageChange(page - 1)}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página anterior"
             >
-              Anterior
+              <ChevronLeft className="size-4" />
             </button>
+
+            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+              Página {page} de {totalPages}
+            </span>
 
             <button
               type="button"
-              disabled={
-                page >= totalPages || isLoading
-              }
-              onClick={() =>
-                handlePageChange(page + 1)
-              }
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={page >= totalPages || isLoading}
+              onClick={() => handlePageChange(page + 1)}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página siguiente"
             >
-              Siguiente
+              <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
       </section>
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
+                  Compras
+                </p>
+
+                <h2 className="mt-2 text-2xl font-black uppercase text-white">
                   {editingCompra
                     ? `Editar compra #${editingCompra.id_compra}`
-                    : 'Registrar compra'}
+                    : 'Nueva compra'}
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Selecciona un proveedor y una
-                  moto o repuesto.
+                <p className="mt-2 text-sm text-neutral-500">
+                  Selecciona un proveedor y una moto o repuesto.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={closeFormModal}
-                className="rounded-lg px-3 py-2 text-xl text-slate-500 hover:bg-slate-100"
+                disabled={isSaving}
+                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
               >
-                ×
+                <X className="size-5" />
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5 p-6"
-            >
-              <div>
-                <label
-                  htmlFor="proveedor"
-                  className="mb-1 block text-sm font-medium text-slate-700"
-                >
-                  Proveedor
-                </label>
-
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <FormField
+                label="Proveedor"
+                required
+                error={formErrors.proveedor}
+              >
                 <select
-                  id="proveedor"
                   value={form.proveedor}
                   onChange={(event) => {
                     setForm((current) => ({
                       ...current,
-                      proveedor:
-                        event.target.value,
+                      proveedor: event.target.value,
                     }));
 
                     setFormErrors((current) => ({
@@ -1091,17 +1002,12 @@ export default function ComprasAdminPage() {
                       proveedor: undefined,
                     }));
                   }}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                  className={inputClass(Boolean(formErrors.proveedor))}
                 >
-                  <option value="">
-                    Selecciona un proveedor
-                  </option>
+                  <option value="">Selecciona un proveedor</option>
 
                   {proveedores
-                    .filter(
-                      (proveedor) =>
-                        proveedor.estado,
-                    )
+                    .filter((proveedor) => proveedor.estado)
                     .map((proveedor) => (
                       <option
                         key={proveedor.id}
@@ -1111,299 +1017,172 @@ export default function ComprasAdminPage() {
                       </option>
                     ))}
                 </select>
+              </FormField>
 
-                {formErrors.proveedor && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {formErrors.proveedor}
-                  </p>
-                )}
-              </div>
-
-              <fieldset>
-                <legend className="mb-2 text-sm font-medium text-slate-700">
-                  Tipo de producto
-                </legend>
-
+              <FormField label="Tipo de producto" required>
                 <div className="grid grid-cols-2 gap-3">
-                  <label
-                    className={`cursor-pointer rounded-lg border p-3 text-center text-sm font-semibold transition ${
-                      form.tipoProducto ===
-                      'moto'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                  <button
+                    type="button"
+                    onClick={() => handleTipoProductoChange('moto')}
+                    className={`rounded-full border py-3 text-xs font-black uppercase tracking-wider transition-colors ${
+                      form.tipoProducto === 'moto'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-neutral-800 bg-[#141417] text-neutral-500 hover:text-white'
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="tipoProducto"
-                      value="moto"
-                      checked={
-                        form.tipoProducto ===
-                        'moto'
-                      }
-                      onChange={() =>
-                        handleTipoProductoChange(
-                          'moto',
-                        )
-                      }
-                      className="sr-only"
-                    />
-
                     Moto
-                  </label>
+                  </button>
 
-                  <label
-                    className={`cursor-pointer rounded-lg border p-3 text-center text-sm font-semibold transition ${
-                      form.tipoProducto ===
-                      'repuesto'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                  <button
+                    type="button"
+                    onClick={() => handleTipoProductoChange('repuesto')}
+                    className={`rounded-full border py-3 text-xs font-black uppercase tracking-wider transition-colors ${
+                      form.tipoProducto === 'repuesto'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-neutral-800 bg-[#141417] text-neutral-500 hover:text-white'
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="tipoProducto"
-                      value="repuesto"
-                      checked={
-                        form.tipoProducto ===
-                        'repuesto'
-                      }
-                      onChange={() =>
-                        handleTipoProductoChange(
-                          'repuesto',
-                        )
-                      }
-                      className="sr-only"
-                    />
-
                     Repuesto
-                  </label>
+                  </button>
                 </div>
-              </fieldset>
+              </FormField>
 
               {form.tipoProducto === 'moto' ? (
-                <div>
-                  <label
-                    htmlFor="moto"
-                    className="mb-1 block text-sm font-medium text-slate-700"
-                  >
-                    Moto
-                  </label>
-
+                <FormField
+                  label="Moto"
+                  required
+                  error={formErrors.moto}
+                >
                   <select
-                    id="moto"
                     value={form.moto}
                     onChange={(event) =>
-                      handleMotoChange(
-                        event.target.value,
-                      )
+                      handleMotoChange(event.target.value)
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                    className={inputClass(Boolean(formErrors.moto))}
                   >
-                    <option value="">
-                      Selecciona una moto
-                    </option>
+                    <option value="">Selecciona una moto</option>
 
                     {motos.map((moto) => (
                       <option
                         key={moto.idMoto}
                         value={moto.idMoto}
                       >
-                        {moto.marca}{' '}
-                        {moto.modelo} (
-                        {moto.anio}) - Stock:{' '}
-                        {moto.stock} -{' '}
-                        {formatCurrency(
-                          moto.precio,
-                        )}
+                        {moto.marca} {moto.modelo} ({moto.anio}) -
+                        Stock: {moto.stock} -{' '}
+                        {formatCurrency(moto.precio)}
                       </option>
                     ))}
                   </select>
-
-                  {formErrors.moto && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.moto}
-                    </p>
-                  )}
-                </div>
+                </FormField>
               ) : (
-                <div>
-                  <label
-                    htmlFor="repuesto"
-                    className="mb-1 block text-sm font-medium text-slate-700"
-                  >
-                    Repuesto
-                  </label>
-
+                <FormField
+                  label="Repuesto"
+                  required
+                  error={formErrors.repuesto}
+                >
                   <select
-                    id="repuesto"
                     value={form.repuesto}
                     onChange={(event) =>
-                      handleRepuestoChange(
-                        event.target.value,
-                      )
+                      handleRepuestoChange(event.target.value)
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                    className={inputClass(Boolean(formErrors.repuesto))}
                   >
-                    <option value="">
-                      Selecciona un repuesto
-                    </option>
+                    <option value="">Selecciona un repuesto</option>
 
-                    {repuestos.map(
-                      (repuesto) => (
-                        <option
-                          key={
-                            repuesto.idRepuesto
-                          }
-                          value={
-                            repuesto.idRepuesto
-                          }
-                        >
-                          {repuesto.nombre} -{' '}
-                          {repuesto.sku} -
-                          Stock:{' '}
-                          {repuesto.stock} -{' '}
-                          {formatCurrency(
-                            repuesto.costo,
-                          )}
-                        </option>
-                      ),
-                    )}
+                    {repuestos.map((repuesto) => (
+                      <option
+                        key={repuesto.idRepuesto}
+                        value={repuesto.idRepuesto}
+                      >
+                        {repuesto.nombre} - {repuesto.sku} - Stock:{' '}
+                        {repuesto.stock} -{' '}
+                        {formatCurrency(repuesto.costo)}
+                      </option>
+                    ))}
                   </select>
-
-                  {formErrors.repuesto && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.repuesto}
-                    </p>
-                  )}
-                </div>
+                </FormField>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div>
-                  <label
-                    htmlFor="cantidad"
-                    className="mb-1 block text-sm font-medium text-slate-700"
-                  >
-                    Cantidad
-                  </label>
-
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                <FormField
+                  label="Cantidad"
+                  required
+                  error={formErrors.cantidad}
+                >
                   <input
-                    id="cantidad"
                     type="number"
                     min="1"
                     step="1"
                     value={form.cantidad}
                     onChange={(event) =>
-                      handleCantidadChange(
-                        event.target.value,
-                      )
+                      handleCantidadChange(event.target.value)
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                    className={inputClass(Boolean(formErrors.cantidad))}
                   />
+                </FormField>
 
-                  {formErrors.cantidad && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.cantidad}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="precio-unitario"
-                    className="mb-1 block text-sm font-medium text-slate-700"
-                  >
-                    Precio unitario
-                  </label>
-
+                <FormField
+                  label="Precio unitario"
+                  required
+                  error={formErrors.precio_unitario}
+                >
                   <input
-                    id="precio-unitario"
                     type="number"
                     min="0.01"
                     step="0.01"
-                    value={
-                      form.precioUnitario
-                    }
+                    value={form.precioUnitario}
                     onChange={(event) =>
-                      handlePrecioChange(
-                        event.target.value,
-                      )
+                      handlePrecioChange(event.target.value)
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                    className={inputClass(
+                      Boolean(formErrors.precio_unitario),
+                    )}
                   />
+                </FormField>
 
-                  {formErrors.precio_unitario && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {
-                        formErrors.precio_unitario
-                      }
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="subtotal"
-                    className="mb-1 block text-sm font-medium text-slate-700"
-                  >
-                    Subtotal
-                  </label>
-
+                <FormField
+                  label="Subtotal"
+                  required
+                  error={formErrors.subtotal}
+                >
                   <input
-                    id="subtotal"
                     type="text"
                     value={form.subtotal}
                     readOnly
-                    className="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-700"
+                    className="w-full rounded-full border border-neutral-800 bg-neutral-900 px-5 py-3 text-sm font-bold text-neutral-300 outline-none"
                   />
-
-                  {formErrors.subtotal && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.subtotal}
-                    </p>
-                  )}
-                </div>
+                </FormField>
               </div>
 
-              <div>
-                <label
-                  htmlFor="estado"
-                  className="mb-1 block text-sm font-medium text-slate-700"
-                >
-                  Estado
-                </label>
-
+              <FormField
+                label="Estado"
+                required
+                error={formErrors.estado}
+              >
                 <select
-                  id="estado"
                   value={form.estado}
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      estado:
-                        event.target
-                          .value as CompraEstado,
+                      estado: event.target.value as CompraEstado,
                     }))
                   }
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                  className={inputClass(Boolean(formErrors.estado))}
                 >
                   {estadoOptions.map((estado) => (
-                    <option
-                      key={estado}
-                      value={estado}
-                    >
+                    <option key={estado} value={estado}>
                       {estado}
                     </option>
                   ))}
                 </select>
-              </div>
+              </FormField>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+              <div className="flex flex-col gap-3 pt-3 sm:flex-row">
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={closeFormModal}
-                  className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -1411,8 +1190,12 @@ export default function ComprasAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
+                  {isSaving && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+
                   {isSaving
                     ? 'Guardando...'
                     : editingCompra
@@ -1426,28 +1209,30 @@ export default function ComprasAdminPage() {
       )}
 
       {deletingCompra && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-slate-900">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+              <Trash2 className="size-6" />
+            </div>
+
+            <h2 className="text-center text-xl font-black uppercase text-white">
               Eliminar compra
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              ¿Estás seguro de eliminar la compra{' '}
-              <strong>
+            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+              Se eliminará la compra{' '}
+              <span className="font-bold text-white">
                 #{deletingCompra.id_compra}
-              </strong>
-              ? Esta acción no se puede deshacer.
+              </span>
+              . Esta acción no se puede deshacer.
             </p>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-7 flex gap-3">
               <button
                 type="button"
                 disabled={isSaving}
-                onClick={() =>
-                  setDeletingCompra(null)
-                }
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+                onClick={() => setDeletingCompra(null)}
+                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -1455,14 +1240,13 @@ export default function ComprasAdminPage() {
               <button
                 type="button"
                 disabled={isSaving}
-                onClick={() =>
-                  void handleDelete()
-                }
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                onClick={() => void handleDelete()}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {isSaving
-                  ? 'Eliminando...'
-                  : 'Eliminar'}
+                {isSaving && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                Eliminar
               </button>
             </div>
           </div>
@@ -1470,4 +1254,76 @@ export default function ComprasAdminPage() {
       )}
     </div>
   );
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+}
+
+function StatCard({ title, value, icon }: StatCardProps) {
+  return (
+    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-white">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex size-11 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+          {icon}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}
+
+function FormField({
+  label,
+  required = false,
+  error,
+  children,
+}: FormFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+        {label}
+
+        {required && (
+          <span className="ml-1 text-primary">*</span>
+        )}
+      </label>
+
+      {children}
+
+      {error && (
+        <p className="px-2 text-xs font-semibold text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function inputClass(hasError: boolean): string {
+  return [
+    'w-full rounded-full border bg-[#141417] px-5 py-3 text-sm font-semibold text-white',
+    'placeholder:text-neutral-600 focus:outline-none focus:ring-4 focus:ring-primary/10',
+    hasError
+      ? 'border-destructive'
+      : 'border-neutral-800 focus:border-primary/80',
+  ].join(' ');
 }
