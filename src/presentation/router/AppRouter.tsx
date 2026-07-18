@@ -1,4 +1,3 @@
-// src/presentation/router/AppRouter.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import Layout from '../components/Layout';
@@ -14,7 +13,6 @@ import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import OrderDetailPage from '../pages/orders/OrderDetailPage';
 
-
 // Páginas de Administración
 import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
 import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
@@ -26,13 +24,31 @@ import RepuestosPage from '../pages/repuestos/RepuestosPage';
 import InventoryPage from '../pages/inventario/InventoryPage';
 import ServiciosAdminPage from '../pages/admin/ServiciosAdminPage';
 
+
 interface PrivateRouteProps {
   element: React.ReactElement;
 }
 
 function PrivateRoute({ element }: PrivateRouteProps) {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? element : <Navigate to="/login" replace />;
+
+  return isAuthenticated
+    ? element
+    : <Navigate to="/login" replace />;
+}
+
+function AdminRoute({ element }: PrivateRouteProps) {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user?.isStaff) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
 }
 
 export default function AppRouter() {
@@ -40,20 +56,23 @@ export default function AppRouter() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          {/* Rutas Públicas de Auth */}
+          {/* Rutas públicas */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Catálogo Público */}
           <Route path="/" element={<CatalogPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route
+            path="/products/:id"
+            element={<ProductDetailPage />}
+          />
 
-          {/* Rutas Privadas del Cliente (Requieren Autenticación) */}
-          <Route path="/cart" element={<PrivateRoute element={<CartPage />} />} />
-          <Route path="/orders" element={<PrivateRoute element={<OrdersPage />} />} />
-          <Route path="/orders/:id" element={<PrivateRoute element={<OrderDetailPage />} />} />
-          <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
+          {/* Rutas privadas del cliente */}
+          <Route
+            path="/cart"
+            element={<PrivateRoute element={<CartPage />} />}
+          />
+
 
 
           {/* Admin — Placeholder por ahora (Módulos 9 a 13) */}
@@ -62,6 +81,91 @@ export default function AppRouter() {
           <Route path="/admin/products" element={<PrivateRoute element={<PlaceholderPage title="Admin Productos — Módulo 11" />} />} />
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
           <Route path="/admin/users" element={<PrivateRoute element={<PlaceholderPage title="Admin Usuarios — Módulo 13" />} />} />
+
+          <Route
+            path="/orders"
+            element={<PrivateRoute element={<OrdersPage />} />}
+          />
+
+          <Route
+            path="/orders/:id"
+            element={
+              <PrivateRoute element={<OrderDetailPage />} />
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={<PrivateRoute element={<ProfilePage />} />}
+          />
+
+          {/* Rutas administrativas */}
+          <Route
+            path="/admin"
+            element={<AdminRoute element={<MotosAdminPage />} />}
+          />
+
+          <Route
+            path="/admin/brands"
+            element={
+              <AdminRoute element={<BrandsAdminPage />} />
+            }
+          />
+
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRoute element={<CategoriesAdminPage />} />
+            }
+          />
+
+          <Route
+            path="/admin/motos"
+            element={<AdminRoute element={<MotosAdminPage />} />}
+          />
+
+          <Route
+            path="/admin/inventory"
+            element={<AdminRoute element={<InventoryPage />} />}
+          />
+
+          <Route
+            path="/admin/proveedores"
+            element={
+              <AdminRoute
+                element={<ProveedoresAdminPage />}
+              />
+            }
+          />
+
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute
+                element={
+                  <PlaceholderPage title="Admin Órdenes — Módulo 12" />
+                }
+              />
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute
+                element={
+                  <PlaceholderPage title="Admin Usuarios — Módulo 13" />
+                }
+              />
+            }
+          />
+
+          {/* Repuestos público */}
+          <Route
+            path="/repuestos"
+            element={<RepuestosPage />}
+          />
+
 
           <Route
             path="/orders"
@@ -156,7 +260,10 @@ export default function AppRouter() {
           />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
         </Routes>
       </Layout>
     </BrowserRouter>

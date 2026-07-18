@@ -44,4 +44,22 @@ export class ApiMotoRepository implements MotoRepository {
     const response = await httpClient.get(`/motos/${id}/`);
     return this.mapMoto(response.data);
   }
+
+  async createMoto(formData: FormData): Promise<Moto> {
+    const response = await httpClient.post('/motos/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return this.mapMoto(response.data);
+  }
+
+  async updateMoto(id: number, formData: FormData): Promise<Moto> {
+    const response = await httpClient.patch(`/motos/${id}/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return this.mapMoto(response.data);
+  }
+
+  async deleteMoto(id: number): Promise<void> {
+    await httpClient.delete(`/motos/${id}/`);
+  }
 }
