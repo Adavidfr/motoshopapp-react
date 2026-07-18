@@ -43,12 +43,21 @@ export class ApiCartRepository implements CartRepository {
     }
   }
 
-  async addItem(cartId: number, motoId: number, cantidad: number, precioUnitario: number): Promise<CarritoCompras> {
-    const response = await httpClient.post(`/carritos/${cartId}/add-item/`, {
-      id_moto: motoId,
+  async addItem(
+    cartId: number,
+    motoId: number | null,
+    repuestoId: number | null,
+    cantidad: number,
+    precioUnitario: number
+  ): Promise<CarritoCompras> {
+    const payload: any = {
       cantidad,
       precio_unitario: precioUnitario.toFixed(2),
-    });
+    };
+    if (motoId !== null) payload.id_moto = motoId;
+    if (repuestoId !== null) payload.id_repuesto = repuestoId;
+
+    const response = await httpClient.post(`/carritos/${cartId}/add-item/`, payload);
     return this.mapCart(response.data);
   }
 
