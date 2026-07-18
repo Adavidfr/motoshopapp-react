@@ -14,7 +14,18 @@ import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import OrderDetailPage from '../pages/orders/OrderDetailPage';
 
-// Componente para proteger rutas privadas
+
+// Páginas de Administración
+import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
+import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
+import MotosAdminPage from '../pages/admin/MotosAdminPage';
+import ProveedoresAdminPage from '../pages/admin/ProveedoresAdminPage';
+
+// Páginas de Repuestos e Inventario
+import RepuestosPage from '../pages/repuestos/RepuestosPage';
+import InventoryPage from '../pages/inventario/InventoryPage';
+import ServiciosAdminPage from '../pages/admin/ServiciosAdminPage';
+
 interface PrivateRouteProps {
   element: React.ReactElement;
 }
@@ -44,12 +55,105 @@ export default function AppRouter() {
           <Route path="/orders/:id" element={<PrivateRoute element={<OrderDetailPage />} />} />
           <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
 
+
           {/* Admin — Placeholder por ahora (Módulos 9 a 13) */}
           <Route path="/admin" element={<PrivateRoute element={<PlaceholderPage title="Admin Dashboard — Módulo 9" />} />} />
           <Route path="/admin/categories" element={<PrivateRoute element={<PlaceholderPage title="Admin Categorías — Módulo 10" />} />} />
           <Route path="/admin/products" element={<PrivateRoute element={<PlaceholderPage title="Admin Productos — Módulo 11" />} />} />
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
           <Route path="/admin/users" element={<PrivateRoute element={<PlaceholderPage title="Admin Usuarios — Módulo 13" />} />} />
+
+          <Route
+            path="/orders"
+            element={<PrivateRoute element={<OrdersPage />} />}
+          />
+
+          <Route
+            path="/orders/:id"
+            element={
+              <PrivateRoute element={<OrderDetailPage />} />
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={<PrivateRoute element={<ProfilePage />} />}
+          />
+
+          {/* Rutas administrativas */}
+          <Route
+            path="/admin"
+            element={<AdminRoute element={<MotosAdminPage />} />}
+          />
+
+          <Route
+            path="/admin/brands"
+            element={
+              <AdminRoute element={<BrandsAdminPage />} />
+            }
+          />
+
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRoute element={<CategoriesAdminPage />} />
+            }
+          />
+
+          <Route
+            path="/admin/motos"
+            element={<AdminRoute element={<MotosAdminPage />} />}
+          />
+
+          <Route
+            path="/admin/inventory"
+            element={<AdminRoute element={<InventoryPage />} />}
+          />
+
+          <Route
+            path="/admin/proveedores"
+            element={
+              <AdminRoute
+                element={<ProveedoresAdminPage />}
+              />
+            }
+          />
+          <Route
+            path="/admin/servicios"
+            element={
+              <AdminRoute
+                element={<ServiciosAdminPage />}
+              />
+            }
+          />
+
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute
+                element={
+                  <PlaceholderPage title="Admin Órdenes — Módulo 12" />
+                }
+              />
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute
+                element={
+                  <PlaceholderPage title="Admin Usuarios — Módulo 13" />
+                }
+              />
+            }
+          />
+
+          {/* Repuestos público */}
+          <Route
+            path="/repuestos"
+            element={<RepuestosPage />}
+          />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
