@@ -9,7 +9,7 @@ export class ListOrdersUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute(limit?: number, offset?: number): Promise<PaginatedResult<Pedido>> {
-    return this.orderRepository.listOrders(limit, offset);
+  async execute(limit?: number, offset?: number, estado?: string): Promise<PaginatedResult<Pedido>> {
+    return this.orderRepository.listOrders(limit, offset, estado);
   }
 }
