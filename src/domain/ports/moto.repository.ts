@@ -6,6 +6,8 @@ export interface ListMotosParams {
   offset?: number;
   ordering?: string;
   search?: string;
+  marca?: number | string;
+  categoria?: number | string;
 }
 
 export interface PaginatedResult<T> {
@@ -18,4 +20,7 @@ export interface PaginatedResult<T> {
 export interface MotoRepository {
   listMotos(params?: ListMotosParams): Promise<PaginatedResult<Moto>>;
   getMoto(id: number): Promise<Moto>;
+  createMoto(formData: FormData): Promise<Moto>;
+  updateMoto(id: number, formData: FormData): Promise<Moto>;
+  deleteMoto(id: number): Promise<void>;
 }

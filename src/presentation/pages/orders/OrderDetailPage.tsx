@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../comp
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice, formatDate } from '../../utils/formatters';
 import { ArrowLeft, CheckCircle, CreditCard } from 'lucide-react';
+import { StatusBadge } from '../../components/StatusBadge';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,26 +58,9 @@ export default function OrderDetailPage() {
     );
   }
 
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'confirmed':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'shipped':
-        return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
-      case 'delivered':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'cancelled':
-        return 'bg-destructive/10 text-destructive border-destructive/20';
-      default:
-        return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link to="/orders" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link to="/orders" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
         <ArrowLeft className="size-4" />
         Volver a Mis Pedidos
       </Link>
@@ -88,9 +72,7 @@ export default function OrderDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{formatDate(selectedOrder.fechaPedido)}</span>
-          <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 border rounded-full ${getStatusStyle(selectedOrder.estado)}`}>
-            {selectedOrder.estado}
-          </span>
+          <StatusBadge status={selectedOrder.estado} />
         </div>
       </div>
 

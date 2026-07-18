@@ -30,16 +30,34 @@ export class ApiCartRepository implements CartRepository {
   }
 
   async getActiveCart(): Promise<CarritoCompras> {
-    const response = await httpClient.get('/carritos/activo/');
-    return this.mapCart(response.data);
+    try {
+      const response = await httpClient.get('/carritos/activo/');
+      return this.mapCart(response.data);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        // Si no hay un carrito activo, lo creamos
+        const createResponse = await httpClient.post('/carritos/', {});
+        return this.mapCart(createResponse.data);
+      }
+      throw err;
+    }
   }
 
-  async addItem(cartId: number, motoId: number, cantidad: number, precioUnitario: number): Promise<CarritoCompras> {
-    const response = await httpClient.post(`/carritos/${cartId}/add-item/`, {
-      id_moto: motoId,
+  async addItem(
+    cartId: number,
+    motoId: number | null,
+    repuestoId: number | null,
+    cantidad: number,
+    precioUnitario: number
+  ): Promise<CarritoCompras> {
+    const payload: any = {
       cantidad,
       precio_unitario: precioUnitario.toFixed(2),
-    });
+    };
+    if (motoId !== null) payload.id_moto = motoId;
+    if (repuestoId !== null) payload.id_repuesto = repuestoId;
+
+    const response = await httpClient.post(`/carritos/${cartId}/add-item/`, payload);
     return this.mapCart(response.data);
   }
 

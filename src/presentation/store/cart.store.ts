@@ -8,7 +8,7 @@ interface CartState {
   isLoading: boolean;
   error: string | null;
   fetchActiveCart: () => Promise<void>;
-  addToCart: (motoId: number, cantidad: number, precioUnitario: number) => Promise<void>;
+  addToCart: (motoId: number | null, repuestoId: number | null, cantidad: number, precioUnitario: number) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   clearCartState: () => void;
@@ -32,14 +32,20 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
-  addToCart: async (motoId, cantidad, precioUnitario) => {
+  addToCart: async (motoId, repuestoId, cantidad, precioUnitario) => {
     set({ isLoading: true, error: null });
     try {
       let currentCart = get().cart;
       if (!currentCart) {
         currentCart = await getActiveCartUseCase.execute();
       }
-      const updatedCart = await addItemToCartUseCase.execute(currentCart.idCarrito, motoId, cantidad, precioUnitario);
+      const updatedCart = await addItemToCartUseCase.execute(
+        currentCart.idCarrito,
+        motoId,
+        repuestoId,
+        cantidad,
+        precioUnitario
+      );
       set({ cart: updatedCart, isLoading: false });
     } catch (err: any) {
       set({

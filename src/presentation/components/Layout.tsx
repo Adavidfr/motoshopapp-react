@@ -33,6 +33,8 @@ export default function Layout({ children }: LayoutProps) {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const isAdminActive = (pathPrefix: string) => location.pathname.startsWith(pathPrefix);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Header Premium - Dark charcoal style */}
@@ -64,6 +66,14 @@ export default function Layout({ children }: LayoutProps) {
               >
                 Motos
               </Link>
+              <Link 
+                to="/repuestos" 
+                className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                  isActive('/repuestos') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
+                }`}
+              >
+                Repuestos
+              </Link>
               {isAuthenticated && (
                 <Link 
                   to="/orders" 
@@ -75,14 +85,84 @@ export default function Layout({ children }: LayoutProps) {
                 </Link>
               )}
               {isAuthenticated && user?.isStaff && (
-                <Link
-                  to="/admin/financiamientos"
-                  className={`pb-1 transition-colors hover:text-white border-b-2 ${
-                    isActive('/admin/financiamientos') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
-                  }`}
-                >
-                  Financiamientos
-                </Link>
+                <>
+                  <Link
+                    to="/admin/proveedores"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/proveedores')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Proveedores
+                  </Link>
+
+                  <Link
+                    to="/admin/servicios"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/servicios')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Servicios
+                  </Link>
+
+                  <Link
+                    to="/admin/compras"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/compras')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Compras
+                  </Link>
+
+                  <Link
+                    to="/admin/mantenimientos"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/mantenimientos')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Mantenimientos
+                  </Link>
+
+                  <Link
+                    to="/admin/repuestos-mantenimiento"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/repuestos-mantenimiento')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Repuestos usados
+                  </Link>
+
+                  <Link
+                    to="/admin/ventas"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/ventas')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Ventas
+                  </Link>
+
+                  <Link
+                    to="/admin/financiamientos"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/financiamientos')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Financiamientos
+                  </Link>
+                </>
               )}
             </nav>
           </div>
