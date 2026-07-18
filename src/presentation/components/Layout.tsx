@@ -1,8 +1,7 @@
 // src/presentation/components/Layout.tsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Search, ShoppingCart, User } from 'lucide-react';
-
+import { Search, ShoppingCart, User, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { useCartStore } from '../store/cart.store';
 import { Button } from './ui/button';
@@ -14,26 +13,16 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const {
-    isAuthenticated,
-    user,
-    logout,
-    initialize,
-  } = useAuthStore();
-
-  const {
-    cart,
-    fetchActiveCart,
-  } = useCartStore();
+  const { isAuthenticated, user, logout, initialize } = useAuthStore();
+  const { cart, fetchActiveCart } = useCartStore();
 
   useEffect(() => {
-    void initialize();
+    initialize();
   }, [initialize]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      void fetchActiveCart();
+      fetchActiveCart();
     }
   }, [isAuthenticated, fetchActiveCart]);
 
@@ -42,218 +31,93 @@ export default function Layout({ children }: LayoutProps) {
     navigate('/login');
   };
 
-  const isActive = (path: string) =>
-    location.pathname === path;
-
-  const isAdminActive = (path: string) =>
-    location.pathname.startsWith(path);
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      {/* Header Premium - Dark charcoal style */}
       <header className="sticky top-0 z-50 w-full bg-[#070708] border-b border-neutral-900 shadow-lg">
         <div className="container mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
+          
+          {/* Logo */}
           <div className="flex items-center gap-10">
             <Link to="/" className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt="Aura Rider Logo"
-                className="h-12 w-12 rounded-full border border-neutral-700/50 object-cover"
-              />
-
-              <span className="text-xl font-black uppercase tracking-tighter text-white">
-                AURA
-                <span className="text-primary">RIDER</span>
-              </span>
+              <img src="/logo.png" alt="Aura Rider Logo" className="h-12 w-12 object-cover rounded-full border border-neutral-700/50" />
+              <span className="uppercase font-black text-xl tracking-tighter text-white">AURA<span className="text-primary">RIDER</span></span>
             </Link>
-
-            <nav className="hidden items-center space-x-8 text-xs font-bold uppercase tracking-widest text-neutral-300 lg:flex">
-              <Link
-                to="/"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                  isActive('/')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+            
+            {/* Links de navegación */}
+            <nav className="hidden lg:flex items-center space-x-8 text-xs font-bold uppercase tracking-widest text-neutral-300">
+              <Link 
+                to="/" 
+                className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                  isActive('/') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
                 }`}
               >
                 Inicio
               </Link>
-
-              <Link
-                to="/catalog"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                  isActive('/catalog')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+              <Link 
+                to="/" 
+                className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                  isActive('/catalog') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
                 }`}
               >
                 Motos
               </Link>
-
-              <Link
-                to="/repuestos"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                  isActive('/repuestos')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
-                }`}
-              >
-                Repuestos
-              </Link>
-
               {isAuthenticated && (
-                <Link
-                  to="/orders"
-                  className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                    isActive('/orders')
-                      ? 'border-primary text-white'
-                      : 'border-transparent text-neutral-400'
+                <Link 
+                  to="/orders" 
+                  className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                    isActive('/orders') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
                   }`}
                 >
-                  Mis pedidos
+                  Mis Pedidos
                 </Link>
               )}
-
               {isAuthenticated && user?.isStaff && (
-                <>
-                  <Link
-                    to="/admin/proveedores"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/proveedores')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Proveedores
-                  </Link>
-
-                  <Link
-                    to="/admin/servicios"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/servicios')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Servicios
-                  </Link>
-
-                  <Link
-                    to="/admin/compras"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/compras')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Compras
-                  </Link>
-
-                  <Link
-                    to="/admin/mantenimientos"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/mantenimientos')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Mantenimientos
-                  </Link>
-
-                  <Link
-                    to="/admin/repuestos-mantenimiento"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/repuestos-mantenimiento')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Repuestos usados
-                  </Link>
-
-                  <Link
-                    to="/admin/ventas"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/ventas')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Ventas
-                  </Link>
-
-                  <Link
-                    to="/admin/financiamientos"
-                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
-                      isAdminActive('/admin/financiamientos')
-                        ? 'border-primary text-white'
-                        : 'border-transparent text-neutral-400'
-                    }`}
-                  >
-                    Financiamientos
-                  </Link>
-                </>
+                <Link
+                  to="/admin/financiamientos"
+                  className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                    isActive('/admin/financiamientos') ? 'border-primary text-white' : 'border-transparent text-neutral-400'
+                  }`}
+                >
+                  Financiamientos
+                </Link>
               )}
             </nav>
           </div>
 
+          {/* Iconos de la derecha */}
           <div className="flex items-center gap-5">
-            <button
-              type="button"
-              aria-label="Buscar"
-              className="p-1 text-neutral-400 transition-colors hover:text-white"
-            >
+            <button className="text-neutral-400 hover:text-white transition-colors p-1">
               <Search className="size-5" />
             </button>
 
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/cart"
-                  className="relative p-1 text-neutral-400 transition-colors hover:text-white"
-                >
+                <Link to="/cart" className="relative text-neutral-400 hover:text-white transition-colors p-1">
                   <ShoppingCart className="size-5" />
-
                   {cart && cart.numItems > 0 && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-white">
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-white">
                       {cart.numItems}
                     </span>
                   )}
                 </Link>
-
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 p-1 text-xs font-bold uppercase tracking-wider text-neutral-400 transition-colors hover:text-white"
-                >
+                <Link to="/profile" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors p-1 text-xs font-bold uppercase tracking-wider">
                   <User className="size-5 text-primary" />
-                  <span className="hidden md:inline">
-                    {user?.username}
-                  </span>
+                  <span className="hidden md:inline">{user?.username}</span>
                 </Link>
-
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleLogout}
-                  className="text-neutral-400 transition-all hover:text-primary"
-                >
+                <Button variant="ghost" size="icon-sm" onClick={handleLogout} className="text-neutral-400 hover:text-primary transition-all">
                   <LogOut className="size-5" />
                 </Button>
               </>
             ) : (
               <div className="flex items-center gap-4">
-                <Link
-                  to="/login"
-                  className="text-xs font-bold uppercase tracking-widest text-neutral-400 transition-colors hover:text-white"
-                >
-                  Iniciar sesión
+                <Link to="/login" className="text-neutral-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
+                  Iniciar Sesión
                 </Link>
-
                 <Link to="/register">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="rounded-none bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-primary/95"
-                  >
+                  <Button variant="default" size="sm" className="bg-primary hover:bg-primary/95 text-white font-bold text-xs uppercase tracking-widest px-5 py-2.5 rounded-none">
                     Registrarse
                   </Button>
                 </Link>
@@ -263,40 +127,28 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1">
         {children}
       </main>
 
-      <footer className="mt-auto border-t border-neutral-900 bg-[#070708] py-12 text-xs text-neutral-400">
+      {/* Footer */}
+      <footer className="bg-[#070708] border-t border-neutral-900 py-12 text-neutral-400 text-xs mt-auto">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
-          <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
             <div className="space-y-4">
               <Link to="/" className="flex items-center gap-3">
-                <img
-                  src="/logo.png"
-                  alt="Aura Rider Logo"
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-
-                <span className="text-lg font-black uppercase tracking-tighter text-white">
-                  AURA
-                  <span className="text-primary">RIDER</span>
-                </span>
+                <img src="/logo.png" alt="Aura Rider Logo" className="h-8 w-8 object-cover rounded-full" />
+                <span className="uppercase font-black text-lg tracking-tighter text-white">AURA<span className="text-primary">RIDER</span></span>
               </Link>
-
-              <p className="leading-relaxed text-neutral-500">
-                Libertad sin límites.
-                <br />
-                El camino es tuyo.
+              <p className="text-neutral-500 leading-relaxed">
+                Libertad sin límites.<br />El camino es tuyo.
               </p>
             </div>
-
+            
             <div className="space-y-3">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">
-                Motos
-              </h4>
-
-              <ul className="space-y-2 font-semibold text-neutral-500">
+              <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">Motos</h4>
+              <ul className="space-y-2 text-neutral-500 font-semibold">
                 <li><Link to="/" className="hover:text-primary">Sport</Link></li>
                 <li><Link to="/" className="hover:text-primary">Naked</Link></li>
                 <li><Link to="/" className="hover:text-primary">Aventura</Link></li>
@@ -305,35 +157,28 @@ export default function Layout({ children }: LayoutProps) {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">
-                Servicios
-              </h4>
-
-              <ul className="space-y-2 font-semibold text-neutral-500">
-                <li><span className="cursor-pointer hover:text-primary">Mantenimiento</span></li>
-                <li><span className="cursor-pointer hover:text-primary">Servicio técnico</span></li>
-                <li><span className="cursor-pointer hover:text-primary">Garantía</span></li>
-                <li><span className="cursor-pointer hover:text-primary">Financiamiento</span></li>
+              <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">Servicios</h4>
+              <ul className="space-y-2 text-neutral-500 font-semibold">
+                <li><span className="hover:text-primary cursor-pointer">Mantenimiento</span></li>
+                <li><span className="hover:text-primary cursor-pointer">Servicio Técnico</span></li>
+                <li><span className="hover:text-primary cursor-pointer">Garantía</span></li>
+                <li><span className="hover:text-primary cursor-pointer">Financiamiento</span></li>
               </ul>
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">
-                Ayuda
-              </h4>
-
-              <ul className="space-y-2 font-semibold text-neutral-500">
-                <li><span className="cursor-pointer hover:text-primary">Preguntas frecuentes</span></li>
-                <li><span className="cursor-pointer hover:text-primary">Envíos</span></li>
-                <li><span className="cursor-pointer hover:text-primary">Cambios y devoluciones</span></li>
+              <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">Ayuda</h4>
+              <ul className="space-y-2 text-neutral-500 font-semibold">
+                <li><span className="hover:text-primary cursor-pointer">Preguntas Frecuentes</span></li>
+                <li><span className="hover:text-primary cursor-pointer">Envíos</span></li>
+                <li><span className="hover:text-primary cursor-pointer">Cambios y Devoluciones</span></li>
               </ul>
             </div>
           </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-neutral-900 pt-6 font-semibold text-neutral-600 md:flex-row">
+          
+          <div className="border-t border-neutral-900 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-neutral-600 font-semibold">
             <p>© 2026 Aura Rider. Todos los derechos reservados.</p>
-
-            <div className="flex items-center gap-7 opacity-75 transition-opacity duration-300 hover:opacity-100">
+            <div className="flex items-center gap-7 opacity-75 hover:opacity-100 transition-opacity duration-300">
               <img src="/visa_logo.png" alt="Visa" className="h-5 w-auto object-contain brightness-0 invert" />
               <img src="/mastercard_logo.png" alt="Mastercard" className="h-6 w-auto object-contain" />
               <img src="/diners_logo.png" alt="Diners Club" className="h-5 w-auto object-contain brightness-0 invert" />
