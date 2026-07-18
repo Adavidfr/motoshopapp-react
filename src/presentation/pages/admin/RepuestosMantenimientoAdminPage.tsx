@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 
 import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Loader2,
+  Package,
   Pencil,
   Plus,
   Search,
@@ -270,15 +275,30 @@ export default function RepuestosMantenimientoAdminPage() {
       minimumFractionDigits: 2,
     }).format(value);
 
+  const displayedRange = useMemo(() => {
+    if (count === 0) {
+      return '0 resultados';
+    }
+
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, count);
+
+    return `${start}-${end} de ${count}`;
+  }, [count, page, pageSize]);
+
   return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-            <Wrench className="h-7 w-7 text-blue-600" />
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.3em] text-primary">
+            Taller
+          </p>
+
+          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
             Repuestos de mantenimiento
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+
+          <p className="mt-2 text-sm text-neutral-400">
             Administra los repuestos utilizados en cada mantenimiento.
           </p>
         </div>
@@ -286,380 +306,440 @@ export default function RepuestosMantenimientoAdminPage() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="size-4" />
           Agregar repuesto
         </button>
       </section>
 
       {successMessage && !showModal && !showDeleteModal && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-full border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-xs font-semibold text-green-400">
           {successMessage}
         </div>
       )}
 
       {error && !showModal && !showDeleteModal && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
           {error}
         </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Registros totales</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {stats?.total ?? count}
-          </p>
-        </article>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Registros totales"
+          value={stats?.total ?? count}
+          icon={<ClipboardList className="size-5" />}
+        />
 
-        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Cantidad total utilizada</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {stats?.detail.reduce((total, item) => total + item.cantidad, 0) ?? 0}
-          </p>
-        </article>
+        <StatCard
+          title="Cantidad utilizada"
+          value={
+            stats?.detail.reduce(
+              (total, item) => total + item.cantidad,
+              0,
+            ) ?? 0
+          }
+          icon={<Package className="size-5" />}
+        />
 
-        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Valor acumulado</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {formatCurrency(
-              stats?.detail.reduce((total, item) => total + item.subtotal, 0) ?? 0,
-            )}
-          </p>
-        </article>
+        <StatCard
+          title="Valor acumulado"
+          value={formatCurrency(
+            stats?.detail.reduce(
+              (total, item) => total + item.subtotal,
+              0,
+            ) ?? 0,
+          )}
+          icon={<Wrench className="size-5" />}
+        />
 
-        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Página actual</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {page} / {totalPages}
-          </p>
-        </article>
+        <StatCard
+          title="Página actual"
+          value={`${page} / ${totalPages}`}
+          icon={<ClipboardList className="size-5" />}
+        />
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="xl:col-span-2">
-            <label htmlFor="search" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Buscar repuesto
-            </label>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input
-                id="search"
-                type="search"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
+      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
+          <div className="relative xl:col-span-2">
+            <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
+
+            <input
+              id="search"
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Buscar por nombre del repuesto..."
+              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+            />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
                   setPage(1);
                 }}
-                placeholder="Buscar por nombre del repuesto..."
-                className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="filter-mantenimiento" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Mantenimiento
-            </label>
-            <select
-              id="filter-mantenimiento"
-              value={selectedMantenimiento}
-              onChange={(event) => {
-                setSelectedMantenimiento(event.target.value);
-                setPage(1);
-              }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="">Todos los mantenimientos</option>
-              {mantenimientos.map((mantenimiento) => (
-                <option
-                  key={mantenimiento.idMantenimiento}
-                  value={mantenimiento.idMantenimiento}
-                >
-                  Mantenimiento #{mantenimiento.idMantenimiento}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            id="filter-mantenimiento"
+            value={selectedMantenimiento}
+            onChange={(event) => {
+              setSelectedMantenimiento(event.target.value);
+              setPage(1);
+            }}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="">Todos los mantenimientos</option>
 
-          <div>
-            <label htmlFor="filter-repuesto" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Repuesto
-            </label>
-            <select
-              id="filter-repuesto"
-              value={selectedRepuesto}
-              onChange={(event) => {
-                setSelectedRepuesto(event.target.value);
-                setPage(1);
-              }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="">Todos los repuestos</option>
-              {repuestos.map((repuesto) => (
-                <option key={repuesto.idRepuesto} value={repuesto.idRepuesto}>
-                  {repuesto.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+            {mantenimientos.map((mantenimiento) => (
+              <option
+                key={mantenimiento.idMantenimiento}
+                value={mantenimiento.idMantenimiento}
+              >
+                Mantenimiento #{mantenimiento.idMantenimiento}
+              </option>
+            ))}
+          </select>
+
+          <select
+            id="filter-repuesto"
+            value={selectedRepuesto}
+            onChange={(event) => {
+              setSelectedRepuesto(event.target.value);
+              setPage(1);
+            }}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="">Todos los repuestos</option>
+
+            {repuestos.map((repuesto) => (
+              <option
+                key={repuesto.idRepuesto}
+                value={repuesto.idRepuesto}
+              >
+                {repuesto.nombre}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-3 flex justify-end">
           <button
             type="button"
             onClick={clearFilters}
-            disabled={!search && !selectedMantenimiento && !selectedRepuesto}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={
+              !search &&
+              !selectedMantenimiento &&
+              !selectedRepuesto
+            }
+            className="rounded-full bg-neutral-800 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Limpiar filtros
           </button>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                {['ID', 'Mantenimiento', 'Repuesto', 'Cantidad', 'Precio unitario', 'Subtotal', 'Acciones'].map((label) => (
-                  <th
-                    key={label}
-                    className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
-                  >
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+        {isLoading && repuestosMantenimiento.length === 0 ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="size-10 animate-spin text-primary" />
+          </div>
+        ) : repuestosMantenimiento.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+            <Wrench className="mb-4 size-12 text-neutral-700" />
 
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-sm text-gray-500">
-                    Cargando repuestos de mantenimiento...
-                  </td>
+            <h2 className="text-lg font-black uppercase text-white">
+              No existen registros
+            </h2>
+
+            <p className="mt-2 max-w-md text-sm text-neutral-500">
+              Modifica los filtros o agrega un repuesto a un mantenimiento.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1050px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                  <th className="px-6 py-4">Registro</th>
+                  <th className="px-6 py-4">Mantenimiento</th>
+                  <th className="px-6 py-4">Repuesto</th>
+                  <th className="px-6 py-4 text-right">Cantidad</th>
+                  <th className="px-6 py-4 text-right">
+                    Precio unitario
+                  </th>
+                  <th className="px-6 py-4 text-right">Subtotal</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
-              ) : repuestosMantenimiento.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-sm text-gray-500">
-                    No existen registros.
-                  </td>
-                </tr>
-              ) : (
-                repuestosMantenimiento.map((item) => (
-                  <tr key={item.idRepuestoMantenimiento} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      #{item.idRepuestoMantenimiento}
+              </thead>
+
+              <tbody className="divide-y divide-neutral-950 text-sm">
+                {repuestosMantenimiento.map((item) => (
+                  <tr
+                    key={item.idRepuestoMantenimiento}
+                    className="transition-colors hover:bg-neutral-900/20"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+                          <Wrench className="size-4" />
+                        </div>
+
+                        <p className="font-bold text-white">
+                          #{item.idRepuestoMantenimiento}
+                        </p>
+                      </div>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+
+                    <td className="px-6 py-4 text-neutral-400">
                       {getMantenimientoLabel(item.mantenimiento)}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+
+                    <td className="px-6 py-4 font-bold text-white">
                       {getRepuestoLabel(item.repuesto)}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+
+                    <td className="px-6 py-4 text-right text-neutral-300">
                       {item.cantidad}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+
+                    <td className="px-6 py-4 text-right text-neutral-300">
                       {formatCurrency(item.precioUnitario)}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">
+
+                    <td className="px-6 py-4 text-right font-bold text-white">
                       {formatCurrency(item.subtotal)}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="flex items-center gap-2">
+
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => openEditModal(item)}
                           title="Editar"
-                          className="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50"
+                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="size-4" />
                         </button>
+
                         <button
                           type="button"
                           onClick={() => openDeleteModal(item)}
                           title="Eliminar"
-                          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="size-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        <div className="flex flex-col gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-gray-500">
-            Mostrando {repuestosMantenimiento.length} de {count} registros
+        <div className="flex flex-col gap-3 border-t border-neutral-950 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-neutral-500">
+            Mostrando {displayedRange}
           </p>
+
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              onClick={() =>
+                setPage((current) =>
+                  Math.max(1, current - 1),
+                )
+              }
               disabled={page <= 1 || isLoading}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50"
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página anterior"
             >
-              Anterior
+              <ChevronLeft className="size-4" />
             </button>
-            <span className="text-sm text-gray-600">
+
+            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
               Página {page} de {totalPages}
             </span>
+
             <button
               type="button"
-              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              onClick={() =>
+                setPage((current) =>
+                  Math.min(totalPages, current + 1),
+                )
+              }
               disabled={page >= totalPages || isLoading}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50"
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página siguiente"
             >
-              Siguiente
+              <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
       </section>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
+                  Taller
+                </p>
+
+                <h2 className="mt-2 text-2xl font-black uppercase text-white">
                   {editingItem
-                    ? 'Editar repuesto de mantenimiento'
-                    : 'Agregar repuesto al mantenimiento'}
+                    ? 'Editar repuesto'
+                    : 'Agregar repuesto'}
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
+
+                <p className="mt-2 text-sm text-neutral-500">
                   Selecciona el mantenimiento, el repuesto y la cantidad.
                 </p>
               </div>
+
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+                disabled={isSaving}
+                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
               >
-                <X className="h-5 w-5" />
+                <X className="size-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-5 px-6 py-5">
-                {(formError || error) && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {formError ?? error}
-                  </div>
-                )}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {(formError || error) && (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
+                  {formError ?? error}
+                </div>
+              )}
 
-                <div>
-                  <label htmlFor="mantenimiento" className="mb-1.5 block text-sm font-medium text-gray-700">
-                    Mantenimiento
-                  </label>
-                  <select
-                    id="mantenimiento"
-                    name="mantenimiento"
-                    value={form.mantenimiento}
-                    onChange={handleSelectChange}
+              <FormField label="Mantenimiento" required>
+                <select
+                  id="mantenimiento"
+                  name="mantenimiento"
+                  value={form.mantenimiento}
+                  onChange={handleSelectChange}
+                  disabled={isSaving}
+                  className={inputClass()}
+                >
+                  <option value="">
+                    Seleccione un mantenimiento
+                  </option>
+
+                  {mantenimientos.map((mantenimiento) => (
+                    <option
+                      key={mantenimiento.idMantenimiento}
+                      value={mantenimiento.idMantenimiento}
+                    >
+                      Mantenimiento #
+                      {mantenimiento.idMantenimiento}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Repuesto" required>
+                <select
+                  id="repuesto"
+                  name="repuesto"
+                  value={form.repuesto}
+                  onChange={handleSelectChange}
+                  disabled={isSaving}
+                  className={inputClass()}
+                >
+                  <option value="">
+                    Seleccione un repuesto
+                  </option>
+
+                  {repuestos.map((repuesto) => (
+                    <option
+                      key={repuesto.idRepuesto}
+                      value={repuesto.idRepuesto}
+                    >
+                      {repuesto.nombre}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <FormField label="Cantidad" required>
+                  <input
+                    id="cantidad"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={form.cantidad}
+                    onChange={handleCantidadChange}
                     disabled={isSaving}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5"
-                  >
-                    <option value="">Seleccione un mantenimiento</option>
-                    {mantenimientos.map((mantenimiento) => (
-                      <option
-                        key={mantenimiento.idMantenimiento}
-                        value={mantenimiento.idMantenimiento}
-                      >
-                        Mantenimiento #{mantenimiento.idMantenimiento}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    className={inputClass()}
+                  />
+                </FormField>
 
-                <div>
-                  <label htmlFor="repuesto" className="mb-1.5 block text-sm font-medium text-gray-700">
-                    Repuesto
-                  </label>
-                  <select
-                    id="repuesto"
-                    name="repuesto"
-                    value={form.repuesto}
-                    onChange={handleSelectChange}
-                    disabled={isSaving}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5"
-                  >
-                    <option value="">Seleccione un repuesto</option>
-                    {repuestos.map((repuesto) => (
-                      <option key={repuesto.idRepuesto} value={repuesto.idRepuesto}>
-                        {repuesto.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FormField label="Precio unitario">
+                  <input
+                    id="precioUnitario"
+                    type="text"
+                    value={formatCurrency(
+                      form.precioUnitario,
+                    )}
+                    readOnly
+                    className={readOnlyInputClass()}
+                  />
+                </FormField>
 
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <label htmlFor="cantidad" className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Cantidad
-                    </label>
-                    <input
-                      id="cantidad"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={form.cantidad}
-                      onChange={handleCantidadChange}
-                      disabled={isSaving}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="precioUnitario" className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Precio unitario
-                    </label>
-                    <input
-                      id="precioUnitario"
-                      type="text"
-                      value={formatCurrency(form.precioUnitario)}
-                      readOnly
-                      className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2.5"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="subtotal" className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Subtotal
-                    </label>
-                    <input
-                      id="subtotal"
-                      type="text"
-                      value={formatCurrency(form.subtotal)}
-                      readOnly
-                      className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2.5"
-                    />
-                  </div>
-                </div>
+                <FormField label="Subtotal">
+                  <input
+                    id="subtotal"
+                    type="text"
+                    value={formatCurrency(form.subtotal)}
+                    readOnly
+                    className={readOnlyInputClass()}
+                  />
+                </FormField>
               </div>
 
-              <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <div className="flex flex-col gap-3 pt-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={isSaving}
-                  className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm"
+                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
                 >
                   Cancelar
                 </button>
+
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {isSaving ? 'Guardando...' : editingItem ? 'Actualizar' : 'Guardar'}
+                  {isSaving && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+
+                  {isSaving
+                    ? 'Guardando...'
+                    : editingItem
+                      ? 'Actualizar'
+                      : 'Guardar'}
                 </button>
               </div>
             </form>
@@ -668,41 +748,56 @@ export default function RepuestosMantenimientoAdminPage() {
       )}
 
       {showDeleteModal && itemToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">Eliminar repuesto</h2>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+              <Trash2 className="size-6" />
             </div>
-            <div className="px-6 py-5">
-              {error && (
-                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
-              <p className="text-sm text-gray-600">
-                ¿Estás seguro de eliminar{' '}
-                <span className="font-semibold text-gray-900">
-                  {getRepuestoLabel(itemToDelete.repuesto)}
-                </span>{' '}
-                de {getMantenimientoLabel(itemToDelete.mantenimiento)}?
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+
+            <h2 className="text-center text-xl font-black uppercase text-white">
+              Eliminar repuesto
+            </h2>
+
+            {error && (
+              <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
+                {error}
+              </div>
+            )}
+
+            <p className="mt-4 text-center text-sm leading-relaxed text-neutral-400">
+              Se eliminará{' '}
+              <span className="font-bold text-white">
+                {getRepuestoLabel(itemToDelete.repuesto)}
+              </span>{' '}
+              de{' '}
+              <span className="font-bold text-white">
+                {getMantenimientoLabel(
+                  itemToDelete.mantenimiento,
+                )}
+              </span>
+              .
+            </p>
+
+            <div className="mt-7 flex gap-3">
               <button
                 type="button"
                 onClick={closeDeleteModal}
                 disabled={isSaving}
-                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm"
+                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
               >
                 Cancelar
               </button>
+
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={isSaving}
-                className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {isSaving ? 'Eliminando...' : 'Eliminar'}
+                {isSaving && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                Eliminar
               </button>
             </div>
           </div>
@@ -710,4 +805,78 @@ export default function RepuestosMantenimientoAdminPage() {
       )}
     </div>
   );
+}
+
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+}
+
+function StatCard({
+  title,
+  value,
+  icon,
+}: StatCardProps) {
+  return (
+    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-white">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex size-11 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+          {icon}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}
+
+function FormField({
+  label,
+  required = false,
+  children,
+}: FormFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+        {label}
+
+        {required && (
+          <span className="ml-1 text-primary">*</span>
+        )}
+      </label>
+
+      {children}
+    </div>
+  );
+}
+
+function inputClass(): string {
+  return [
+    'w-full rounded-full border border-neutral-800 bg-[#141417] px-5 py-3',
+    'text-sm font-semibold text-white outline-none transition',
+    'focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
+    'disabled:cursor-not-allowed disabled:bg-neutral-900 disabled:text-neutral-600',
+  ].join(' ');
+}
+
+function readOnlyInputClass(): string {
+  return [
+    'w-full rounded-full border border-neutral-800 bg-neutral-900 px-5 py-3',
+    'text-sm font-bold text-neutral-300 outline-none',
+  ].join(' ');
 }
