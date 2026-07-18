@@ -1,9 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
 import { useAuthStore } from '../store/auth.store';
+
 import Layout from '../components/Layout';
 import PlaceholderPage from '../pages/PlaceholderPage';
 
-// Páginas reales de la Fase 1
+// Páginas públicas y privadas
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import CatalogPage from '../pages/catalog/CatalogPage';
@@ -13,23 +15,25 @@ import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import OrderDetailPage from '../pages/orders/OrderDetailPage';
 
-// Páginas de Administración
+// Páginas administrativas
 import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
 import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
 import MotosAdminPage from '../pages/admin/MotosAdminPage';
 import ProveedoresAdminPage from '../pages/admin/ProveedoresAdminPage';
-
-// Páginas de Repuestos e Inventario
-import RepuestosPage from '../pages/repuestos/RepuestosPage';
-import InventoryPage from '../pages/inventario/InventoryPage';
 import ServiciosAdminPage from '../pages/admin/ServiciosAdminPage';
 import MantenimientosAdminPage from '../pages/admin/MantenimientosAdminPage';
 import RepuestosMantenimientoAdminPage from '../pages/admin/RepuestosMantenimientoAdminPage';
-interface PrivateRouteProps {
+import ComprasAdminPage from '../pages/admin/ComprasAdminPage';
+
+// Repuestos e inventario
+import RepuestosPage from '../pages/repuestos/RepuestosPage';
+import InventoryPage from '../pages/inventario/InventoryPage';
+
+interface RouteGuardProps {
   element: React.ReactElement;
 }
 
-function PrivateRoute({ element }: PrivateRouteProps) {
+function PrivateRoute({ element }: RouteGuardProps) {
   const { isAuthenticated } = useAuthStore();
 
   return isAuthenticated
@@ -37,7 +41,7 @@ function PrivateRoute({ element }: PrivateRouteProps) {
     : <Navigate to="/login" replace />;
 }
 
-function AdminRoute({ element }: PrivateRouteProps) {
+function AdminRoute({ element }: RouteGuardProps) {
   const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
@@ -57,34 +61,42 @@ export default function AppRouter() {
       <Layout>
         <Routes>
           {/* Rutas públicas */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-
           <Route path="/" element={<CatalogPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
+
           <Route
             path="/products/:id"
             element={<ProductDetailPage />}
           />
 
+          <Route
+            path="/repuestos"
+            element={<RepuestosPage />}
+          />
+
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+
+          <Route
+            path="/register"
+            element={<RegisterPage />}
+          />
+
           {/* Rutas privadas del cliente */}
           <Route
             path="/cart"
-            element={<PrivateRoute element={<CartPage />} />}
+            element={
+              <PrivateRoute element={<CartPage />} />
+            }
           />
-
-
-
-          {/* Admin — Placeholder por ahora (Módulos 9 a 13) */}
-          <Route path="/admin" element={<PrivateRoute element={<PlaceholderPage title="Admin Dashboard — Módulo 9" />} />} />
-          <Route path="/admin/categories" element={<PrivateRoute element={<PlaceholderPage title="Admin Categorías — Módulo 10" />} />} />
-          <Route path="/admin/products" element={<PrivateRoute element={<PlaceholderPage title="Admin Productos — Módulo 11" />} />} />
-          <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
-          <Route path="/admin/users" element={<PrivateRoute element={<PlaceholderPage title="Admin Usuarios — Módulo 13" />} />} />
 
           <Route
             path="/orders"
-            element={<PrivateRoute element={<OrdersPage />} />}
+            element={
+              <PrivateRoute element={<OrdersPage />} />
+            }
           />
 
           <Route
@@ -96,13 +108,17 @@ export default function AppRouter() {
 
           <Route
             path="/profile"
-            element={<PrivateRoute element={<ProfilePage />} />}
+            element={
+              <PrivateRoute element={<ProfilePage />} />
+            }
           />
 
           {/* Rutas administrativas */}
           <Route
             path="/admin"
-            element={<AdminRoute element={<MotosAdminPage />} />}
+            element={
+              <AdminRoute element={<MotosAdminPage />} />
+            }
           />
 
           <Route
@@ -121,128 +137,51 @@ export default function AppRouter() {
 
           <Route
             path="/admin/motos"
-            element={<AdminRoute element={<MotosAdminPage />} />}
+            element={
+              <AdminRoute element={<MotosAdminPage />} />
+            }
           />
 
           <Route
             path="/admin/inventory"
-            element={<AdminRoute element={<InventoryPage />} />}
+            element={
+              <AdminRoute element={<InventoryPage />} />
+            }
           />
 
           <Route
             path="/admin/proveedores"
             element={
-              <AdminRoute
-                element={<ProveedoresAdminPage />}
-              />
+              <AdminRoute element={<ProveedoresAdminPage />} />
             }
           />
+
           <Route
             path="/admin/servicios"
             element={
-              <AdminRoute
-                element={<ServiciosAdminPage />}
-              />
+              <AdminRoute element={<ServiciosAdminPage />} />
             }
           />
 
           <Route
-            path="/admin/orders"
+            path="/admin/compras"
             element={
-              <AdminRoute
-                element={
-                  <PlaceholderPage title="Admin Órdenes — Módulo 12" />
-                }
-              />
+              <AdminRoute element={<ComprasAdminPage />} />
             }
           />
 
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute
-                element={
-                  <PlaceholderPage title="Admin Usuarios — Módulo 13" />
-                }
-              />
-            }
-          />
           <Route
             path="/admin/mantenimientos"
-            element={<MantenimientosAdminPage />}
+            element={
+              <AdminRoute element={<MantenimientosAdminPage />} />
+            }
           />
+
           <Route
             path="/admin/repuestos-mantenimiento"
-            element={<RepuestosMantenimientoAdminPage />}
-          />
-
-          {/* Repuestos público */}
-          <Route
-            path="/repuestos"
-            element={<RepuestosPage />}
-          />
-
-
-          <Route
-            path="/orders"
-            element={<PrivateRoute element={<OrdersPage />} />}
-          />
-
-          <Route
-            path="/orders/:id"
-            element={
-              <PrivateRoute element={<OrderDetailPage />} />
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={<PrivateRoute element={<ProfilePage />} />}
-          />
-
-          {/* Rutas administrativas */}
-          <Route
-            path="/admin"
-            element={<AdminRoute element={<MotosAdminPage />} />}
-          />
-
-          <Route
-            path="/admin/brands"
-            element={
-              <AdminRoute element={<BrandsAdminPage />} />
-            }
-          />
-
-          <Route
-            path="/admin/categories"
-            element={
-              <AdminRoute element={<CategoriesAdminPage />} />
-            }
-          />
-
-          <Route
-            path="/admin/motos"
-            element={<AdminRoute element={<MotosAdminPage />} />}
-          />
-
-          <Route
-            path="/admin/inventory"
-            element={<AdminRoute element={<InventoryPage />} />}
-          />
-
-          <Route
-            path="/admin/proveedores"
             element={
               <AdminRoute
-                element={<ProveedoresAdminPage />}
-              />
-            }
-          />
-          <Route
-            path="/admin/servicios"
-            element={
-              <AdminRoute
-                element={<ServiciosAdminPage />}
+                element={<RepuestosMantenimientoAdminPage />}
               />
             }
           />
@@ -267,12 +206,6 @@ export default function AppRouter() {
                 }
               />
             }
-          />
-
-          {/* Repuestos público */}
-          <Route
-            path="/repuestos"
-            element={<RepuestosPage />}
           />
 
           {/* Fallback */}
