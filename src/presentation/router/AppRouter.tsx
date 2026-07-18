@@ -24,6 +24,7 @@ import RepuestosPage from '../pages/repuestos/RepuestosPage';
 import InventoryPage from '../pages/inventario/InventoryPage';
 import ServiciosAdminPage from '../pages/admin/ServiciosAdminPage';
 import MantenimientosAdminPage from '../pages/admin/MantenimientosAdminPage';
+import RepuestosMantenimientoAdminPage from '../pages/admin/RepuestosMantenimientoAdminPage';
 interface PrivateRouteProps {
   element: React.ReactElement;
 }
@@ -169,6 +170,10 @@ export default function AppRouter() {
           <Route
             path="/admin/mantenimientos"
             element={<MantenimientosAdminPage />}
+          />
+          <Route
+            path="/admin/repuestos-mantenimiento"
+            element={<RepuestosMantenimientoAdminPage />}
           />
 
           {/* Repuestos público */}

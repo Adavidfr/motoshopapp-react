@@ -102,13 +102,35 @@ export default function Layout({ children }: LayoutProps) {
               
             )}
             {isAuthenticated && user?.isStaff && (
-                <Link
-                  to="/admin/mantenimientos"
-                  className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-100"
-                >
-                  Mantenimientos
-                </Link>
-              )}
+              <Link
+                to="/admin/mantenimientos"
+                className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                  location.pathname.startsWith(
+                    '/admin/mantenimientos',
+                  )
+                    ? 'border-primary text-white'
+                    : 'border-transparent text-neutral-400'
+                }`}
+              >
+                Mantenimientos
+              </Link>
+              
+            )}
+            {isAuthenticated && user?.isStaff && (
+              <Link
+                to="/admin/repuestos-mantenimiento"
+                className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                  location.pathname.startsWith(
+                    '/admin/repuestos-mantenimiento',
+                  )
+                    ? 'border-primary text-white'
+                    : 'border-transparent text-neutral-400'
+                }`}
+              >
+                Repuestos usados
+              </Link>
+              
+            )}
 
             </nav>
           </div>
