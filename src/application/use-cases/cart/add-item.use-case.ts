@@ -8,7 +8,13 @@ export class AddItemToCartUseCase {
     this.cartRepository = cartRepository;
   }
 
-  async execute(cartId: number, motoId: number, cantidad: number, precioUnitario: number): Promise<CarritoCompras> {
-    return this.cartRepository.addItem(cartId, motoId, cantidad, precioUnitario);
+  async execute(
+    cartId: number,
+    motoId: number | null,
+    repuestoId: number | null,
+    cantidad: number,
+    precioUnitario: number
+  ): Promise<CarritoCompras> {
+    return this.cartRepository.addItem(cartId, motoId, repuestoId, cantidad, precioUnitario);
   }
 }
