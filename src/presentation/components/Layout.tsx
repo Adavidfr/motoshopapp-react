@@ -99,7 +99,16 @@ export default function Layout({ children }: LayoutProps) {
               >
                 Servicios
               </Link>
+              
             )}
+            {isAuthenticated && user?.isStaff && (
+                <Link
+                  to="/admin/mantenimientos"
+                  className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-100"
+                >
+                  Mantenimientos
+                </Link>
+              )}
 
             </nav>
           </div>
