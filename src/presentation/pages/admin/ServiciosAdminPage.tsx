@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   DollarSign,
   Edit,
@@ -9,6 +11,8 @@ import {
   Plus,
   Search,
   Settings,
+  ToggleLeft,
+  ToggleRight,
   Trash2,
   Wrench,
   X,
@@ -332,434 +336,302 @@ export default function ServiciosAdminPage() {
     });
   };
 
+  const displayedRange = useMemo(() => {
+    if (count === 0) {
+      return '0 resultados';
+    }
+
+    const start = (currentPage - 1) * pageSize + 1;
+    const end = Math.min(currentPage * pageSize, count);
+
+    return `${start}-${end} de ${count}`;
+  }, [count, currentPage, pageSize]);
+
   return (
-    <div className="min-h-screen bg-[#f5f5f7] text-neutral-900">
-      {/* Encabezado */}
-      <section className="border-b border-neutral-800 bg-[#070708]">
-        <div className="container mx-auto max-w-screen-2xl px-4 py-10 sm:px-6">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <Wrench className="size-5 text-primary" />
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.3em] text-primary">
+            Abastecimiento
+          </p>
 
-                <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
-                  Abastecimiento y taller
-                </span>
-              </div>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+            Gestión de servicios
+          </h1>
 
-              <h1 className="text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
-                Gestión de servicios
-              </h1>
+          <p className="mt-2 text-sm text-neutral-400">
+            Administra los servicios del taller, precios y tiempos estimados.
+          </p>
+        </div>
 
-              <p className="mt-2 max-w-2xl text-sm text-neutral-400">
-                Administra los servicios del taller,
-                precios y tiempos estimados.
-              </p>
-            </div>
+        <button
+          type="button"
+          onClick={handleOpenCreateModal}
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+        >
+          <Plus className="size-4" />
+          Nuevo servicio
+        </button>
+      </section>
+
+      {successMessage && (
+        <div className="rounded-full border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-xs font-semibold text-green-400">
+          {successMessage}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-xs font-semibold text-destructive">
+          {error}
+        </div>
+      )}
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Total de servicios"
+          value={stats?.total ?? count}
+          icon={<Settings className="size-5" />}
+        />
+
+        <StatCard
+          title="Servicios activos"
+          value={stats?.activos ?? 0}
+          icon={<ToggleRight className="size-5" />}
+        />
+
+        <StatCard
+          title="Servicios inactivos"
+          value={stats?.inactivos ?? 0}
+          icon={<ToggleLeft className="size-5" />}
+        />
+
+        <StatCard
+          title="Precio promedio"
+          value={formatCurrency(
+            stats?.detail?.length
+              ? stats.detail.reduce(
+                  (total, servicio) =>
+                    total + Number(servicio.precio_base),
+                  0,
+                ) / stats.detail.length
+              : 0,
+          )}
+          icon={<DollarSign className="size-5" />}
+        />
+      </section>
+
+      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
+
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por nombre o descripción..."
+              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+            />
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={estadoFilter}
+            onChange={(event) => setEstadoFilter(event.target.value)}
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="">Todos los estados</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+
+          <select
+            value={ordering}
+            onChange={(event) =>
+              setOrdering(
+                event.target.value as ServicioFilters['ordering'],
+              )
+            }
+            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+          >
+            <option value="nombre">Nombre A-Z</option>
+            <option value="-nombre">Nombre Z-A</option>
+            <option value="precio_base">Menor precio</option>
+            <option value="-precio_base">Mayor precio</option>
+            <option value="tiempo_estimado_minutos">Menor duración</option>
+            <option value="-tiempo_estimado_minutos">Mayor duración</option>
+            <option value="-fecha_creacion">Más recientes</option>
+          </select>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+        {isLoading && servicios.length === 0 ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="size-10 animate-spin text-primary" />
+          </div>
+        ) : servicios.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+            <Wrench className="mb-4 size-12 text-neutral-700" />
+
+            <h2 className="text-lg font-black uppercase text-white">
+              No se encontraron servicios
+            </h2>
+
+            <p className="mt-2 max-w-md text-sm text-neutral-500">
+              Modifica los filtros de búsqueda o registra un nuevo servicio.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[950px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                  <th className="px-6 py-4">Servicio</th>
+                  <th className="px-6 py-4">Precio base</th>
+                  <th className="px-6 py-4">Tiempo estimado</th>
+                  <th className="px-6 py-4 text-center">Estado</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-neutral-950 text-sm">
+                {servicios.map((servicio) => (
+                  <tr
+                    key={servicio.id}
+                    className="transition-colors hover:bg-neutral-900/20"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+                          <Wrench className="size-4" />
+                        </div>
+
+                        <div className="max-w-md">
+                          <p className="font-bold text-white">
+                            {servicio.nombre}
+                          </p>
+
+                          <p className="mt-1 line-clamp-2 text-xs text-neutral-600">
+                            {servicio.descripcion || 'Sin descripción'}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 font-bold text-white">
+                      {formatCurrency(servicio.precio_base)}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-2 text-neutral-300">
+                        <Clock3 className="size-3.5 text-neutral-600" />
+                        {formatDuration(servicio.tiempo_estimado_minutos)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => void handleToggleEstado(servicio)}
+                        className="disabled:cursor-default"
+                        title="Cambiar estado"
+                      >
+                        {servicio.estado ? (
+                          <span className="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-bold uppercase text-green-400">
+                            Activo
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-bold uppercase text-neutral-500">
+                            Inactivo
+                          </span>
+                        )}
+                      </button>
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(servicio)}
+                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          title="Editar servicio"
+                        >
+                          <Edit className="size-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDeleteModal(servicio)}
+                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20"
+                          title="Eliminar servicio"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 border-t border-neutral-950 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-neutral-500">
+            Mostrando {displayedRange}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={currentPage <= 1 || isLoading}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página anterior"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+
+            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+              Página {currentPage} de {totalPages}
+            </span>
 
             <button
               type="button"
-              onClick={handleOpenCreateModal}
-              className="inline-flex h-11 items-center justify-center gap-2 bg-primary px-5 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-primary/90"
+              disabled={currentPage >= totalPages || isLoading}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Página siguiente"
             >
-              <Plus className="size-4" />
-              Nuevo servicio
+              <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
       </section>
 
-      <main className="container mx-auto max-w-screen-2xl space-y-8 px-4 py-8 sm:px-6">
-        {/* Mensajes */}
-        {successMessage && (
-          <div className="border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-            {successMessage}
-          </div>
-        )}
-
-        {error && (
-          <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* Estadísticas */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="border border-neutral-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Total de servicios
-                </p>
-
-                <p className="mt-2 text-3xl font-black text-neutral-900">
-                  {stats?.total ?? 0}
-                </p>
-              </div>
-
-              <div className="flex size-11 items-center justify-center bg-neutral-100">
-                <Settings className="size-5 text-neutral-700" />
-              </div>
-            </div>
-          </article>
-
-          <article className="border border-neutral-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Servicios activos
-                </p>
-
-                <p className="mt-2 text-3xl font-black text-green-600">
-                  {stats?.activos ?? 0}
-                </p>
-              </div>
-
-              <div className="flex size-11 items-center justify-center bg-green-50">
-                <Eye className="size-5 text-green-600" />
-              </div>
-            </div>
-          </article>
-
-          <article className="border border-neutral-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Servicios inactivos
-                </p>
-
-                <p className="mt-2 text-3xl font-black text-red-600">
-                  {stats?.inactivos ?? 0}
-                </p>
-              </div>
-
-              <div className="flex size-11 items-center justify-center bg-red-50">
-                <EyeOff className="size-5 text-red-600" />
-              </div>
-            </div>
-          </article>
-
-          <article className="border border-neutral-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Precio promedio
-                </p>
-
-                <p className="mt-2 text-2xl font-black text-primary">
-                  {formatCurrency(
-                    stats?.detail?.length
-                      ? stats.detail.reduce(
-                          (total, servicio) =>
-                            total +
-                            Number(
-                              servicio.precio_base,
-                            ),
-                          0,
-                        ) / stats.detail.length
-                      : 0,
-                  )}
-                </p>
-              </div>
-
-              <div className="flex size-11 items-center justify-center bg-red-50">
-                <DollarSign className="size-5 text-primary" />
-              </div>
-            </div>
-          </article>
-        </section>
-
-        {/* Filtros */}
-        <section className="border border-neutral-200 bg-white p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
-
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(event.target.value)
-                }
-                placeholder="Buscar por nombre o descripción..."
-                className="h-11 w-full border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-neutral-400 focus:border-primary"
-              />
-            </div>
-
-            <select
-              value={estadoFilter}
-              onChange={(event) =>
-                setEstadoFilter(event.target.value)
-              }
-              className="h-11 border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none focus:border-primary"
-            >
-              <option value="">Todos los estados</option>
-              <option value="true">Activos</option>
-              <option value="false">Inactivos</option>
-            </select>
-
-            <select
-              value={ordering}
-              onChange={(event) =>
-                setOrdering(
-                  event.target
-                    .value as ServicioFilters['ordering'],
-                )
-              }
-              className="h-11 border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none focus:border-primary"
-            >
-              <option value="nombre">
-                Nombre: A-Z
-              </option>
-
-              <option value="-nombre">
-                Nombre: Z-A
-              </option>
-
-              <option value="precio_base">
-                Menor precio
-              </option>
-
-              <option value="-precio_base">
-                Mayor precio
-              </option>
-
-              <option value="tiempo_estimado_minutos">
-                Menor duración
-              </option>
-
-              <option value="-tiempo_estimado_minutos">
-                Mayor duración
-              </option>
-
-              <option value="-fecha_creacion">
-                Más recientes
-              </option>
-            </select>
-          </div>
-        </section>
-
-        {/* Tabla */}
-        <section className="overflow-hidden border border-neutral-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-            <div>
-              <h2 className="text-sm font-black uppercase tracking-wide text-neutral-900">
-                Servicios registrados
-              </h2>
-
-              <p className="mt-1 text-xs text-neutral-500">
-                {count} registro{count === 1 ? '' : 's'}
-              </p>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[950px] border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50 text-left">
-                  <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                    Servicio
-                  </th>
-
-                  <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                    Precio base
-                  </th>
-
-                  <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                    Tiempo estimado
-                  </th>
-
-                  <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                    Estado
-                  </th>
-
-                  <th className="px-5 py-4 text-right text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-5 py-16 text-center"
-                    >
-                      <div className="flex items-center justify-center gap-3 text-sm font-semibold text-neutral-500">
-                        <Loader2 className="size-5 animate-spin text-primary" />
-                        Cargando servicios...
-                      </div>
-                    </td>
-                  </tr>
-                ) : servicios.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-5 py-16 text-center"
-                    >
-                      <Wrench className="mx-auto mb-3 size-10 text-neutral-300" />
-
-                      <p className="text-sm font-bold text-neutral-600">
-                        No se encontraron servicios.
-                      </p>
-
-                      <p className="mt-1 text-xs text-neutral-400">
-                        Registra un servicio o modifica los
-                        filtros.
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  servicios.map((servicio) => (
-                    <tr
-                      key={servicio.id}
-                      className="border-b border-neutral-100 transition-colors last:border-b-0 hover:bg-neutral-50"
-                    >
-                      <td className="px-5 py-4">
-                        <div className="max-w-md">
-                          <p className="text-sm font-black text-neutral-900">
-                            {servicio.nombre}
-                          </p>
-
-                          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-neutral-500">
-                            {servicio.descripcion ||
-                              'Sin descripción'}
-                          </p>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <span className="text-sm font-black text-neutral-900">
-                          {formatCurrency(
-                            servicio.precio_base,
-                          )}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700">
-                          <Clock3 className="size-4 text-primary" />
-
-                          {formatDuration(
-                            servicio.tiempo_estimado_minutos,
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <button
-                          type="button"
-                          disabled={isSaving}
-                          onClick={() =>
-                            void handleToggleEstado(
-                              servicio,
-                            )
-                          }
-                          className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                            servicio.estado
-                              ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                              : 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
-                          }`}
-                        >
-                          {servicio.estado ? (
-                            <Eye className="size-3.5" />
-                          ) : (
-                            <EyeOff className="size-3.5" />
-                          )}
-
-                          {servicio.estado
-                            ? 'Activo'
-                            : 'Inactivo'}
-                        </button>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            title="Editar servicio"
-                            onClick={() =>
-                              handleOpenEditModal(
-                                servicio,
-                              )
-                            }
-                            className="flex size-9 items-center justify-center border border-neutral-200 text-neutral-600 transition-colors hover:border-primary hover:bg-red-50 hover:text-primary"
-                          >
-                            <Edit className="size-4" />
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Eliminar servicio"
-                            onClick={() =>
-                              handleOpenDeleteModal(
-                                servicio,
-                              )
-                            }
-                            className="flex size-9 items-center justify-center border border-neutral-200 text-neutral-600 transition-colors hover:border-red-500 hover:bg-red-50 hover:text-red-600"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginación */}
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-neutral-200 px-5 py-4 sm:flex-row">
-            <p className="text-xs font-semibold text-neutral-500">
-              Página {currentPage} de {totalPages}
-            </p>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={currentPage <= 1 || isLoading}
-                onClick={() =>
-                  handlePageChange(currentPage - 1)
-                }
-                className="h-9 border border-neutral-300 px-4 text-xs font-bold uppercase tracking-wide text-neutral-700 transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Anterior
-              </button>
-
-              <button
-                type="button"
-                disabled={
-                  currentPage >= totalPages ||
-                  isLoading
-                }
-                onClick={() =>
-                  handlePageChange(currentPage + 1)
-                }
-                className="h-9 border border-neutral-300 px-4 text-xs font-bold uppercase tracking-wide text-neutral-700 transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Modal para crear o editar */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-5">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                  Taller
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
+                  Servicios
                 </p>
 
-                <h2 className="mt-1 text-xl font-black uppercase text-neutral-900">
-                  {selectedServicio
-                    ? 'Editar servicio'
-                    : 'Nuevo servicio'}
+                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                  {selectedServicio ? 'Editar servicio' : 'Nuevo servicio'}
                 </h2>
               </div>
 
@@ -767,29 +639,19 @@ export default function ServiciosAdminPage() {
                 type="button"
                 onClick={handleCloseFormModal}
                 disabled={isSaving}
-                className="flex size-9 items-center justify-center border border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-900 disabled:opacity-50"
+                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5 p-6"
-            >
-              <div>
-                <label
-                  htmlFor="nombre"
-                  className="mb-2 block text-xs font-black uppercase tracking-wide text-neutral-700"
-                >
-                  Nombre del servicio
-                  <span className="ml-1 text-primary">
-                    *
-                  </span>
-                </label>
-
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <FormField
+                label="Nombre del servicio"
+                required
+                error={formErrors.nombre}
+              >
                 <input
-                  id="nombre"
                   type="text"
                   maxLength={150}
                   value={formData.nombre}
@@ -799,184 +661,116 @@ export default function ServiciosAdminPage() {
                       nombre: event.target.value,
                     }))
                   }
-                  placeholder="Ej. Mantenimiento preventivo"
-                  className={`h-11 w-full border bg-white px-4 text-sm outline-none transition-colors ${
-                    formErrors.nombre
-                      ? 'border-red-500'
-                      : 'border-neutral-300 focus:border-primary'
-                  }`}
+                  placeholder="Ej: Mantenimiento preventivo"
+                  className={inputClass(Boolean(formErrors.nombre))}
                 />
+              </FormField>
 
-                {formErrors.nombre && (
-                  <p className="mt-1.5 text-xs font-semibold text-red-600">
-                    {formErrors.nombre}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="descripcion"
-                  className="mb-2 block text-xs font-black uppercase tracking-wide text-neutral-700"
-                >
-                  Descripción
-                </label>
-
+              <FormField
+                label="Descripción"
+                error={formErrors.descripcion}
+              >
                 <textarea
-                  id="descripcion"
                   rows={4}
                   value={formData.descripcion}
                   onChange={(event) =>
                     setFormData((current) => ({
                       ...current,
-                      descripcion:
-                        event.target.value,
+                      descripcion: event.target.value,
                     }))
                   }
-                  placeholder="Describe las actividades incluidas en el servicio..."
-                  className={`w-full resize-none border bg-white px-4 py-3 text-sm outline-none transition-colors ${
-                    formErrors.descripcion
-                      ? 'border-red-500'
-                      : 'border-neutral-300 focus:border-primary'
-                  }`}
+                  placeholder="Describe las actividades incluidas..."
+                  className={textareaClass(
+                    Boolean(formErrors.descripcion),
+                  )}
                 />
+              </FormField>
 
-                {formErrors.descripcion && (
-                  <p className="mt-1.5 text-xs font-semibold text-red-600">
-                    {formErrors.descripcion}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="precio_base"
-                    className="mb-2 block text-xs font-black uppercase tracking-wide text-neutral-700"
-                  >
-                    Precio base
-                    <span className="ml-1 text-primary">
-                      *
-                    </span>
-                  </label>
-
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
-
-                    <input
-                      id="precio_base"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.precio_base}
-                      onChange={(event) =>
-                        setFormData((current) => ({
-                          ...current,
-                          precio_base:
-                            event.target.value,
-                        }))
-                      }
-                      placeholder="0.00"
-                      className={`h-11 w-full border bg-white pl-10 pr-4 text-sm outline-none transition-colors ${
-                        formErrors.precio_base
-                          ? 'border-red-500'
-                          : 'border-neutral-300 focus:border-primary'
-                      }`}
-                    />
-                  </div>
-
-                  {formErrors.precio_base && (
-                    <p className="mt-1.5 text-xs font-semibold text-red-600">
-                      {formErrors.precio_base}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="tiempo_estimado"
-                    className="mb-2 block text-xs font-black uppercase tracking-wide text-neutral-700"
-                  >
-                    Tiempo estimado
-                    <span className="ml-1 text-primary">
-                      *
-                    </span>
-                  </label>
-
-                  <div className="relative">
-                    <Clock3 className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
-
-                    <input
-                      id="tiempo_estimado"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={
-                        formData.tiempo_estimado_minutos
-                      }
-                      onChange={(event) =>
-                        setFormData((current) => ({
-                          ...current,
-                          tiempo_estimado_minutos:
-                            event.target.value,
-                        }))
-                      }
-                      placeholder="Minutos"
-                      className={`h-11 w-full border bg-white pl-10 pr-16 text-sm outline-none transition-colors ${
-                        formErrors.tiempo_estimado_minutos
-                          ? 'border-red-500'
-                          : 'border-neutral-300 focus:border-primary'
-                      }`}
-                    />
-
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">
-                      min
-                    </span>
-                  </div>
-
-                  {formErrors.tiempo_estimado_minutos && (
-                    <p className="mt-1.5 text-xs font-semibold text-red-600">
-                      {
-                        formErrors.tiempo_estimado_minutos
-                      }
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="border border-neutral-200 bg-neutral-50 p-4">
-                <label className="flex cursor-pointer items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-black text-neutral-900">
-                      Servicio activo
-                    </p>
-
-                    <p className="mt-1 text-xs text-neutral-500">
-                      Los servicios activos podrán ser
-                      seleccionados en mantenimientos.
-                    </p>
-                  </div>
-
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <FormField
+                  label="Precio base"
+                  required
+                  error={formErrors.precio_base}
+                >
                   <input
-                    type="checkbox"
-                    checked={formData.estado}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.precio_base}
                     onChange={(event) =>
                       setFormData((current) => ({
                         ...current,
-                        estado: event.target.checked,
+                        precio_base: event.target.value,
                       }))
                     }
-                    className="size-5 accent-primary"
+                    placeholder="0.00"
+                    className={inputClass(
+                      Boolean(formErrors.precio_base),
+                    )}
                   />
-                </label>
+                </FormField>
+
+                <FormField
+                  label="Tiempo estimado (minutos)"
+                  required
+                  error={formErrors.tiempo_estimado_minutos}
+                >
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.tiempo_estimado_minutos}
+                    onChange={(event) =>
+                      setFormData((current) => ({
+                        ...current,
+                        tiempo_estimado_minutos:
+                          event.target.value,
+                      }))
+                    }
+                    placeholder="Ej: 60"
+                    className={inputClass(
+                      Boolean(
+                        formErrors.tiempo_estimado_minutos,
+                      ),
+                    )}
+                  />
+                </FormField>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 pt-5 sm:flex-row sm:justify-end">
+              <div className="flex items-center justify-between rounded-[1.5rem] border border-neutral-800 bg-[#141417] px-5 py-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-white">
+                    Servicio activo
+                  </p>
+
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Permite seleccionarlo en mantenimientos.
+                  </p>
+                </div>
+
                 <button
                   type="button"
-                  onClick={handleCloseFormModal}
+                  onClick={() =>
+                    setFormData((current) => ({
+                      ...current,
+                      estado: !current.estado,
+                    }))
+                  }
+                >
+                  {formData.estado ? (
+                    <ToggleRight className="size-9 text-primary" />
+                  ) : (
+                    <ToggleLeft className="size-9 text-neutral-600" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-3 sm:flex-row">
+                <button
+                  type="button"
                   disabled={isSaving}
-                  className="h-11 border border-neutral-300 px-5 text-xs font-black uppercase tracking-widest text-neutral-700 transition-colors hover:border-neutral-500 disabled:opacity-50"
+                  onClick={handleCloseFormModal}
+                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -984,18 +778,17 @@ export default function ServiciosAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex h-11 items-center justify-center gap-2 bg-primary px-5 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Guardando...
-                    </>
-                  ) : selectedServicio ? (
-                    'Guardar cambios'
-                  ) : (
-                    'Crear servicio'
+                  {isSaving && (
+                    <Loader2 className="size-4 animate-spin" />
                   )}
+
+                  {isSaving
+                    ? 'Guardando...'
+                    : selectedServicio
+                      ? 'Actualizar'
+                      : 'Guardar'}
                 </button>
               </div>
             </form>
@@ -1003,59 +796,45 @@ export default function ServiciosAdminPage() {
         </div>
       )}
 
-      {/* Modal para eliminar */}
       {isDeleteModalOpen && selectedServicio && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md bg-white shadow-2xl">
-            <div className="p-6">
-              <div className="mb-5 flex size-12 items-center justify-center bg-red-50">
-                <Trash2 className="size-6 text-red-600" />
-              </div>
-
-              <h2 className="text-xl font-black uppercase text-neutral-900">
-                Eliminar servicio
-              </h2>
-
-              <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-                ¿Está seguro de eliminar el servicio{' '}
-                <strong className="text-neutral-900">
-                  {selectedServicio.nombre}
-                </strong>
-                ?
-              </p>
-
-              <p className="mt-2 text-xs font-semibold text-red-600">
-                Esta acción no se puede deshacer.
-              </p>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+              <Trash2 className="size-6" />
             </div>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 bg-neutral-50 p-5 sm:flex-row sm:justify-end">
+            <h2 className="text-center text-xl font-black uppercase text-white">
+              Eliminar servicio
+            </h2>
+
+            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+              Se eliminará el servicio{' '}
+              <span className="font-bold text-white">
+                {selectedServicio.nombre}
+              </span>
+              . Esta acción no se puede deshacer.
+            </p>
+
+            <div className="mt-7 flex gap-3">
               <button
                 type="button"
-                onClick={handleCloseDeleteModal}
                 disabled={isSaving}
-                className="h-11 border border-neutral-300 bg-white px-5 text-xs font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50"
+                onClick={handleCloseDeleteModal}
+                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
               >
                 Cancelar
               </button>
 
               <button
                 type="button"
-                onClick={() => void handleDelete()}
                 disabled={isSaving}
-                className="inline-flex h-11 items-center justify-center gap-2 bg-red-600 px-5 text-xs font-black uppercase tracking-widest text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => void handleDelete()}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Eliminando...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="size-4" />
-                    Eliminar
-                  </>
+                {isSaving && (
+                  <Loader2 className="size-4 animate-spin" />
                 )}
+                Eliminar
               </button>
             </div>
           </div>
@@ -1063,4 +842,87 @@ export default function ServiciosAdminPage() {
       )}
     </div>
   );
+}
+
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+}
+
+function StatCard({ title, value, icon }: StatCardProps) {
+  return (
+    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-white">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex size-11 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+          {icon}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}
+
+function FormField({
+  label,
+  required = false,
+  error,
+  children,
+}: FormFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+        {label}
+
+        {required && (
+          <span className="ml-1 text-primary">*</span>
+        )}
+      </label>
+
+      {children}
+
+      {error && (
+        <p className="px-2 text-xs font-semibold text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function inputClass(hasError: boolean): string {
+  return [
+    'w-full rounded-full border bg-[#141417] px-5 py-3 text-sm font-semibold text-white',
+    'placeholder:text-neutral-600 focus:outline-none focus:ring-4 focus:ring-primary/10',
+    hasError
+      ? 'border-destructive'
+      : 'border-neutral-800 focus:border-primary/80',
+  ].join(' ');
+}
+
+function textareaClass(hasError: boolean): string {
+  return [
+    'h-28 w-full resize-none rounded-[1.5rem] border bg-[#141417] px-5 py-3',
+    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'focus:outline-none focus:ring-4 focus:ring-primary/10',
+    hasError
+      ? 'border-destructive'
+      : 'border-neutral-800 focus:border-primary/80',
+  ].join(' ');
 }
