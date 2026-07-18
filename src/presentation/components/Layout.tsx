@@ -74,7 +74,8 @@ export default function Layout({ children }: LayoutProps) {
                   Mis Pedidos
                 </Link>
               )}
-              {isAuthenticated && user?.isStaff && (
+                {isAuthenticated && user?.isStaff && (
+              <>
                 <Link
                   to="/admin/proveedores"
                   className={`pb-1 transition-colors hover:text-white border-b-2 ${
@@ -85,7 +86,30 @@ export default function Layout({ children }: LayoutProps) {
                 >
                   Proveedores
                 </Link>
-              )}
+
+                <Link
+                  to="/admin/servicios"
+                  className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                    isActive('/admin/servicios')
+                      ? 'border-primary text-white'
+                      : 'border-transparent text-neutral-400'
+                  }`}
+                >
+                  Servicios
+                </Link>
+
+                <Link
+                  to="/admin/compras"
+                  className={`pb-1 transition-colors hover:text-white border-b-2 ${
+                    isActive('/admin/compras')
+                      ? 'border-primary text-white'
+                      : 'border-transparent text-neutral-400'
+                  }`}
+                >
+                  Compras
+                </Link>
+              </>
+            )}
             </nav>
           </div>
 

@@ -22,6 +22,7 @@ import ProveedoresAdminPage from '../pages/admin/ProveedoresAdminPage';
 // Páginas de Repuestos e Inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
 import InventoryPage from '../pages/inventario/InventoryPage';
+import ComprasAdminPage from '../pages/admin/ComprasAdminPage';
 
 interface PrivateRouteProps {
   element: React.ReactElement;
@@ -134,6 +135,14 @@ export default function AppRouter() {
                 element={
                   <PlaceholderPage title="Admin Órdenes — Módulo 12" />
                 }
+              />
+            }
+          />
+          <Route
+            path="/admin/compras"
+            element={
+              <AdminRoute
+                element={<ComprasAdminPage />}
               />
             }
           />
