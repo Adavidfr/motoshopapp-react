@@ -1,0 +1,15 @@
+// src/infrastructure/factories/factura.factory.ts
+import { ApiFacturaRepository } from '../adapters/api-factura.repository';
+import { GetFacturasUseCase } from '../../application/use-cases/factura/get-facturas.use-case';
+import { GetFacturaUseCase } from '../../application/use-cases/factura/get-factura.use-case';
+import { CreateFacturaUseCase } from '../../application/use-cases/factura/create-factura.use-case';
+import { UpdateFacturaUseCase } from '../../application/use-cases/factura/update-factura.use-case';
+import { DeleteFacturaUseCase } from '../../application/use-cases/factura/delete-factura.use-case';
+
+const facturaRepository = new ApiFacturaRepository();
+
+export const getFacturasUseCase  = new GetFacturasUseCase(facturaRepository);
+export const getFacturaUseCase   = new GetFacturaUseCase(facturaRepository);
+export const createFacturaUseCase = new CreateFacturaUseCase(facturaRepository);
+export const updateFacturaUseCase = new UpdateFacturaUseCase(facturaRepository);
+export const deleteFacturaUseCase = new DeleteFacturaUseCase(facturaRepository);

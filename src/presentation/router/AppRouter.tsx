@@ -26,6 +26,9 @@ import ComprasAdminPage from '../pages/admin/ComprasAdminPage';
 import VentasAdminPage from '../pages/admin/VentasAdminPage';
 import FinanciamientosAdminPage from '../pages/admin/FinanciamientosAdminPage';
 import PagosAdminPage from '../pages/admin/PagosAdminPage';
+import FacturasAdminPage from '../pages/admin/FacturasAdminPage';
+import GarantiasAdminPage from '../pages/admin/GarantiasAdminPage';
+import SegurosAdminPage from '../pages/admin/SegurosAdminPage';
 
 // Repuestos e inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
@@ -83,6 +86,9 @@ export default function AppRouter() {
           <Route path="/admin/ventas" element={<AdminRoute element={<VentasAdminPage />} />} />
           <Route path="/admin/financiamientos" element={<AdminRoute element={<FinanciamientosAdminPage />} />} />
           <Route path="/admin/pagos" element={<AdminRoute element={<PagosAdminPage />} />} />
+          <Route path="/admin/facturas" element={<AdminRoute element={<FacturasAdminPage />} />} />
+          <Route path="/admin/garantias" element={<AdminRoute element={<GarantiasAdminPage />} />} />
+          <Route path="/admin/seguros" element={<AdminRoute element={<SegurosAdminPage />} />} />
 
           {/* Admin — Placeholders para otros módulos */}
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />

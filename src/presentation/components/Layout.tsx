@@ -173,6 +173,39 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     Pagos
                   </Link>
+
+                  <Link
+                    to="/admin/facturas"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/facturas')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Facturas
+                  </Link>
+
+                  <Link
+                    to="/admin/garantias"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/garantias')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Garantías
+                  </Link>
+
+                  <Link
+                    to="/admin/seguros"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/seguros')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Seguros
+                  </Link>
                 </>
               )}
             </nav>
