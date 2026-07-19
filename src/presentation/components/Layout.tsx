@@ -239,6 +239,17 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     Devoluciones
                   </Link>
+
+                  <Link
+                    to="/admin/notificaciones"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/notificaciones')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Notificaciones
+                  </Link>
                 </>
               )}
             </nav>

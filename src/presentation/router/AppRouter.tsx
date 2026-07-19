@@ -32,6 +32,7 @@ import SegurosAdminPage from '../pages/admin/SegurosAdminPage';
 import DocumentosVentaAdminPage from '../pages/admin/DocumentosVentaAdminPage';
 import HistorialVentasAdminPage from '../pages/admin/HistorialVentasAdminPage';
 import DevolucionesAdminPage from '../pages/admin/DevolucionesAdminPage';
+import NotificacionesAdminPage from '../pages/admin/NotificacionesAdminPage';
 
 // Repuestos e inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
@@ -95,6 +96,7 @@ export default function AppRouter() {
           <Route path="/admin/documentos-venta" element={<AdminRoute element={<DocumentosVentaAdminPage />} />} />
           <Route path="/admin/historial-ventas" element={<AdminRoute element={<HistorialVentasAdminPage />} />} />
           <Route path="/admin/devoluciones" element={<AdminRoute element={<DevolucionesAdminPage />} />} />
+          <Route path="/admin/notificaciones" element={<AdminRoute element={<NotificacionesAdminPage />} />} />
 
           {/* Admin — Placeholders para otros módulos */}
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
