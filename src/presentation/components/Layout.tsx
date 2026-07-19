@@ -206,6 +206,39 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     Seguros
                   </Link>
+
+                  <Link
+                    to="/admin/documentos-venta"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/documentos-venta')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Documentos
+                  </Link>
+
+                  <Link
+                    to="/admin/historial-ventas"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/historial-ventas')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Historial Ventas
+                  </Link>
+
+                  <Link
+                    to="/admin/devoluciones"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/devoluciones')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Devoluciones
+                  </Link>
                 </>
               )}
             </nav>
