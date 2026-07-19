@@ -162,6 +162,17 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     Financiamientos
                   </Link>
+
+                  <Link
+                    to="/admin/pagos"
+                    className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                      isAdminActive('/admin/pagos')
+                        ? 'border-primary text-white'
+                        : 'border-transparent text-neutral-400'
+                    }`}
+                  >
+                    Pagos
+                  </Link>
                 </>
               )}
             </nav>
