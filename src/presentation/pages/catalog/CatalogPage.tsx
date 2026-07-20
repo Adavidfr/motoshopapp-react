@@ -10,8 +10,10 @@ import { Search, Mail, ArrowRight } from 'lucide-react';
 
 import { useBrandStore } from '../../store/brand.store';
 import { useCategoryStore } from '../../store/category.store';
+import { useAuthStore } from '../../store/auth.store';
 
 export default function CatalogPage() {
+  const { isAuthenticated } = useAuthStore();
   const { motos, fetchMotos, isLoading, error } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
   const { categories, fetchCategories } = useCategoryStore();
@@ -52,20 +54,24 @@ export default function CatalogPage() {
 
   // Cargar catálogo auxiliar de marcas y categorías
   useEffect(() => {
-    fetchBrands();
-    fetchCategories();
-  }, [fetchBrands, fetchCategories]);
+    if (isAuthenticated) {
+      fetchBrands();
+      fetchCategories();
+    }
+  }, [fetchBrands, fetchCategories, isAuthenticated]);
 
   // Cargar motocicletas al cambiar cualquier filtro
   useEffect(() => {
-    const params: any = {};
-    if (debouncedSearch) params.search = debouncedSearch;
-    if (selectedBrand) params.marca = selectedBrand;
-    if (selectedCategory) params.categoria = selectedCategory;
-    if (selectedOrder) params.ordering = selectedOrder;
+    if (isAuthenticated) {
+      const params: any = {};
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (selectedBrand) params.marca = selectedBrand;
+      if (selectedCategory) params.categoria = selectedCategory;
+      if (selectedOrder) params.ordering = selectedOrder;
 
-    fetchMotos(params);
-  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos]);
+      fetchMotos(params);
+    }
+  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos, isAuthenticated]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -238,146 +244,172 @@ export default function CatalogPage() {
       <section id="motos-list" className="bg-[#f5f5f7] py-16 text-black">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 space-y-10">
           
-          <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
-            <div className="space-y-1 text-left">
-              <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
-              <h2 className="text-3xl font-black uppercase tracking-tight text-neutral-900">
-                Elige tu próxima máquina
-              </h2>
-            </div>
-            
-            {/* Controles de Filtros y Búsqueda */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full lg:max-w-4xl">
-              
-              {/* Buscador */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
-                <Input
-                  placeholder="Buscar modelo o color..."
-                  className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-11 text-xs"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+          {!isAuthenticated ? (
+            <div className="bg-white border border-neutral-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto space-y-6 shadow-xl my-10">
+              <div className="inline-flex size-16 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary">
+                <Search className="size-7" />
               </div>
-
-              {/* Categorías */}
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
-              >
-                <option value="">Todas las Categorías</option>
-                {categories.filter(c => c.estado).map((cat) => (
-                  <option key={cat.idCategoria} value={cat.idCategoria}>{cat.nombre}</option>
-                ))}
-              </select>
-
-              {/* Marcas */}
-              <select
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
-              >
-                <option value="">Todas las Marcas</option>
-                {brands.filter(b => b.estado).map((b) => (
-                  <option key={b.idMarca} value={b.idMarca}>{b.nombre}</option>
-                ))}
-              </select>
-
-              {/* Ordenar por */}
-              <select
-                value={selectedOrder}
-                onChange={(e) => setSelectedOrder(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
-              >
-                <option value="">Ordenar Por</option>
-                <option value="precio">Precio: Menor a Mayor</option>
-                <option value="-precio">Precio: Mayor a Menor</option>
-                <option value="-anio">Año: Más Reciente</option>
-                <option value="-stock">Stock: Mayor a Menor</option>
-              </select>
-
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-4 text-sm bg-destructive/10 border border-destructive/20 text-destructive font-semibold">
-              {error}
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="bg-white border-neutral-200 rounded-none overflow-hidden h-[380px]">
-                  <Skeleton className="aspect-video w-full" />
-                  <CardHeader className="p-5 space-y-2">
-                    <Skeleton className="h-5 w-2/3" />
-                    <Skeleton className="h-4 w-1/3" />
-                  </CardHeader>
-                  <CardContent className="p-5 pt-0">
-                    <Skeleton className="h-6 w-1/2" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : motos.length === 0 ? (
-            <div className="text-center py-16 text-neutral-500 font-bold">
-              No hay motocicletas disponibles en el catálogo.
+              <div className="space-y-2">
+                <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">
+                  Explora el Catálogo Completo
+                </h3>
+                <p className="text-neutral-500 text-xs font-semibold max-w-sm mx-auto leading-relaxed">
+                  Inicia sesión para ver precios exclusivos, disponibilidad en stock de motos y repuestos, y gestionar tus compras directamente en línea.
+                </p>
+              </div>
+              <div className="pt-2 flex justify-center">
+                <Link to="/login">
+                  <button className="racing-btn-outline rounded-none bg-primary hover:bg-primary/95 text-white border-transparent cursor-pointer">
+                    Iniciar Sesión
+                    <ArrowRight className="size-4" />
+                  </button>
+                </Link>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {motos.map((moto) => (
-                <Card key={moto.idMoto} className="racing-card rounded-none h-[400px]">
+            <>
+              <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
+                <div className="space-y-1 text-left">
+                  <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-neutral-900">
+                    Elige tu próxima máquina
+                  </h2>
+                </div>
+                
+                {/* Controles de Filtros y Búsqueda */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full lg:max-w-4xl">
                   
-                  {/* Imagen de la moto */}
-                  <div className="aspect-video w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center p-4">
-                    {moto.imagen ? (
-                      <img
-                        src={moto.imagen}
-                        alt={moto.modelo}
-                        className="object-contain w-full h-full hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <span className="text-5xl">🏍️</span>
-                    )}
-                    
-                    {/* Badge de Stock */}
-                    <span className={`absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border ${
-                      moto.stock > 0 
-                        ? 'bg-green-500/10 text-green-600 border-green-500/25' 
-                        : 'bg-destructive/10 text-destructive border-destructive/20'
-                    }`}>
-                      {moto.stock > 0 ? 'En Stock' : 'Agotado'}
-                    </span>
+                  {/* Buscador */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+                    <Input
+                      placeholder="Buscar modelo o color..."
+                      className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-11 text-xs"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
 
-                  <CardHeader className="p-5 pb-2">
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">{moto.marca || 'Sport'}</span>
-                    <CardTitle className="text-base font-black text-neutral-900 mt-0.5 truncate uppercase">
-                      {moto.modelo}
-                    </CardTitle>
-                    <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
-                      {moto.categoria || 'Naked'}
-                    </p>
-                  </CardHeader>
+                  {/* Categorías */}
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="">Todas las Categorías</option>
+                    {categories.filter(c => c.estado).map((cat) => (
+                      <option key={cat.idCategoria} value={cat.idCategoria}>{cat.nombre}</option>
+                    ))}
+                  </select>
 
-                  <CardContent className="px-5 pb-5 pt-0">
-                    <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
-                  </CardContent>
+                  {/* Marcas */}
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => setSelectedBrand(e.target.value)}
+                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="">Todas las Marcas</option>
+                    {brands.filter(b => b.estado).map((b) => (
+                      <option key={b.idMarca} value={b.idMarca}>{b.nombre}</option>
+                    ))}
+                  </select>
 
-                  <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
-                    <Link to={`/products/${moto.idMoto}`} className="w-full flex justify-between items-center group">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
-                        Ver Detalles
-                      </span>
-                      <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                    </Link>
-                  </CardFooter>
+                  {/* Ordenar por */}
+                  <select
+                    value={selectedOrder}
+                    onChange={(e) => setSelectedOrder(e.target.value)}
+                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="">Ordenar Por</option>
+                    <option value="precio">Precio: Menor a Mayor</option>
+                    <option value="-precio">Precio: Mayor a Menor</option>
+                    <option value="-anio">Año: Más Reciente</option>
+                    <option value="-stock">Stock: Mayor a Menor</option>
+                  </select>
 
-                </Card>
-              ))}
-            </div>
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-4 text-sm bg-destructive/10 border border-destructive/20 text-destructive font-semibold">
+                  {error}
+                </div>
+              )}
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i} className="bg-white border-neutral-200 rounded-none overflow-hidden h-[380px]">
+                      <Skeleton className="aspect-video w-full" />
+                      <CardHeader className="p-5 space-y-2">
+                        <Skeleton className="h-5 w-2/3" />
+                        <Skeleton className="h-4 w-1/3" />
+                      </CardHeader>
+                      <CardContent className="p-5 pt-0">
+                        <Skeleton className="h-6 w-1/2" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : motos.length === 0 ? (
+                <div className="text-center py-16 text-neutral-500 font-bold">
+                  No hay motocicletas disponibles en el catálogo.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {motos.map((moto) => (
+                    <Card key={moto.idMoto} className="racing-card rounded-none h-[400px]">
+                      
+                      {/* Imagen de la moto */}
+                      <div className="aspect-video w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center p-4">
+                        {moto.imagen ? (
+                          <img
+                            src={moto.imagen}
+                            alt={moto.modelo}
+                            className="object-contain w-full h-full hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <span className="text-5xl">🏍️</span>
+                        )}
+                        
+                        {/* Badge de Stock */}
+                        <span className={`absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border ${
+                          moto.stock > 0 
+                            ? 'bg-green-500/10 text-green-600 border-green-500/25' 
+                            : 'bg-destructive/10 text-destructive border-destructive/20'
+                        }`}>
+                          {moto.stock > 0 ? 'En Stock' : 'Agotado'}
+                        </span>
+                      </div>
+
+                      <CardHeader className="p-5 pb-2">
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">{moto.marca || 'Sport'}</span>
+                        <CardTitle className="text-base font-black text-neutral-900 mt-0.5 truncate uppercase">
+                          {moto.modelo}
+                        </CardTitle>
+                        <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
+                          {moto.categoria || 'Naked'}
+                        </p>
+                      </CardHeader>
+
+                      <CardContent className="px-5 pb-5 pt-0">
+                        <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
+                      </CardContent>
+
+                      <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
+                        <Link to={`/products/${moto.idMoto}`} className="w-full flex justify-between items-center group">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
+                            Ver Detalles
+                          </span>
+                          <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        </Link>
+                      </CardFooter>
+
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
