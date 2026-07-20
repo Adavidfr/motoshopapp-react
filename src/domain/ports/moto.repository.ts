@@ -8,6 +8,7 @@ export interface ListMotosParams {
   search?: string;
   marca?: number | string;
   categoria?: number | string;
+  page?: number;
 }
 
 export interface PaginatedResult<T> {

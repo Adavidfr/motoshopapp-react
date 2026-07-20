@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2, Loader2, Upload, FileImage, Search } from 'lucide-r
 import type { Moto } from '../../../domain/entities/moto.entity';
 
 export default function MotosAdminPage() {
-  const { motos, isLoading, error, fetchMotos, createMoto, updateMoto, deleteMoto } = useMotoStore();
+  const { motos, totalCount, isLoading, error, fetchMotos, createMoto, updateMoto, deleteMoto } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
   const { categories, fetchCategories } = useCategoryStore();
 
@@ -29,14 +29,22 @@ export default function MotosAdminPage() {
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load auxiliary data once
   useEffect(() => {
-    fetchMotos();
     fetchBrands();
     fetchCategories();
-  }, [fetchMotos, fetchBrands, fetchCategories]);
+  }, [fetchBrands, fetchCategories]);
+
+  // Load motos on filters/page change
+  useEffect(() => {
+    const params: any = { page };
+    if (searchTerm) params.search = searchTerm;
+    fetchMotos(params);
+  }, [page, fetchMotos]);
 
   const handleOpenCreate = () => {
     setEditingId(null);
@@ -126,7 +134,8 @@ export default function MotosAdminPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchMotos({ search: searchTerm });
+    setPage(1);
+    fetchMotos({ search: searchTerm, page: 1 });
   };
 
   return (
@@ -239,6 +248,29 @@ export default function MotosAdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination controls */}
+      {totalCount > 10 && (
+        <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-neutral-900">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+          >
+            Anterior
+          </button>
+          <span className="text-xs font-bold text-neutral-400">
+            Página {page} de {Math.ceil(totalCount / 10)}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / 10), p + 1))}
+            disabled={page >= Math.ceil(totalCount / 10)}
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+          >
+            Siguiente
+          </button>
         </div>
       )}
 
