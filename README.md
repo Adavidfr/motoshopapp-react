@@ -204,6 +204,3 @@ Durante la integración continua entre el Frontend (Puerto 5173) y Backend (Puer
    Si el catálogo no carga o el inicio de sesión falla mostrando un error de red en la consola del navegador (`Network Error / CORS Missing Allow Origin`), el problema reside en la configuración del Backend. Asegúrate de que el backend en Django tenga instalado el paquete `django-cors-headers` y haya añadido `http://localhost:5173` a la lista blanca de orígenes.
 2. **Imágenes Rota:** 
    Verifica que la carpeta `/media/` de Django esté bien configurada, ya que el Frontend recibe URLs relativas y las concatena para mostrar los JPGs o PNGs de las motocicletas en el "Showroom".
-
----
-*Documentación generada formalmente para el Seminario de Integración de la Escuela de Tecnologías UTE, 2026.*
