@@ -9,7 +9,7 @@ interface OrderState {
   isLoading: boolean;
   error: string | null;
   createOrder: (cartId: number) => Promise<Pedido>;
-  fetchOrders: (limit?: number, offset?: number) => Promise<void>;
+  fetchOrders: (limit?: number, offset?: number, estado?: string) => Promise<void>;
   fetchOrderById: (id: number) => Promise<void>;
   confirmOrder: (id: number) => Promise<void>;
   clearSelectedOrder: () => void;
@@ -36,10 +36,10 @@ export const useOrderStore = create<OrderState>((set) => ({
     }
   },
 
-  fetchOrders: async (limit, offset) => {
+  fetchOrders: async (limit, offset, estado) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await listOrdersUseCase.execute(limit, offset);
+      const result = await listOrdersUseCase.execute(limit, offset, estado);
       set({ orders: result.results, isLoading: false });
     } catch (err: any) {
       set({

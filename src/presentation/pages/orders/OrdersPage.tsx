@@ -7,6 +7,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice, formatDate } from '../../utils/formatters';
+import { StatusBadge } from '../../components/StatusBadge';
 import { Eye, ShoppingBag } from 'lucide-react';
 
 export default function OrdersPage() {
@@ -15,23 +16,6 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'confirmed':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'shipped':
-        return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
-      case 'delivered':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'cancelled':
-        return 'bg-destructive/10 text-destructive border-destructive/20';
-      default:
-        return 'bg-muted text-muted-foreground border-border';
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -90,9 +74,7 @@ export default function OrdersPage() {
                   <TableCell className="font-mono font-bold">#{order.idPedido}</TableCell>
                   <TableCell>{formatDate(order.fechaPedido)}</TableCell>
                   <TableCell>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border rounded-full ${getStatusStyle(order.estado)}`}>
-                      {order.estado}
-                    </span>
+                    <StatusBadge status={order.estado} />
                   </TableCell>
                   <TableCell className="text-right font-bold text-primary">
                     {formatPrice(order.total)}

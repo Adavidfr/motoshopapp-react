@@ -37,7 +37,7 @@ export class ApiOrderRepository implements OrderRepository {
       usernameCliente: data.username_cliente,
       idUsuarioCliente: data.id_usuario_cliente,
       idCarrito: data.id_carrito,
-      carrito: this.mapCart(data.carrito),
+      carrito: data.carrito ? this.mapCart(data.carrito) : undefined as any,
       estado: data.estado,
       total: Number(data.total),
       fechaPedido: data.fecha_pedido,
@@ -45,16 +45,31 @@ export class ApiOrderRepository implements OrderRepository {
   }
 
   async createOrder(cartId: number): Promise<Pedido> {
-    const response = await httpClient.post('/pedidos/', {
+    // 1. Crear el pedido en el backend
+    await httpClient.post('/pedidos/', {
       id_carrito: cartId,
     });
-    return this.mapOrder(response.data);
+
+    // 2. Dado que el backend retorna una estructura parcial en POST, obtenemos el listado
+    // de pedidos del usuario actual (el más reciente estará primero por -fecha_pedido)
+    const listResponse = await httpClient.get('/pedidos/', {
+      params: { limit: 1 },
+    });
+
+    const results = listResponse.data.results || [];
+    if (results.length > 0) {
+      return this.mapOrder(results[0]);
+    }
+
+    throw new Error('El pedido fue creado pero no se pudo recuperar la información del mismo.');
   }
 
-  async listOrders(limit?: number, offset?: number): Promise<PaginatedResult<Pedido>> {
-    const response = await httpClient.get('/pedidos/', {
-      params: { limit, offset },
-    });
+  async listOrders(limit?: number, offset?: number, estado?: string): Promise<PaginatedResult<Pedido>> {
+    const params: any = { limit, offset };
+    if (estado) {
+      params.estado = estado;
+    }
+    const response = await httpClient.get('/pedidos/', { params });
     return {
       count: response.data.count,
       next: response.data.next,
