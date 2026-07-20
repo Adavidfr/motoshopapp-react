@@ -200,3 +200,9 @@
 .animate-breathe-glow {
   animation: breathe-glow 3s ease-in-out infinite;
 }
+
+/* Progress bar for success states */
+@keyframes progress-bar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}

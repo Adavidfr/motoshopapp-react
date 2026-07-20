@@ -6,7 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema } from '../../../application/dtos/auth.dto';
 import type { RegisterDto } from '../../../application/dtos/auth.dto';
 import { useAuthStore } from '../../store/auth.store';
-import { User, Mail, Lock, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { User, Mail, Lock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2 } from 'lucide-react';
+import Particles from '../../components/react-bits/Particles';
+import GradientText from '../../components/react-bits/GradientText';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -30,170 +32,253 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div className="relative flex min-h-[90vh] items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-[#070708] overflow-hidden">
-      {/* Background Grid & Ambient Red Glow */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,rgba(255,26,26,0.12)_0%,rgba(7,7,8,0)_70%)] pointer-events-none z-0 blur-xl animate-pulse duration-[8000ms]" />
+  // Input field base styles
+  const inputBase = "w-full bg-white/[0.04] border border-white/[0.08] text-white rounded-xl py-3.5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/[0.06] focus:shadow-[0_0_20px_rgba(255,26,26,0.08)] transition-all duration-300";
 
-      {/* Split Design Card */}
-      <div className="relative w-full max-w-[1050px] min-h-[580px] bg-[#0c0c0e] rounded-[2.5rem] shadow-[0_0_80px_rgba(255,26,26,0.05),0_30px_70px_rgba(0,0,0,0.85)] border border-neutral-900/60 overflow-hidden z-10 grid grid-cols-1 md:grid-cols-2">
-        
-        {/* Left Side: Form */}
-        <div className="p-10 sm:p-14 flex flex-col justify-center">
-          {/* Brand header */}
-          <div className="flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="Aura Rider Logo" className="h-7 w-7 object-contain" />
+  return (
+    <div className="relative flex min-h-[92vh] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#050506] overflow-hidden">
+
+      {/* Particles Background */}
+      <Particles quantity={40} color="255, 26, 26" speed={0.2} connectDistance={90} size={1} />
+
+      {/* Ambient Glow */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/[0.06] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-primary/[0.04] rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Split Card */}
+      <div className="relative w-full max-w-[1100px] min-h-[650px] bg-[#0a0a0c]/90 backdrop-blur-xl rounded-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/[0.06] overflow-hidden z-10 grid grid-cols-1 md:grid-cols-2">
+
+        {/* Left: Video/Image Panel */}
+        <div className="relative hidden md:flex flex-col overflow-hidden">
+          {/* Background Video */}
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            poster="https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&q=80&w=800"
+          >
+            <source src="https://cdn.coverr.co/videos/coverr-motorcycle-rider-on-the-road-8356/1080p.mp4" type="video/mp4" />
+          </video>
+
+          {/* Overlay gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-black/50 to-black/20 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#0a0a0c]/80 to-transparent z-10" />
+
+          {/* Content */}
+          <div className="relative z-20 flex flex-col justify-between h-full p-12">
+            {/* Top */}
+            <div>
+              <GradientText
+                className="font-bold text-[10px] uppercase tracking-[0.2em]"
+                colors={['#ff1a1a', '#ff6b35', '#ffaa00', '#ff6b35', '#ff1a1a']}
+                animationSpeed={3}
+              >
+                Comienza tu aventura
+              </GradientText>
+            </div>
+
+            {/* Bottom */}
+            <div className="space-y-5">
+              <h2 className="text-5xl font-black text-white leading-[0.9] uppercase tracking-tighter">
+                ÚNETE AL
+                <br />
+                <span className="text-primary">EQUIPO.</span>
+              </h2>
+              <p className="text-neutral-400 text-sm max-w-xs font-medium leading-relaxed">
+                Crea tu cuenta de piloto para acceder a los mejores modelos y gestionar tus reservas con total facilidad.
+              </p>
+
+              {/* Features */}
+              <div className="space-y-3 pt-2">
+                {['Acceso exclusivo a modelos', 'Ofertas personalizadas', 'Historial de pedidos'].map((item) => (
+                  <div key={item} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="size-3.5 text-primary" />
+                    <span className="text-neutral-500 text-xs font-semibold">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 pt-3">
+                <div className="h-[1px] w-12 bg-primary/40" />
+                <span className="text-neutral-500 text-xs font-semibold">
+                  ¿Ya tienes cuenta?{' '}
+                  <Link to="/login" onClick={clearError} className="text-white hover:text-primary font-bold transition-colors">
+                    Inicia sesión
+                  </Link>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Form */}
+        <div className="p-8 sm:p-12 flex flex-col justify-center relative">
+          {/* Decorative corner accent */}
+          <div className="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-primary/20 rounded-tr-3xl pointer-events-none" />
+
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 mb-8">
+            <img src="/logo.png" alt="Aura Rider Logo" className="h-8 w-8 object-contain" />
             <span className="text-sm font-black tracking-widest text-white uppercase">AURA RIDER</span>
           </div>
 
-          <h3 className="text-2xl font-black text-white tracking-tight mb-4 uppercase">
-            Crear Cuenta
-          </h3>
+          {/* Title */}
+          <div className="mb-6 space-y-1.5">
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Crear Cuenta</h2>
+            <p className="text-neutral-500 text-sm font-medium">Regístrate para acceder a todo el catálogo</p>
+          </div>
 
           {success ? (
-            <div className="p-6 text-center text-sm bg-green-500/10 border border-green-500/20 text-green-400 rounded-[2rem] space-y-3 font-semibold">
-              <ShieldCheck className="size-8 mx-auto text-green-400 animate-bounce" />
+            <div className="p-8 text-center bg-green-500/[0.06] border border-green-500/20 rounded-2xl space-y-4">
+              <div className="size-16 mx-auto rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                <ShieldCheck className="size-8 text-green-400 animate-bounce" />
+              </div>
               <div>
-                <p className="font-bold text-base text-white">¡Registro Exitoso!</p>
-                <p className="text-neutral-400 text-xs mt-1 font-medium">Redirigiendo al inicio de sesión...</p>
+                <p className="font-black text-lg text-white uppercase">¡Registro Exitoso!</p>
+                <p className="text-neutral-400 text-xs font-medium mt-1">Redirigiendo al inicio de sesión...</p>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full h-1 bg-neutral-800 rounded-full overflow-hidden mt-3">
+                <div className="h-full bg-green-500 rounded-full" style={{ animation: 'progress-bar 2.5s linear forwards' }} />
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {error && (
-                <div className="p-3.5 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-full flex items-center gap-2 font-semibold justify-center">
+                <div className="p-3 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-center gap-2 font-semibold">
                   <ShieldAlert className="size-4 shrink-0" />
                   {error}
                 </div>
               )}
-              
-              {/* Username Input */}
-              <div className="space-y-1">
+
+              {/* Username */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Usuario</label>
                 <div className="relative flex items-center group">
-                  <User className="absolute left-5 size-4.5 text-neutral-500 group-focus-within:text-primary transition-colors" />
+                  <User className="absolute left-4 size-4 text-neutral-600 group-focus-within:text-primary transition-colors duration-300" />
                   <input
                     id="username"
                     type="text"
-                    placeholder="Usuario"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="Elige tu nombre de usuario"
+                    className={`${inputBase} pl-12 pr-5`}
                     {...register('username')}
                     aria-invalid={errors.username ? 'true' : 'false'}
                   />
                 </div>
                 {errors.username && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.username.message}</p>
+                  <p className="text-xs text-destructive font-bold pl-1">{errors.username.message}</p>
                 )}
               </div>
 
-              {/* Email Input */}
-              <div className="space-y-1">
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Correo</label>
                 <div className="relative flex items-center group">
-                  <Mail className="absolute left-5 size-4.5 text-neutral-500" />
+                  <Mail className="absolute left-4 size-4 text-neutral-600 group-focus-within:text-primary transition-colors duration-300" />
                   <input
                     id="email"
                     type="email"
-                    placeholder="Correo Electrónico"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="tu@correo.com"
+                    className={`${inputBase} pl-12 pr-5`}
                     {...register('email')}
                     aria-invalid={errors.email ? 'true' : 'false'}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.email.message}</p>
+                  <p className="text-xs text-destructive font-bold pl-1">{errors.email.message}</p>
                 )}
               </div>
 
-              {/* First Name & Last Name Side by Side */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              {/* Name Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Nombre</label>
                   <input
                     id="firstName"
                     type="text"
                     placeholder="Nombre"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className={`${inputBase} px-4`}
                     {...register('firstName')}
                   />
                 </div>
-                <div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Apellido</label>
                   <input
                     id="lastName"
                     type="text"
                     placeholder="Apellido"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className={`${inputBase} px-4`}
                     {...register('lastName')}
                   />
                 </div>
               </div>
 
-              {/* Password Input */}
-              <div className="space-y-1">
-                <div className="relative flex items-center group">
-                  <Lock className="absolute left-5 size-4.5 text-neutral-500" />
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Contraseña"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                    {...register('password')}
-                    aria-invalid={errors.password ? 'true' : 'false'}
-                  />
+              {/* Passwords Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Contraseña</label>
+                  <div className="relative flex items-center group">
+                    <Lock className="absolute left-4 size-4 text-neutral-600 group-focus-within:text-primary transition-colors duration-300" />
+                    <input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      className={`${inputBase} pl-12 pr-4`}
+                      {...register('password')}
+                      aria-invalid={errors.password ? 'true' : 'false'}
+                    />
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-destructive font-bold pl-1">{errors.password.message}</p>
+                  )}
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.password.message}</p>
-                )}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 pl-1">Confirmar</label>
+                  <div className="relative flex items-center group">
+                    <Lock className="absolute left-4 size-4 text-neutral-600 group-focus-within:text-primary transition-colors duration-300" />
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      className={`${inputBase} pl-12 pr-4`}
+                      {...register('confirmPassword')}
+                      aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                    />
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-destructive font-bold pl-1">{errors.confirmPassword.message}</p>
+                  )}
+                </div>
               </div>
 
-              {/* Confirm Password Input */}
-              <div className="space-y-1">
-                <div className="relative flex items-center group">
-                  <Lock className="absolute left-5 size-4.5 text-neutral-500" />
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirmar Contraseña"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                    {...register('confirmPassword')}
-                    aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-                  />
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.confirmPassword.message}</p>
-                )}
-              </div>
-              <button 
-                type="submit" 
-                className="w-full mt-6 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-widest rounded-full py-4.5 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_25px_rgba(255,26,26,0.4)] disabled:opacity-50"
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full mt-4 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-widest rounded-xl py-4 transition-all duration-300 shadow-[0_4px_30px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_40px_rgba(255,26,26,0.4)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2 cursor-pointer"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creando...' : 'REGISTRARSE'}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="size-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="28" strokeLinecap="round" /></svg>
+                    Creando cuenta...
+                  </span>
+                ) : (
+                  <>REGISTRARSE <ArrowRight className="size-4" /></>
+                )}
               </button>
+
+              {/* Mobile login link */}
+              <p className="text-center text-sm font-semibold text-neutral-500 md:hidden pt-2">
+                ¿Ya tienes cuenta?{' '}
+                <Link to="/login" onClick={clearError} className="text-primary hover:text-white font-bold transition-colors">
+                  Inicia sesión
+                </Link>
+              </p>
             </form>
           )}
         </div>
-
-        {/* Right Side: Spectacular Image Banner with Welcome Text */}
-        <div className="relative hidden md:block w-full h-full bg-[url('https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center">
-          {/* Glossy gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-primary/10" />
-          
-          {/* Welcome Text elements */}
-          <div className="absolute inset-0 flex flex-col justify-end p-14 text-left space-y-4 z-20">
-            <h2 className="text-5xl sm:text-6xl font-black text-white leading-none uppercase tracking-tighter">
-              ÚNETE AL EQUIPO.
-            </h2>
-            <p className="text-neutral-350 text-sm max-w-sm font-semibold leading-relaxed">
-              Crea tu cuenta de piloto para ver los mejores modelos y gestionar tus reservas con total facilidad.
-            </p>
-            <div className="pt-4 text-sm font-semibold text-neutral-400">
-              ¿Ya tienes una cuenta?{' '}
-              <Link to="/login" onClick={clearError} className="text-white hover:text-primary underline font-bold transition-all ml-1">
-                Inicia sesión aquí
-              </Link>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );

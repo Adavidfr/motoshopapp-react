@@ -90,14 +90,14 @@ export default function CatalogPage() {
 
   // Brand logos for infinite scroll marquee
   const brandLogos = [
-    { name: 'Yamaha', logo: '🏍️' },
-    { name: 'Honda', logo: '🔴' },
-    { name: 'Kawasaki', logo: '🟢' },
-    { name: 'Suzuki', logo: '🔵' },
-    { name: 'Ducati', logo: '❤️' },
-    { name: 'BMW', logo: '⚪' },
-    { name: 'KTM', logo: '🟠' },
-    { name: 'Triumph', logo: '🇬🇧' },
+    { name: 'Yamaha', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Yamaha_Motor_logo.svg' },
+    { name: 'Honda', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Honda.svg' },
+    { name: 'Kawasaki', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Kawasaki_Heavy_Industries_Logo.svg' },
+    { name: 'Suzuki', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Suzuki_logo_2.svg' },
+    { name: 'Ducati', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Ducati_red_logo.svg' },
+    { name: 'BMW', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg' },
+    { name: 'KTM', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/KTM-Logo.svg' },
+    { name: 'Triumph', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/Triumph_Motorcycles_logo.svg' },
   ];
 
   return (
@@ -242,15 +242,20 @@ export default function CatalogPage() {
       {/* ═══════════════════════════════════════════════════════════
           2. BRANDS MARQUEE – Infinite Auto-Scroll
          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#080809] py-6 border-b border-neutral-900 overflow-hidden">
-        <InfiniteScroll speed={20} direction="left" pauseOnHover>
+      <section className="bg-[#080809] py-8 border-b border-neutral-900 overflow-hidden">
+        <InfiniteScroll speed={25} direction="left" pauseOnHover>
           {brandLogos.map((brand, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 px-8 py-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-300 cursor-default select-none shrink-0"
+              className="flex items-center gap-4 px-10 py-3 group cursor-default select-none shrink-0"
             >
-              <span className="text-2xl">{brand.logo}</span>
-              <span className="text-xs font-black uppercase tracking-widest whitespace-nowrap">{brand.name}</span>
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="h-7 w-auto object-contain brightness-0 invert opacity-30 group-hover:opacity-80 transition-all duration-500"
+                loading="lazy"
+              />
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-300 transition-colors duration-500 whitespace-nowrap">{brand.name}</span>
             </div>
           ))}
         </InfiniteScroll>
@@ -259,34 +264,51 @@ export default function CatalogPage() {
       {/* ═══════════════════════════════════════════════════════════
           3. VALUE PROPOSITION – 4 Animated Feature Cards
          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#060607] py-14 border-b border-neutral-900">
-        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="bg-[#060607] py-16 border-b border-neutral-900">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <GradientText
+              className="font-bold text-[10px] uppercase tracking-[0.25em]"
+              colors={['#ff1a1a', '#ff6b35', '#ffaa00', '#ff6b35', '#ff1a1a']}
+              animationSpeed={4}
+            >
+              ¿Por qué elegirnos?
+            </GradientText>
+            <h3 className="text-2xl font-black uppercase tracking-tight text-white mt-2">La mejor experiencia en motos</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { icon: Shield, title: 'Garantía Oficial', desc: 'Respaldo total en todas nuestras motos', color: '#ff4d4d' },
-            { icon: Zap, title: 'Mejores Precios', desc: 'Financiamiento directo y facilidades de pago', color: '#ff6b00' },
-            { icon: Truck, title: 'Envío Nacional', desc: 'Entrega puerta a puerta en todo el país', color: '#00b4d8' },
-            { icon: Star, title: 'Equipo Premium', desc: 'Accesorios de alta gama para tu seguridad', color: '#ffd60a' },
+            { icon: Shield, title: 'Garantía Oficial', desc: 'Respaldo total del fabricante en todas nuestras motocicletas con cobertura extendida.', color: '#ff4d4d', gradient: 'from-red-500/10 to-transparent' },
+            { icon: Zap, title: 'Mejores Precios', desc: 'Financiamiento directo con las tasas más competitivas y facilidades de pago.', color: '#ff6b00', gradient: 'from-orange-500/10 to-transparent' },
+            { icon: Truck, title: 'Envío Nacional', desc: 'Entrega puerta a puerta en todo el país con seguro de transporte incluido.', color: '#00b4d8', gradient: 'from-cyan-500/10 to-transparent' },
+            { icon: Star, title: 'Equipo Premium', desc: 'Accesorios certificados de alta gama para maximizar tu seguridad y estilo.', color: '#ffd60a', gradient: 'from-yellow-500/10 to-transparent' },
           ].map((feat, idx) => (
             <SpotlightCard
               key={idx}
-              className="bg-[#0a0a0c] border border-neutral-900/60 p-6 rounded-2xl group hover:border-neutral-800 transition-all duration-500"
-              spotlightColor={`${feat.color}15`}
-              spotlightSize={200}
+              className={`relative bg-gradient-to-b ${feat.gradient} bg-[#0a0a0c] border border-neutral-800/40 p-7 rounded-2xl group hover:border-neutral-700/60 transition-all duration-500 hover:-translate-y-1`}
+              spotlightColor={`${feat.color}18`}
+              spotlightSize={250}
             >
-              <div className="flex items-start gap-4">
+              {/* Accent top line */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-700 rounded-full"
+                style={{ background: feat.color }}
+              />
+              <div className="flex flex-col items-center text-center gap-4">
                 <div
-                  className="size-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500"
-                  style={{ background: `${feat.color}15`, border: `1px solid ${feat.color}25` }}
+                  className="size-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+                  style={{ background: `${feat.color}12`, border: `1px solid ${feat.color}20`, boxShadow: `0 0 25px ${feat.color}08` }}
                 >
-                  <feat.icon className="size-5" style={{ color: feat.color }} />
+                  <feat.icon className="size-6" style={{ color: feat.color }} />
                 </div>
                 <div>
-                  <h4 className="text-white font-bold uppercase tracking-wider text-xs">{feat.title}</h4>
-                  <p className="text-neutral-500 text-[11px] font-semibold mt-1">{feat.desc}</p>
+                  <h4 className="text-white font-bold uppercase tracking-wider text-[11px]">{feat.title}</h4>
+                  <p className="text-neutral-500 text-[11px] font-medium mt-2 leading-relaxed">{feat.desc}</p>
                 </div>
               </div>
             </SpotlightCard>
           ))}
+          </div>
         </div>
       </section>
 
