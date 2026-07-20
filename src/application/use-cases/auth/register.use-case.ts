@@ -1,6 +1,6 @@
 // src/application/use-cases/auth/register.use-case.ts
 import type { AuthRepository } from '../../../domain/ports/auth.repository';
-import type { RegisterDto } from '../../dtos/auth.dto';
+import type { RegisterPayload } from '../../dtos/auth.dto';
 
 export class RegisterUseCase {
   private authRepository: AuthRepository;
@@ -8,7 +8,7 @@ export class RegisterUseCase {
     this.authRepository = authRepository;
   }
 
-  async execute(dto: RegisterDto): Promise<void> {
+  async execute(dto: RegisterPayload): Promise<void> {
     return this.authRepository.register(dto);
   }
 }

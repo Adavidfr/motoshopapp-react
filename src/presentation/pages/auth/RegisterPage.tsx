@@ -18,7 +18,9 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterDto) => {
     try {
-      await registerApi(data);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { confirmPassword: _confirm, ...payload } = data;
+      await registerApi(payload);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
@@ -142,7 +144,23 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Submit Button */}
+              {/* Confirm Password Input */}
+              <div className="space-y-1">
+                <div className="relative flex items-center group">
+                  <Lock className="absolute left-5 size-4.5 text-neutral-500" />
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirmar Contraseña"
+                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    {...register('confirmPassword')}
+                    aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.confirmPassword.message}</p>
+                )}
+              </div>
               <button 
                 type="submit" 
                 className="w-full mt-6 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-widest rounded-full py-4.5 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_25px_rgba(255,26,26,0.4)] disabled:opacity-50"

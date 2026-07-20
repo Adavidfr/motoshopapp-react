@@ -1,7 +1,7 @@
 // src/infrastructure/adapters/api-auth.repository.ts
 import type { AuthRepository } from '../../domain/ports/auth.repository';
 import type { User, LoginResponse } from '../../domain/entities/user.entity';
-import type { LoginDto, RegisterDto } from '../../application/dtos/auth.dto';
+import type { LoginDto, RegisterPayload } from '../../application/dtos/auth.dto';
 import { httpClient } from '../http/axios-client';
 
 export class ApiAuthRepository implements AuthRepository {
@@ -34,7 +34,7 @@ export class ApiAuthRepository implements AuthRepository {
     };
   }
 
-  async register(dto: RegisterDto): Promise<void> {
+  async register(dto: RegisterPayload): Promise<void> {
     await httpClient.post('/auth/register/', {
       username: dto.username,
       email: dto.email,

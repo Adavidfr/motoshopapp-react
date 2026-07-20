@@ -10,6 +10,7 @@ import PlaceholderPage from '../pages/PlaceholderPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import CatalogPage from '../pages/catalog/CatalogPage';
+import MotosPage from '../pages/catalog/MotosPage';
 import ProductDetailPage from '../pages/catalog/ProductDetailPage';
 import CartPage from '../pages/cart/CartPage';
 import ProfilePage from '../pages/profile/ProfilePage';
@@ -99,7 +100,7 @@ export default function AppRouter() {
           path="/catalog"
           element={
             <Layout>
-              <CatalogPage />
+              <MotosPage />
             </Layout>
           }
         />

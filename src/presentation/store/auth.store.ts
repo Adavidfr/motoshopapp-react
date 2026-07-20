@@ -1,7 +1,7 @@
 // src/presentation/store/auth.store.ts
 import { create } from 'zustand';
 import type { User } from '../../domain/entities/user.entity';
-import type { LoginDto, RegisterDto } from '../../application/dtos/auth.dto';
+import type { LoginDto, RegisterPayload } from '../../application/dtos/auth.dto';
 import { loginUseCase, registerUseCase, logoutUseCase } from '../../infrastructure/factories/auth.factory';
 import { LocalTokenStorage } from '../../infrastructure/storage/local-token-storage';
 
@@ -11,7 +11,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (dto: LoginDto) => Promise<void>;
-  register: (dto: RegisterDto) => Promise<void>;
+  register: (dto: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
   initialize: () => void;

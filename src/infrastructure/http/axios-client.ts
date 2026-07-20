@@ -45,6 +45,20 @@ httpClient.interceptors.response.use(
 
     // Si es 401 y no hemos intentado reintentar la solicitud
     if (error.response?.status === 401 && !originalRequest._retry) {
+      const refreshToken = LocalTokenStorage.getRefreshToken();
+
+      // Sin refresh token: usuario no autenticado.
+      // Reintentamos sin el header Authorization para endpoints públicos.
+      if (!refreshToken) {
+        originalRequest._retry = true;
+        delete originalRequest.headers.Authorization;
+        try {
+          return await httpClient(originalRequest);
+        } catch (retryError) {
+          return Promise.reject(retryError);
+        }
+      }
+
       // Si ya está refrescando el token, encolar la solicitud
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -59,13 +73,6 @@ httpClient.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
-
-      const refreshToken = LocalTokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        isRefreshing = false;
-        LocalTokenStorage.clearTokens();
-        return Promise.reject(error);
-      }
 
       try {
         // Petición limpia para refrescar token
