@@ -39,14 +39,14 @@
   }
 
   html:not(.dark) {
-    --background: 240 10% 98%; /* Light mode background */
-    --foreground: 240 10% 3.9%;
+    --background: 220 20% 97%; /* Soft premium slate-gray tint */
+    --foreground: 224 71% 4%; /* Deep luxury slate-black text */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --popover-foreground: 224 71% 4%;
+    --border: 220 15% 91%;
+    --input: 220 15% 91%;
   }
 
   * {

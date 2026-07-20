@@ -302,7 +302,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pageTitle = location.pathname === '/admin' ? 'Dashboard' : (currentItem?.label ?? 'Admin');
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#050506]">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground transition-colors duration-500">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:w-60 xl:w-64 shrink-0">
         <Sidebar />
@@ -323,12 +323,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="shrink-0 flex items-center gap-4 px-5 py-4 bg-[#080809] border-b border-neutral-900 lg:px-7">
+        <header className="shrink-0 flex items-center gap-4 px-5 py-4 bg-card border-b border-border transition-colors duration-300 lg:px-7">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-neutral-400 hover:text-white transition-colors"
+            className="lg:hidden text-neutral-400 hover:text-card-foreground transition-colors"
           >
             <Menu className="size-5" />
           </button>
@@ -337,7 +336,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
               Panel Administrativo
             </p>
-            <h1 className="text-base font-black uppercase tracking-tight text-white">
+            <h1 className="text-base font-black uppercase tracking-tight text-card-foreground">
               {pageTitle}
             </h1>
           </div>
@@ -346,9 +345,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Cambiar tema"
-            className="flex items-center justify-center p-2 text-neutral-400 hover:text-white transition-colors border border-neutral-800 rounded-full hover:border-neutral-700 cursor-pointer"
+            className="flex items-center justify-center size-9 rounded-full bg-neutral-100/10 hover:bg-neutral-100/20 dark:bg-neutral-900/50 dark:hover:bg-neutral-900 border border-neutral-700/30 dark:border-neutral-800 text-neutral-400 hover:text-white hover:scale-105 hover:rotate-12 transition-all duration-300 cursor-pointer"
           >
-            {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            {theme === 'dark' ? <Sun className="size-4 text-amber-500" /> : <Moon className="size-4 text-indigo-400" />}
           </button>
 
           <Link
