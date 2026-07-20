@@ -7,12 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useProfileStore } from '../../store/profile.store';
 import { updateProfileSchema } from '../../../application/dtos/profile.dto';
 import type { UpdateProfileDto } from '../../../application/dtos/profile.dto';
-import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Label } from '../../components/ui/label';
-import { CheckCircle, AlertCircle, Save, Calendar, Phone, CreditCard, MapPin } from 'lucide-react';
+import {
+  CheckCircle2, AlertCircle, Save, Calendar, Phone, CreditCard, MapPin, User, Mail, Shield
+} from 'lucide-react';
 
 export default function ProfilePage() {
   const { profile, fetchProfile, updateProfile, isLoading, error } = useProfileStore();
@@ -51,127 +51,187 @@ export default function ProfilePage() {
 
   if (isLoading && !profile) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-full max-w-2xl space-y-6 px-4">
+          <Skeleton className="h-10 w-56 bg-white/[0.06]" />
+          <Skeleton className="h-80 w-full rounded-2xl bg-white/[0.06]" />
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight">Mi Perfil</h1>
-        <p className="text-muted-foreground text-sm">
-          Edita tu información personal y datos de facturación/envío
-        </p>
-      </div>
+  const initials = profile?.username?.substring(0, 2).toUpperCase() || 'AR';
 
-      <Card className="border-border/40 shadow-md">
-        <CardHeader className="border-b border-border/40 pb-6">
-          <div className="flex items-center gap-4">
-            <span className="text-4xl bg-primary/10 text-primary p-4 rounded-3xl font-bold flex items-center justify-center size-16">
-              {profile?.username?.substring(0, 2).toUpperCase() || 'US'}
-            </span>
-            <div>
-              <CardTitle className="text-xl font-bold">{profile?.username}</CardTitle>
-              <CardDescription>{profile?.email}</CardDescription>
+  return (
+    <div className="min-h-[80vh] bg-background text-foreground py-10 px-4 sm:px-6 transition-colors duration-300">
+      <div className="max-w-2xl mx-auto space-y-8">
+
+        {/* Page Header */}
+        <div className="flex items-center gap-4">
+          <div className="size-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <User className="size-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tight text-foreground">Mi Perfil</h1>
+            <p className="text-neutral-500 text-sm font-medium">Información personal y datos de facturación</p>
+          </div>
+        </div>
+
+        {/* Profile Card */}
+        <div className="bg-card/60 border border-border/50 rounded-3xl overflow-hidden backdrop-blur-sm">
+
+          {/* Avatar Hero Row */}
+          <div className="relative px-8 py-8 border-b border-border/40">
+            {/* Background accent */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.04] to-transparent pointer-events-none" />
+
+            <div className="relative flex items-center gap-5">
+              {/* Avatar */}
+              <div className="relative">
+                <div className="size-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <span className="text-2xl font-black text-primary">{initials}</span>
+                </div>
+                {/* Online indicator */}
+                <div className="absolute -bottom-1 -right-1 size-5 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
+                  <div className="size-2 rounded-full bg-green-300 animate-pulse" />
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="space-y-1.5">
+                <h2 className="text-xl font-black text-foreground">{profile?.username}</h2>
+                <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-500">
+                  <Mail className="size-3.5" />
+                  {profile?.email}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="size-3.5 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Cuenta Activa</span>
+                </div>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {successMsg && (
-              <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
-                <CheckCircle className="size-4" />
-                {successMsg}
-              </div>
-            )}
 
-            {error && (
-              <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
-                <AlertCircle className="size-4" />
-                {error}
-              </div>
-            )}
+          {/* Form */}
+          <div className="p-8">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Cedula */}
+              {/* Alerts */}
+              {successMsg && (
+                <div className="flex items-center gap-3 p-4 text-sm bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl font-medium">
+                  <CheckCircle2 className="size-5 shrink-0" />
+                  {successMsg}
+                </div>
+              )}
+              {error && (
+                <div className="flex items-center gap-3 p-4 text-sm bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl font-medium">
+                  <AlertCircle className="size-5 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              {/* Section Title */}
+              <div className="flex items-center gap-3">
+                <div className="h-[1px] flex-1 bg-border/40" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600">Datos Personales</span>
+                <div className="h-[1px] flex-1 bg-border/40" />
+              </div>
+
+              {/* Cedula + Telefono */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cedula" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                    <CreditCard className="size-3.5" />
+                    Cédula / RUC
+                  </Label>
+                  <Input
+                    id="cedula"
+                    placeholder="1722883394"
+                    className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
+                    {...register('cedula')}
+                    aria-invalid={errors.cedula ? 'true' : 'false'}
+                  />
+                  {errors.cedula && (
+                    <p className="text-xs text-destructive font-bold">{errors.cedula.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telefono" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                    <Phone className="size-3.5" />
+                    Teléfono
+                  </Label>
+                  <Input
+                    id="telefono"
+                    placeholder="0992384732"
+                    className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
+                    {...register('telefono')}
+                    aria-invalid={errors.telefono ? 'true' : 'false'}
+                  />
+                  {errors.telefono && (
+                    <p className="text-xs text-destructive font-bold">{errors.telefono.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Fecha Nacimiento */}
               <div className="space-y-2">
-                <Label htmlFor="cedula" className="flex items-center gap-1.5 text-xs font-semibold">
-                  <CreditCard className="size-3.5 text-muted-foreground" />
-                  Cédula / RUC
+                <Label htmlFor="fechaNacimiento" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                  <Calendar className="size-3.5" />
+                  Fecha de Nacimiento
                 </Label>
                 <Input
-                  id="cedula"
-                  placeholder="1722883394"
-                  {...register('cedula')}
-                  aria-invalid={errors.cedula ? 'true' : 'false'}
+                  id="fechaNacimiento"
+                  type="date"
+                  className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
+                  {...register('fechaNacimiento')}
+                  aria-invalid={errors.fechaNacimiento ? 'true' : 'false'}
                 />
-                {errors.cedula && (
-                  <p className="text-xs text-destructive">{errors.cedula.message}</p>
+                {errors.fechaNacimiento && (
+                  <p className="text-xs text-destructive font-bold">{errors.fechaNacimiento.message}</p>
                 )}
               </div>
 
-              {/* Telefono */}
+              {/* Direccion */}
               <div className="space-y-2">
-                <Label htmlFor="telefono" className="flex items-center gap-1.5 text-xs font-semibold">
-                  <Phone className="size-3.5 text-muted-foreground" />
-                  Teléfono de Contacto
+                <Label htmlFor="direccion" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                  <MapPin className="size-3.5" />
+                  Dirección de Facturación / Envío
                 </Label>
                 <Input
-                  id="telefono"
-                  placeholder="0992384732"
-                  {...register('telefono')}
-                  aria-invalid={errors.telefono ? 'true' : 'false'}
+                  id="direccion"
+                  placeholder="Av. 10 de Agosto N34 y Av. Eloy Alfaro, Quito"
+                  className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
+                  {...register('direccion')}
+                  aria-invalid={errors.direccion ? 'true' : 'false'}
                 />
-                {errors.telefono && (
-                  <p className="text-xs text-destructive">{errors.telefono.message}</p>
+                {errors.direccion && (
+                  <p className="text-xs text-destructive font-bold">{errors.direccion.message}</p>
                 )}
               </div>
-            </div>
 
-            {/* Fecha Nacimiento */}
-            <div className="space-y-2">
-              <Label htmlFor="fechaNacimiento" className="flex items-center gap-1.5 text-xs font-semibold">
-                <Calendar className="size-3.5 text-muted-foreground" />
-                Fecha de Nacimiento
-              </Label>
-              <Input
-                id="fechaNacimiento"
-                type="date"
-                {...register('fechaNacimiento')}
-                aria-invalid={errors.fechaNacimiento ? 'true' : 'false'}
-              />
-              {errors.fechaNacimiento && (
-                <p className="text-xs text-destructive">{errors.fechaNacimiento.message}</p>
-              )}
-            </div>
-
-            {/* Direccion */}
-            <div className="space-y-2">
-              <Label htmlFor="direccion" className="flex items-center gap-1.5 text-xs font-semibold">
-                <MapPin className="size-3.5 text-muted-foreground" />
-                Dirección Completa de Facturación / Envío
-              </Label>
-              <Input
-                id="direccion"
-                placeholder="Av. 10 de Agosto N34 y Av. Eloy Alfaro, Quito"
-                {...register('direccion')}
-                aria-invalid={errors.direccion ? 'true' : 'false'}
-              />
-              {errors.direccion && (
-                <p className="text-xs text-destructive">{errors.direccion.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full gap-2 mt-4" disabled={isLoading}>
-              <Save className="size-4" />
-              {isLoading ? 'Guardando Cambios...' : 'Guardar Cambios'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.2)] hover:shadow-[0_6px_30px_rgba(255,26,26,0.35)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="size-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="28" strokeLinecap="round" /></svg>
+                    Guardando Cambios...
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-4" />
+                    Guardar Cambios
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

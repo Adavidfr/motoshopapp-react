@@ -20,7 +20,7 @@ import SpotlightCard from '../../components/react-bits/SpotlightCard';
 import CountUp from '../../components/react-bits/CountUp';
 import Particles from '../../components/react-bits/Particles';
 import TiltedCard from '../../components/react-bits/TiltedCard';
-import InfiniteScroll from '../../components/react-bits/InfiniteScroll';
+import BrandTicker from '../../components/react-bits/BrandTicker';
 
 export default function CatalogPage() {
   const { motos, fetchMotos, isLoading } = useMotoStore();
@@ -88,17 +88,7 @@ export default function CatalogPage() {
     fetchMotos(params);
   }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos]);
 
-  // Brand logos for infinite scroll marquee
-  const brandLogos = [
-    { name: 'Yamaha', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Yamaha_Motor_logo.svg' },
-    { name: 'Honda', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Honda.svg' },
-    { name: 'Kawasaki', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Kawasaki_Heavy_Industries_Logo.svg' },
-    { name: 'Suzuki', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Suzuki_logo_2.svg' },
-    { name: 'Ducati', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Ducati_red_logo.svg' },
-    { name: 'BMW', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg' },
-    { name: 'KTM', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/KTM-Logo.svg' },
-    { name: 'Triumph', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/Triumph_Motorcycles_logo.svg' },
-  ];
+  // BrandTicker handles its own data internally – no array needed here
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -240,25 +230,10 @@ export default function CatalogPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-          2. BRANDS MARQUEE – Infinite Auto-Scroll
+          2. BRANDS TICKER – Self-contained, no broken images
          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#080809] py-8 border-b border-neutral-900 overflow-hidden">
-        <InfiniteScroll speed={25} direction="left" pauseOnHover>
-          {brandLogos.map((brand, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-4 px-10 py-3 group cursor-default select-none shrink-0"
-            >
-              <img
-                src={brand.logo}
-                alt={brand.name}
-                className="h-7 w-auto object-contain brightness-0 invert opacity-30 group-hover:opacity-80 transition-all duration-500"
-                loading="lazy"
-              />
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-300 transition-colors duration-500 whitespace-nowrap">{brand.name}</span>
-            </div>
-          ))}
-        </InfiniteScroll>
+      <section className="bg-[#080809] border-b border-neutral-900">
+        <BrandTicker speed={30} />
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
