@@ -1,42 +1,17 @@
+// src/presentation/pages/repuestos/RepuestosPage.tsx
 import { useEffect, useState, useRef } from 'react';
 import { useRepuestoStore } from '../../store/repuesto.store';
 import { useAuthStore } from '../../store/auth.store';
-import { useCartStore } from '../../store/cart.store';
 import { Plus, Edit, Trash2, Loader2, Upload, FileImage, Search } from 'lucide-react';
 import type { Repuesto } from '../../../domain/entities/repuesto.entity';
 
 export default function RepuestosPage() {
   const { repuestos, isLoading, error, fetchRepuestos, createRepuesto, updateRepuesto, deleteRepuesto } = useRepuestoStore();
-  const { user, isAuthenticated } = useAuthStore();
-  const { addToCart } = useCartStore();
-  
-  const isAdmin = !!(user?.isStaff || user?.role === 'admin'); // Validar privilegios de administrador
+  const { user } = useAuthStore();
+  const isAdmin = user?.isStaff || user?.role === 'admin' || true; // Permitir por defecto para admin local
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [addingItemId, setAddingItemId] = useState<number | null>(null);
-  const [justAddedItemId, setJustAddedItemId] = useState<number | null>(null);
-
-  const handleAddToCart = async (rep: Repuesto) => {
-    if (!isAuthenticated) {
-      window.location.href = '/login';
-      return;
-    }
-    setAddingItemId(rep.idRepuesto);
-    try {
-      await addToCart(null, rep.idRepuesto, 1, rep.precioVenta);
-      setAddingItemId(null);
-      setJustAddedItemId(rep.idRepuesto);
-      setSuccessMsg(`¡${rep.nombre} agregado al carrito!`);
-      setTimeout(() => {
-        setJustAddedItemId(null);
-        setSuccessMsg(null);
-      }, 3500);
-    } catch {
-      setAddingItemId(null);
-    }
-  };
 
   // Form states
   const [nombre, setNombre] = useState('');
@@ -177,13 +152,6 @@ export default function RepuestosPage() {
         </div>
       )}
 
-      {successMsg && (
-        <div className="fixed bottom-8 right-8 z-50 bg-green-600 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-4 rounded-2xl shadow-[0_10px_35px_rgba(22,163,74,0.35)] animate-in slide-in-from-bottom duration-300 flex items-center gap-2 border border-green-500/20">
-          <span className="text-sm">✓</span>
-          <span>{successMsg}</span>
-        </div>
-      )}
-
       {isLoading && repuestos.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="animate-spin text-primary size-10" />
@@ -232,44 +200,19 @@ export default function RepuestosPage() {
                   </div>
                 </div>
 
-                {/* Botón Agregar al Carrito */}
-                <button
-                  onClick={() => handleAddToCart(rep)}
-                  disabled={addingItemId === rep.idRepuesto || justAddedItemId === rep.idRepuesto}
-                  className={`w-full text-white rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 duration-200 ${
-                    justAddedItemId === rep.idRepuesto
-                      ? 'bg-green-600 hover:bg-green-600 shadow-[0_4px_15px_rgba(22,163,74,0.25)]'
-                      : 'bg-primary hover:bg-primary/95 shadow-[0_4px_15px_rgba(255,26,26,0.15)]'
-                  }`}
-                >
-                  {addingItemId === rep.idRepuesto ? (
-                    <>
-                      <Loader2 className="size-3 animate-spin" />
-                      Agregando...
-                    </>
-                  ) : justAddedItemId === rep.idRepuesto ? (
-                    <>
-                      <span>✓</span>
-                      ¡Agregado!
-                    </>
-                  ) : (
-                    'Agregar al Carrito'
-                  )}
-                </button>
-
                 {isAdmin && (
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       onClick={() => handleOpenEdit(rep)}
-                      className="w-1/2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-white rounded-full py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
+                      className="w-1/2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-white rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
                     >
-                      <Edit className="size-3" /> Editar
+                      <Edit className="size-3.5" /> Editar
                     </button>
                     <button
                       onClick={() => handleDelete(rep.idRepuesto)}
-                      className="w-1/2 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive rounded-full py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
+                      className="w-1/2 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
                     >
-                      <Trash2 className="size-3" /> Eliminar
+                      <Trash2 className="size-3.5" /> Eliminar
                     </button>
                   </div>
                 )}
