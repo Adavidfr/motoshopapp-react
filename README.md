@@ -122,8 +122,8 @@ Para probar el flujo completo (Carrito de compras, perfiles, y panel de administ
 Dado que la aplicación maneja autenticación JWT contra el backend, tienes dos opciones:
 
 1. **Crear una cuenta nueva** desde el frontend navegando a `/register`.
-2. **Si el backend tiene datos semilla (seed)** precargados, puedes probar iniciando sesión en `/login` con las credenciales por defecto de administrador de la API (ejemplo genérico, verificar con el equipo de backend):
-   - **Usuario / Correo:** admin@aurarider.com
-   - **Contraseña:** admin123 (o la configurada en tu superuser de Django)
+2. **Si el backend tiene datos semilla (seed)** precargados, puedes probar iniciando sesión en `/login` con las credenciales oficiales de Administrador de la API:
+   - **Usuario / Correo:** `admin` (o `admin@motoshop.com`)
+   - **Contraseña:** `Motoshop1234!`
 
 *(Nota: Solo los usuarios que tengan el flag `is_staff=True` o `is_superuser=True` en el backend podrán acceder a la ruta `/admin` del Frontend).*
