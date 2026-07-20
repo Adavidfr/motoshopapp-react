@@ -11,6 +11,14 @@ import { Search, Mail, ArrowRight } from 'lucide-react';
 import { useBrandStore } from '../../store/brand.store';
 import { useCategoryStore } from '../../store/category.store';
 
+// React Bits animated components
+import SplitText from '../../components/react-bits/SplitText';
+import GradientText from '../../components/react-bits/GradientText';
+import ShinyText from '../../components/react-bits/ShinyText';
+import Magnet from '../../components/react-bits/Magnet';
+import SpotlightCard from '../../components/react-bits/SpotlightCard';
+import CountUp from '../../components/react-bits/CountUp';
+
 export default function CatalogPage() {
   const { motos, fetchMotos, isLoading, error } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
@@ -93,26 +101,44 @@ export default function CatalogPage() {
 
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 py-20 pointer-events-auto">
           <div className="md:col-span-8 flex flex-col justify-center space-y-6 text-left">
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">
+            <GradientText
+              className="font-bold text-xs uppercase tracking-widest"
+              colors={['#ff1a1a', '#ff6b35', '#ffaa00', '#ff6b35', '#ff1a1a']}
+              animationSpeed={3}
+            >
               El camino es tuyo
-            </span>
+            </GradientText>
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter text-white leading-none uppercase">
-              LIBERTAD<br />SIN LÍMITES
+              <SplitText
+                text="LIBERTAD"
+                delay={60}
+                animationFrom={{ opacity: 0, transform: 'translateY(40px) scale(0.9)' }}
+                animationTo={{ opacity: 1, transform: 'translateY(0) scale(1)' }}
+              />
+              <br />
+              <SplitText
+                text="SIN LÍMITES"
+                delay={60}
+                animationFrom={{ opacity: 0, transform: 'translateY(40px) scale(0.9)' }}
+                animationTo={{ opacity: 1, transform: 'translateY(0) scale(1)' }}
+              />
             </h1>
             <p className="text-neutral-400 text-sm max-w-md font-medium leading-relaxed">
               Descubre nuestra colección de motos diseñadas para dominar cada ruta y experimentar la máxima potencia.
             </p>
             <div className="pt-4">
-              <Link to="#motos-list" onClick={(e) => {
-                e.stopPropagation(); // Evita cambiar la diapositiva al hacer clic en el botón
-                e.preventDefault();
-                document.getElementById('motos-list')?.scrollIntoView({ behavior: 'smooth' });
-              }}>
-                <button className="racing-btn-outline rounded-none">
-                  Ver Modelos
-                  <ArrowRight className="size-4 text-primary" />
-                </button>
-              </Link>
+              <Magnet magnetStrength={0.3} padding={40}>
+                <Link to="#motos-list" onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  document.getElementById('motos-list')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <button className="racing-btn-outline rounded-none animate-pulse-glow">
+                    Ver Modelos
+                    <ArrowRight className="size-4 text-primary" />
+                  </button>
+                </Link>
+              </Magnet>
             </div>
           </div>
 
@@ -240,7 +266,13 @@ export default function CatalogPage() {
           
           <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
                 <div className="space-y-1 text-left">
-                  <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
+                  <GradientText
+                    className="font-bold text-[10px] uppercase tracking-widest"
+                    colors={['#ff1a1a', '#ff6b35', '#ffaa00', '#ff6b35', '#ff1a1a']}
+                    animationSpeed={4}
+                  >
+                    Modelos Destacados
+                  </GradientText>
                   <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">
                     Elige tu próxima máquina
                   </h2>
@@ -328,7 +360,13 @@ export default function CatalogPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {motos.map((moto) => (
-                    <Card key={moto.idMoto} className="racing-card rounded-none h-[400px]">
+                    <SpotlightCard
+                      key={moto.idMoto}
+                      className="racing-card rounded-none h-[400px]"
+                      spotlightColor="rgba(255, 26, 26, 0.12)"
+                      spotlightSize={250}
+                    >
+                    <Card className="racing-card rounded-none h-full border-0 shadow-none bg-transparent">
                       
                       {/* Imagen de la moto */}
                       <div className="aspect-video w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center p-4">
@@ -363,7 +401,9 @@ export default function CatalogPage() {
                       </CardHeader>
 
                       <CardContent className="px-5 pb-5 pt-0">
-                        <p className="text-xl font-extrabold text-card-foreground">{formatPrice(moto.precio)}</p>
+                        <p className="text-xl font-extrabold text-card-foreground">
+                          <ShinyText text={formatPrice(moto.precio)} speed={4} />
+                        </p>
                       </CardContent>
 
                       <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-border">
@@ -376,6 +416,7 @@ export default function CatalogPage() {
                       </CardFooter>
 
                     </Card>
+                    </SpotlightCard>
                   ))}
                 </div>
               )}
@@ -394,18 +435,49 @@ export default function CatalogPage() {
             />
           </div>
           <div className="space-y-6 text-left">
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">Sobre Nosotros</span>
+            <GradientText
+              className="font-bold text-xs uppercase tracking-widest"
+              colors={['#ff1a1a', '#ff6b35', '#ffaa00', '#ff6b35', '#ff1a1a']}
+              animationSpeed={3}
+            >
+              Sobre Nosotros
+            </GradientText>
             <h2 className="text-4xl font-black uppercase text-white leading-tight">
               PASIÓN POR LAS DOS RUEDAS
             </h2>
             <p className="text-neutral-400 text-sm leading-relaxed font-medium">
               En Aura Rider vivimos la velocidad, la libertad y la aventura. Más que vender motos, compartimos tu misma pasión y te acompañamos en cada kilómetro del camino ofreciéndote solo las mejores máquinas.
             </p>
+
+            {/* Animated Stats Row */}
+            <div className="grid grid-cols-3 gap-6 pt-2">
+              <div>
+                <span className="text-2xl font-black text-white">
+                  <CountUp to={500} suffix="+" duration={2500} />
+                </span>
+                <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider mt-1">Motos Vendidas</p>
+              </div>
+              <div>
+                <span className="text-2xl font-black text-white">
+                  <CountUp to={15} suffix="+" duration={2000} />
+                </span>
+                <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider mt-1">Marcas Aliadas</p>
+              </div>
+              <div>
+                <span className="text-2xl font-black text-white">
+                  <CountUp to={98} suffix="%" duration={2200} />
+                </span>
+                <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider mt-1">Satisfacción</p>
+              </div>
+            </div>
+
             <div className="pt-2">
-              <button className="racing-btn-outline rounded-none">
-                Conócenos
-                <ArrowRight className="size-4 text-primary" />
-              </button>
+              <Magnet magnetStrength={0.25} padding={30}>
+                <button className="racing-btn-outline rounded-none">
+                  Conócenos
+                  <ArrowRight className="size-4 text-primary" />
+                </button>
+              </Magnet>
             </div>
           </div>
         </div>
