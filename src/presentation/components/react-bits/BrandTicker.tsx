@@ -1,24 +1,12 @@
 // src/presentation/components/react-bits/BrandTicker.tsx
-// Fully self-contained brand ticker using pure CSS – zero external dependencies.
-// Uses data-URLs and brand text so it NEVER shows broken images.
+import { motion } from 'framer-motion';
 
-interface Brand {
-  name: string;
-  color: string;
-  letter: string;
-}
-
-const BRANDS: Brand[] = [
-  { name: 'Yamaha',   color: '#1C2B6E', letter: 'Y' },
-  { name: 'Honda',    color: '#CC0000', letter: 'H' },
-  { name: 'Kawasaki', color: '#1D9634', letter: 'K' },
-  { name: 'Suzuki',   color: '#1B50A4', letter: 'S' },
-  { name: 'Ducati',   color: '#CC0000', letter: 'D' },
-  { name: 'BMW',      color: '#0066CC', letter: 'B' },
-  { name: 'KTM',      color: '#FF6600', letter: 'K' },
-  { name: 'Triumph',  color: '#CCAA00', letter: 'T' },
-  { name: 'Harley',   color: '#FF8200', letter: 'H' },
-  { name: 'Royal Enfield', color: '#8B1A1A', letter: 'R' },
+const BRANDS = [
+  { name: 'Ducati', logo: 'https://cdn.simpleicons.org/ducati/white' },
+  { name: 'Yamaha', logo: 'https://cdn.simpleicons.org/yamahamotorcorporation/white' },
+  { name: 'Kawasaki', logo: '/logos/kawasaki.svg' },
+  { name: 'BMW', logo: 'https://cdn.simpleicons.org/bmw/white' },
+  { name: 'Honda', logo: 'https://cdn.simpleicons.org/honda/white' },
 ];
 
 interface BrandTickerProps {
@@ -26,58 +14,37 @@ interface BrandTickerProps {
   className?: string;
 }
 
-export default function BrandTicker({ speed = 28, className = '' }: BrandTickerProps) {
-  // Duplicate the list for seamless loop
-  const items = [...BRANDS, ...BRANDS];
+export default function BrandTicker({ speed = 25, className = '' }: BrandTickerProps) {
+  // Duplicate for seamless infinite loop
+  const items = [...BRANDS, ...BRANDS, ...BRANDS];
 
   return (
     <div
-      className={`overflow-hidden ${className}`}
+      className={`overflow-hidden flex items-center py-10 ${className}`}
       aria-label="Marcas disponibles"
       style={{
-        maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+        maskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)',
       }}
     >
-      <div
+      <motion.div
         className="flex w-max items-center"
-        style={{ animation: `infinite-scroll ${speed}s linear infinite` }}
+        animate={{ x: ["0%", "-33.333333%"] }}
+        transition={{ ease: "linear", duration: speed, repeat: Infinity }}
       >
         {items.map((brand, idx) => (
           <div
             key={`${brand.name}-${idx}`}
-            className="flex items-center gap-3 px-8 py-5 group cursor-default select-none shrink-0 transition-all duration-300"
+            className="flex items-center justify-center w-[250px] shrink-0 opacity-40 hover:opacity-100 transition-opacity duration-500 grayscale hover:grayscale-0 cursor-pointer"
           >
-            {/* Brand monogram badge */}
-            <div
-              className="size-9 rounded-xl flex items-center justify-center font-black text-sm text-white shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
-              style={{
-                background: `linear-gradient(135deg, ${brand.color}CC, ${brand.color}66)`,
-                border: `1px solid ${brand.color}40`,
-                boxShadow: `0 0 12px ${brand.color}20`,
-              }}
-            >
-              {brand.letter}
-            </div>
-
-            {/* Separator dot */}
-            <div
-              className="size-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: brand.color }}
+            <img 
+              src={brand.logo} 
+              alt={brand.name} 
+              className="h-20 w-auto object-contain pointer-events-none drop-shadow-2xl brightness-0 dark:invert transition-all duration-500" 
             />
-
-            {/* Brand name */}
-            <span
-              className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-200 transition-colors duration-500 whitespace-nowrap"
-            >
-              {brand.name}
-            </span>
-
-            {/* Right divider */}
-            <div className="w-[1px] h-5 bg-white/[0.05] ml-4" />
           </div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }
