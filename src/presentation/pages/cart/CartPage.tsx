@@ -11,7 +11,7 @@ import { Trash2, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const { cart, fetchActiveCart, removeFromCart, clearCart, isLoading } = useCartStore();
+  const { cart, fetchActiveCart, removeFromCart, clearCart, isLoading, error: cartError } = useCartStore();
   const { createOrder, isLoading: isOrderCreating } = useOrderStore();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -28,7 +28,22 @@ export default function CartPage() {
       await fetchActiveCart();
       navigate(`/orders/${order.idPedido}`);
     } catch (err: any) {
-      setCheckoutError(err.response?.data?.detail || 'No se pudo procesar tu pedido. Verifica la disponibilidad.');
+      const data = err.response?.data;
+      let errorMsg = 'No se pudo procesar tu pedido. Verifica la disponibilidad.';
+      if (data && typeof data === 'object') {
+        if (data.detail) errorMsg = String(data.detail);
+        else if (data.error) errorMsg = String(data.error);
+        else {
+          const keys = Object.keys(data);
+          if (keys.length > 0) {
+            const firstVal = data[keys[0]];
+            errorMsg = Array.isArray(firstVal) ? String(firstVal[0]) : String(firstVal);
+          }
+        }
+      } else if (typeof data === 'string') {
+        errorMsg = data;
+      }
+      setCheckoutError(errorMsg);
     }
   };
 
@@ -53,9 +68,9 @@ export default function CartPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-extrabold tracking-tight">Tu Carrito</h1>
 
-      {checkoutError && (
-        <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg font-medium">
-          {checkoutError}
+      {(checkoutError || cartError) && (
+        <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg font-medium text-center">
+          {checkoutError || cartError}
         </div>
       )}
 
@@ -83,9 +98,13 @@ export default function CartPage() {
               <Card key={item.idItem} className="overflow-hidden border-border/40 bg-card/60">
                 <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex gap-4 items-center">
-                    <span className="text-3xl bg-muted p-3 rounded-2xl">🏍️</span>
+                    <span className="text-3xl bg-muted p-3 rounded-2xl">
+                      {item.idMoto ? '🏍️' : '⚙️'}
+                    </span>
                     <div>
-                      <h3 className="font-bold text-base">Moto ID: {item.idMoto}</h3>
+                      <h3 className="font-bold text-base">
+                        {item.idMoto ? `Motocicleta #${item.idMoto}` : `Repuesto #${item.idRepuesto}`}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         Precio Unitario: {formatPrice(item.precioUnitario)}
                       </p>
