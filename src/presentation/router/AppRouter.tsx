@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 
 import Layout from '../components/Layout';
+import AdminLayout from '../components/AdminLayout';
 import PlaceholderPage from '../pages/PlaceholderPage';
 
 // Páginas públicas y privadas
@@ -15,208 +16,197 @@ import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import OrderDetailPage from '../pages/orders/OrderDetailPage';
 
-// Páginas administrativas
+// Dashboard admin
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
+
+// Páginas administrativas — catálogo
 import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
 import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
 import MotosAdminPage from '../pages/admin/MotosAdminPage';
-import ProveedoresAdminPage from '../pages/admin/ProveedoresAdminPage';
+
+// Páginas administrativas — ventas
+import VentasAdminPage from '../pages/admin/VentasAdminPage';
+import FacturasAdminPage from '../pages/admin/FacturasAdminPage';
+import PagosAdminPage from '../pages/admin/PagosAdminPage';
+import DocumentosVentaAdminPage from '../pages/admin/DocumentosVentaAdminPage';
+import FinanciamientosAdminPage from '../pages/admin/FinanciamientosAdminPage';
+import DevolucionesAdminPage from '../pages/admin/DevolucionesAdminPage';
+
+// Páginas administrativas — servicio técnico
 import ServiciosAdminPage from '../pages/admin/ServiciosAdminPage';
 import MantenimientosAdminPage from '../pages/admin/MantenimientosAdminPage';
 import RepuestosMantenimientoAdminPage from '../pages/admin/RepuestosMantenimientoAdminPage';
+import GarantiasAdminPage from '../pages/admin/GarantiasAdminPage';
+import SegurosAdminPage from '../pages/admin/SegurosAdminPage';
+
+// Páginas administrativas — compras
+import ProveedoresAdminPage from '../pages/admin/ProveedoresAdminPage';
 import ComprasAdminPage from '../pages/admin/ComprasAdminPage';
+
+// Páginas administrativas — reportes / sistema
+import HistorialVentasAdminPage from '../pages/admin/HistorialVentasAdminPage';
+import NotificacionesAdminPage from '../pages/admin/NotificacionesAdminPage';
 
 // Repuestos e inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
 import InventoryPage from '../pages/inventario/InventoryPage';
 
+// ─── Route Guards ─────────────────────────────────────────────────────────────
 interface RouteGuardProps {
   element: React.ReactElement;
 }
 
 function PrivateRoute({ element }: RouteGuardProps) {
   const { isAuthenticated } = useAuthStore();
-
-  return isAuthenticated
-    ? element
-    : <Navigate to="/login" replace />;
+  return isAuthenticated ? element : <Navigate to="/login" replace />;
 }
 
 function AdminRoute({ element }: RouteGuardProps) {
   const { isAuthenticated, user } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!user?.isStaff) {
-    return <Navigate to="/" replace />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!user?.isStaff) return <Navigate to="/" replace />;
   return element;
 }
 
+// ─── Admin page wrapper (applies AdminLayout) ─────────────────────────────────
+function AdminPage({ element }: RouteGuardProps) {
+  return (
+    <AdminRoute
+      element={
+        <AdminLayout>
+          {element}
+        </AdminLayout>
+      }
+    />
+  );
+}
 
-
+// ─── Router ───────────────────────────────────────────────────────────────────
 export default function AppRouter() {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<CatalogPage />} />
-          <Route path="/catalog" element={<CatalogPage />} />
+      <Routes>
+        {/* ── Public routes (with main Layout) ── */}
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <CatalogPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/catalog"
+          element={
+            <Layout>
+              <CatalogPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/:id"
+          element={
+            <Layout>
+              <ProductDetailPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/repuestos"
+          element={
+            <Layout>
+              <RepuestosPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <Layout>
+              <LoginPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <Layout>
+              <RegisterPage />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/products/:id"
-            element={<ProductDetailPage />}
-          />
-
-          <Route
-            path="/repuestos"
-            element={<RepuestosPage />}
-          />
-
-          <Route
-            path="/login"
-            element={<LoginPage />}
-          />
-
-          <Route
-            path="/register"
-            element={<RegisterPage />}
-          />
-
-          {/* Rutas privadas del cliente */}
-          <Route
-            path="/cart"
-            element={
+        {/* ── Private client routes ── */}
+        <Route
+          path="/cart"
+          element={
+            <Layout>
               <PrivateRoute element={<CartPage />} />
-            }
-          />
-
-          <Route
-            path="/orders"
-            element={
+            </Layout>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <Layout>
               <PrivateRoute element={<OrdersPage />} />
-            }
-          />
-
-          <Route
-            path="/orders/:id"
-            element={
+            </Layout>
+          }
+        />
+        <Route
+          path="/orders/:id"
+          element={
+            <Layout>
               <PrivateRoute element={<OrderDetailPage />} />
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
+            </Layout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <Layout>
               <PrivateRoute element={<ProfilePage />} />
-            }
-          />
+            </Layout>
+          }
+        />
 
-          {/* Rutas administrativas */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute element={<MotosAdminPage />} />
-            }
-          />
+        {/* ── Admin routes (with AdminLayout, no main navbar) ── */}
+        <Route path="/admin" element={<AdminPage element={<AdminDashboardPage />} />} />
 
-          <Route
-            path="/admin/brands"
-            element={
-              <AdminRoute element={<BrandsAdminPage />} />
-            }
-          />
+        {/* Catálogo */}
+        <Route path="/admin/motos" element={<AdminPage element={<MotosAdminPage />} />} />
+        <Route path="/admin/brands" element={<AdminPage element={<BrandsAdminPage />} />} />
+        <Route path="/admin/categories" element={<AdminPage element={<CategoriesAdminPage />} />} />
+        <Route path="/admin/inventory" element={<AdminPage element={<InventoryPage />} />} />
 
-          <Route
-            path="/admin/categories"
-            element={
-              <AdminRoute element={<CategoriesAdminPage />} />
-            }
-          />
+        {/* Ventas */}
+        <Route path="/admin/ventas" element={<AdminPage element={<VentasAdminPage />} />} />
+        <Route path="/admin/facturas" element={<AdminPage element={<FacturasAdminPage />} />} />
+        <Route path="/admin/pagos" element={<AdminPage element={<PagosAdminPage />} />} />
+        <Route path="/admin/documentos-venta" element={<AdminPage element={<DocumentosVentaAdminPage />} />} />
+        <Route path="/admin/financiamientos" element={<AdminPage element={<FinanciamientosAdminPage />} />} />
+        <Route path="/admin/devoluciones" element={<AdminPage element={<DevolucionesAdminPage />} />} />
 
-          <Route
-            path="/admin/motos"
-            element={
-              <AdminRoute element={<MotosAdminPage />} />
-            }
-          />
+        {/* Servicio técnico */}
+        <Route path="/admin/servicios" element={<AdminPage element={<ServiciosAdminPage />} />} />
+        <Route path="/admin/mantenimientos" element={<AdminPage element={<MantenimientosAdminPage />} />} />
+        <Route path="/admin/repuestos-mantenimiento" element={<AdminPage element={<RepuestosMantenimientoAdminPage />} />} />
+        <Route path="/admin/garantias" element={<AdminPage element={<GarantiasAdminPage />} />} />
+        <Route path="/admin/seguros" element={<AdminPage element={<SegurosAdminPage />} />} />
 
-          <Route
-            path="/admin/inventory"
-            element={
-              <AdminRoute element={<InventoryPage />} />
-            }
-          />
+        {/* Compras */}
+        <Route path="/admin/proveedores" element={<AdminPage element={<ProveedoresAdminPage />} />} />
+        <Route path="/admin/compras" element={<AdminPage element={<ComprasAdminPage />} />} />
 
-          <Route
-            path="/admin/proveedores"
-            element={
-              <AdminRoute element={<ProveedoresAdminPage />} />
-            }
-          />
+        {/* Reportes / sistema */}
+        <Route path="/admin/historial-ventas" element={<AdminPage element={<HistorialVentasAdminPage />} />} />
+        <Route path="/admin/notificaciones" element={<AdminPage element={<NotificacionesAdminPage />} />} />
+        <Route path="/admin/orders" element={<AdminPage element={<PlaceholderPage title="Órdenes de clientes" />} />} />
+        <Route path="/admin/users" element={<AdminPage element={<PlaceholderPage title="Gestión de usuarios" />} />} />
 
-          <Route
-            path="/admin/servicios"
-            element={
-              <AdminRoute element={<ServiciosAdminPage />} />
-            }
-          />
-
-          <Route
-            path="/admin/compras"
-            element={
-              <AdminRoute element={<ComprasAdminPage />} />
-            }
-          />
-
-          <Route
-            path="/admin/mantenimientos"
-            element={
-              <AdminRoute element={<MantenimientosAdminPage />} />
-            }
-          />
-
-          <Route
-            path="/admin/repuestos-mantenimiento"
-            element={
-              <AdminRoute
-                element={<RepuestosMantenimientoAdminPage />}
-              />
-            }
-          />
-
-          <Route
-            path="/admin/orders"
-            element={
-              <AdminRoute
-                element={
-                  <PlaceholderPage title="Admin Órdenes — Módulo 12" />
-                }
-              />
-            }
-          />
-
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute
-                element={
-                  <PlaceholderPage title="Admin Usuarios — Módulo 13" />
-                }
-              />
-            }
-          />
-
-          {/* Fallback */}
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
-        </Routes>
-      </Layout>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
