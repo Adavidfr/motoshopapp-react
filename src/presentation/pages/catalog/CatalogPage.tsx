@@ -10,10 +10,8 @@ import { Search, Mail, ArrowRight } from 'lucide-react';
 
 import { useBrandStore } from '../../store/brand.store';
 import { useCategoryStore } from '../../store/category.store';
-import { useAuthStore } from '../../store/auth.store';
 
 export default function CatalogPage() {
-  const { isAuthenticated } = useAuthStore();
   const { motos, fetchMotos, isLoading, error } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
   const { categories, fetchCategories } = useCategoryStore();
@@ -54,24 +52,20 @@ export default function CatalogPage() {
 
   // Cargar catálogo auxiliar de marcas y categorías
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchBrands();
-      fetchCategories();
-    }
-  }, [fetchBrands, fetchCategories, isAuthenticated]);
+    fetchBrands();
+    fetchCategories();
+  }, [fetchBrands, fetchCategories]);
 
   // Cargar motocicletas al cambiar cualquier filtro
   useEffect(() => {
-    if (isAuthenticated) {
-      const params: any = {};
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (selectedBrand) params.marca = selectedBrand;
-      if (selectedCategory) params.categoria = selectedCategory;
-      if (selectedOrder) params.ordering = selectedOrder;
+    const params: any = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (selectedBrand) params.marca = selectedBrand;
+    if (selectedCategory) params.categoria = selectedCategory;
+    if (selectedOrder) params.ordering = selectedOrder;
 
-      fetchMotos(params);
-    }
-  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos, isAuthenticated]);
+    fetchMotos(params);
+  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -244,31 +238,7 @@ export default function CatalogPage() {
       <section id="motos-list" className="bg-background text-foreground py-16 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 space-y-10">
           
-          {!isAuthenticated ? (
-            <div className="bg-card text-card-foreground border border-border rounded-[2rem] p-12 text-center max-w-xl mx-auto space-y-6 shadow-xl my-10 transition-colors duration-300">
-              <div className="inline-flex size-16 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary">
-                <Search className="size-7" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-black uppercase tracking-tight text-card-foreground">
-                  Explora el Catálogo Completo
-                </h3>
-                <p className="text-neutral-500 text-xs font-semibold max-w-sm mx-auto leading-relaxed">
-                  Inicia sesión para ver precios exclusivos, disponibilidad en stock de motos y repuestos, y gestionar tus compras directamente en línea.
-                </p>
-              </div>
-              <div className="pt-2 flex justify-center">
-                <Link to="/login">
-                  <button className="racing-btn-outline rounded-none bg-primary hover:bg-primary/95 text-white border-transparent cursor-pointer">
-                    Iniciar Sesión
-                    <ArrowRight className="size-4" />
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
+          <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
                 <div className="space-y-1 text-left">
                   <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
                   <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">
@@ -409,8 +379,7 @@ export default function CatalogPage() {
                   ))}
                 </div>
               )}
-            </>
-          )}
+
         </div>
       </section>
 
