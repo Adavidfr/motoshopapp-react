@@ -1,5 +1,5 @@
 // src/presentation/components/AdminLayout.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import {
@@ -28,6 +28,8 @@ import {
   CreditCard,
   ToggleRight,
   Archive,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 // ─── Navigation structure ───────────────────────────────────────────────────
@@ -139,12 +141,14 @@ function Sidebar({ onClose }: SidebarProps) {
     <aside className="admin-sidebar flex h-full flex-col bg-[#080809] border-r border-neutral-900">
       {/* Logo */}
       <div className="flex items-center justify-between px-5 py-5 border-b border-neutral-900">
-        <Link to="/admin" className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-            <LayoutDashboard className="size-4 text-primary" />
-          </div>
-          <span className="text-sm font-black uppercase tracking-widest text-white">
-            Admin<span className="text-primary">Panel</span>
+        <Link to="/admin" className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="Aura Rider Logo"
+            className="h-9 w-9 rounded-full border border-neutral-700/50 object-cover"
+          />
+          <span className="text-sm font-black uppercase tracking-tighter text-white">
+            AURA<span className="text-primary">RIDER</span>
           </span>
         </Link>
         {onClose && (
@@ -271,6 +275,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return 'dark'; // Default premium dark theme
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
+
   // Get page title from current path
   const currentItem = NAV_GROUPS.flatMap((g) => g.items).find(
     (i) => location.pathname === i.path || location.pathname.startsWith(i.path + '/')
@@ -317,6 +341,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {pageTitle}
             </h1>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Cambiar tema"
+            className="flex items-center justify-center p-2 text-neutral-400 hover:text-white transition-colors border border-neutral-800 rounded-full hover:border-neutral-700 cursor-pointer"
+          >
+            {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
 
           <Link
             to="/"
