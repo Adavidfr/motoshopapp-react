@@ -8,10 +8,19 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
 import { Search, Mail, ArrowRight } from 'lucide-react';
 
+import { useBrandStore } from '../../store/brand.store';
+import { useCategoryStore } from '../../store/category.store';
+
 export default function CatalogPage() {
   const { motos, fetchMotos, isLoading, error } = useMotoStore();
+  const { brands, fetchBrands } = useBrandStore();
+  const { categories, fetchCategories } = useCategoryStore();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState('');
 
   // Carrusel de imágenes de motos deportivas rojas (Ducati, Honda CBR, Yamaha R6)
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -41,9 +50,22 @@ export default function CatalogPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // Cargar catálogo auxiliar de marcas y categorías
   useEffect(() => {
-    fetchMotos({ search: debouncedSearch });
-  }, [debouncedSearch, fetchMotos]);
+    fetchBrands();
+    fetchCategories();
+  }, [fetchBrands, fetchCategories]);
+
+  // Cargar motocicletas al cambiar cualquier filtro
+  useEffect(() => {
+    const params: any = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (selectedBrand) params.marca = selectedBrand;
+    if (selectedCategory) params.categoria = selectedCategory;
+    if (selectedOrder) params.ordering = selectedOrder;
+
+    fetchMotos(params);
+  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -216,23 +238,65 @@ export default function CatalogPage() {
       <section id="motos-list" className="bg-[#f5f5f7] py-16 text-black">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 space-y-10">
           
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-            <div className="space-y-1">
+          <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
+            <div className="space-y-1 text-left">
               <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
               <h2 className="text-3xl font-black uppercase tracking-tight text-neutral-900">
                 Elige tu próxima máquina
               </h2>
             </div>
             
-            {/* Buscador Integrado */}
-            <div className="relative w-full sm:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
-              <Input
-                placeholder="Buscar modelo o marca..."
-                className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-11"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            {/* Controles de Filtros y Búsqueda */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full lg:max-w-4xl">
+              
+              {/* Buscador */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+                <Input
+                  placeholder="Buscar modelo o color..."
+                  className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-11 text-xs"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              {/* Categorías */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+              >
+                <option value="">Todas las Categorías</option>
+                {categories.filter(c => c.estado).map((cat) => (
+                  <option key={cat.idCategoria} value={cat.idCategoria}>{cat.nombre}</option>
+                ))}
+              </select>
+
+              {/* Marcas */}
+              <select
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+              >
+                <option value="">Todas las Marcas</option>
+                {brands.filter(b => b.estado).map((b) => (
+                  <option key={b.idMarca} value={b.idMarca}>{b.nombre}</option>
+                ))}
+              </select>
+
+              {/* Ordenar por */}
+              <select
+                value={selectedOrder}
+                onChange={(e) => setSelectedOrder(e.target.value)}
+                className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+              >
+                <option value="">Ordenar Por</option>
+                <option value="precio">Precio: Menor a Mayor</option>
+                <option value="-precio">Precio: Mayor a Menor</option>
+                <option value="-anio">Año: Más Reciente</option>
+                <option value="-stock">Stock: Mayor a Menor</option>
+              </select>
+
             </div>
           </div>
 
