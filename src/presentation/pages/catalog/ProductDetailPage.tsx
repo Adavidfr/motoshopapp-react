@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
-import { ShoppingCart, ArrowLeft, Shield, Sparkles, CheckCircle } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Shield, Sparkles, CheckCircle, Minus, Plus } from 'lucide-react';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,10 +17,12 @@ export default function ProductDetailPage() {
   const { addToCart, isLoading: isCartLoading } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<number>(1);
 
   useEffect(() => {
     if (id) {
       fetchMotoById(Number(id));
+      setQuantity(1);
     }
     return () => {
       clearSelectedMoto();
@@ -34,8 +36,8 @@ export default function ProductDetailPage() {
     }
     if (selectedMoto) {
       try {
-        await addToCart(selectedMoto.idMoto, 1, selectedMoto.precio);
-        setSuccessMsg('¡Moto añadida al carrito con éxito!');
+        await addToCart(selectedMoto.idMoto, null, quantity, selectedMoto.precio);
+        setSuccessMsg(`¡${quantity} × ${selectedMoto.modelo} agregada(s) al carrito con éxito!`);
         setTimeout(() => setSuccessMsg(null), 3000);
       } catch {
         // Error manejado en el store
@@ -158,15 +160,43 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            <Button
-              size="lg"
-              className="w-full gap-2 text-xs font-bold uppercase tracking-widest rounded-none bg-primary hover:bg-primary/95 text-white py-6"
-              disabled={selectedMoto.stock === 0 || isCartLoading}
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="size-4" />
-              {selectedMoto.stock === 0 ? 'Agotado Temporalmente' : 'Agregar al Carrito'}
-            </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-900/30 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-800"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1 || selectedMoto.stock === 0}
+                  type="button"
+                >
+                  <Minus className="size-4 text-neutral-400" />
+                </Button>
+                <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-white tabular-nums">
+                  {quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-800"
+                  onClick={() => setQuantity(Math.min(selectedMoto.stock, quantity + 1))}
+                  disabled={quantity >= selectedMoto.stock || selectedMoto.stock === 0}
+                  type="button"
+                >
+                  <Plus className="size-4 text-neutral-400" />
+                </Button>
+              </div>
+
+              <Button
+                size="lg"
+                className="flex-1 gap-2 text-xs font-bold uppercase tracking-widest bg-primary hover:bg-primary/95 text-white py-6 h-12 rounded-lg"
+                disabled={selectedMoto.stock === 0 || isCartLoading}
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="size-4" />
+                {selectedMoto.stock === 0 ? 'Agotado' : 'Agregar al Carrito'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

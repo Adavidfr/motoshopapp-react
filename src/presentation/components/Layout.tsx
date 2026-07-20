@@ -48,6 +48,8 @@ export default function Layout({ children }: LayoutProps) {
   const isAdminActive = (path: string) =>
     location.pathname.startsWith(path);
 
+  const isAdminActive = (pathPrefix: string) => location.pathname.startsWith(pathPrefix);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <header className="sticky top-0 z-50 w-full bg-[#070708] border-b border-neutral-900 shadow-lg">

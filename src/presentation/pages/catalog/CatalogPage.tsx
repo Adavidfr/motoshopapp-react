@@ -366,7 +366,7 @@ export default function CatalogPage() {
                     <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
                   </CardContent>
 
-                  <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center border-t border-neutral-100">
+                  <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
                     <Link to={`/products/${moto.idMoto}`} className="w-full flex justify-between items-center group">
                       <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
                         Ver Detalles
