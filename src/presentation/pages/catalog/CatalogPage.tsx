@@ -240,17 +240,17 @@ export default function CatalogPage() {
         </div>
       </section>
 
-      {/* 3. SECCIÓN DE PRODUCTOS (Fondo Claro + Tarjetas Blancas) */}
-      <section id="motos-list" className="bg-[#f5f5f7] py-16 text-black">
+      {/* 3. SECCIÓN DE PRODUCTOS (Fondo Adaptable + Tarjetas Dinámicas) */}
+      <section id="motos-list" className="bg-background text-foreground py-16 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 space-y-10">
           
           {!isAuthenticated ? (
-            <div className="bg-white border border-neutral-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto space-y-6 shadow-xl my-10">
+            <div className="bg-card text-card-foreground border border-border rounded-[2rem] p-12 text-center max-w-xl mx-auto space-y-6 shadow-xl my-10 transition-colors duration-300">
               <div className="inline-flex size-16 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary">
                 <Search className="size-7" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">
+                <h3 className="text-xl font-black uppercase tracking-tight text-card-foreground">
                   Explora el Catálogo Completo
                 </h3>
                 <p className="text-neutral-500 text-xs font-semibold max-w-sm mx-auto leading-relaxed">
@@ -271,7 +271,7 @@ export default function CatalogPage() {
               <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
                 <div className="space-y-1 text-left">
                   <span className="text-primary font-bold text-[10px] uppercase tracking-widest">Modelos Destacados</span>
-                  <h2 className="text-3xl font-black uppercase tracking-tight text-neutral-900">
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">
                     Elige tu próxima máquina
                   </h2>
                 </div>
@@ -284,7 +284,7 @@ export default function CatalogPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
                     <Input
                       placeholder="Buscar modelo o color..."
-                      className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-11 text-xs"
+                      className="pl-9 bg-card border-border text-card-foreground rounded-none h-11 text-xs focus-visible:ring-1 focus-visible:ring-primary"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -294,7 +294,7 @@ export default function CatalogPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                    className="bg-card border border-border text-card-foreground rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
                   >
                     <option value="">Todas las Categorías</option>
                     {categories.filter(c => c.estado).map((cat) => (
@@ -306,7 +306,7 @@ export default function CatalogPage() {
                   <select
                     value={selectedBrand}
                     onChange={(e) => setSelectedBrand(e.target.value)}
-                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                    className="bg-card border border-border text-card-foreground rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
                   >
                     <option value="">Todas las Marcas</option>
                     {brands.filter(b => b.estado).map((b) => (
@@ -318,7 +318,7 @@ export default function CatalogPage() {
                   <select
                     value={selectedOrder}
                     onChange={(e) => setSelectedOrder(e.target.value)}
-                    className="bg-white border border-neutral-300 text-neutral-800 rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors"
+                    className="bg-card border border-border text-card-foreground rounded-none h-11 px-4 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
                   >
                     <option value="">Ordenar Por</option>
                     <option value="precio">Precio: Menor a Mayor</option>
@@ -384,7 +384,7 @@ export default function CatalogPage() {
 
                       <CardHeader className="p-5 pb-2">
                         <span className="text-[9px] font-black text-primary uppercase tracking-widest">{moto.marca || 'Sport'}</span>
-                        <CardTitle className="text-base font-black text-neutral-900 mt-0.5 truncate uppercase">
+                        <CardTitle className="text-base font-black text-card-foreground mt-0.5 truncate uppercase">
                           {moto.modelo}
                         </CardTitle>
                         <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
@@ -393,12 +393,12 @@ export default function CatalogPage() {
                       </CardHeader>
 
                       <CardContent className="px-5 pb-5 pt-0">
-                        <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
+                        <p className="text-xl font-extrabold text-card-foreground">{formatPrice(moto.precio)}</p>
                       </CardContent>
 
-                      <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
+                      <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-border">
                         <Link to={`/products/${moto.idMoto}`} className="w-full flex justify-between items-center group">
-                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-card-foreground/75 group-hover:text-primary transition-colors">
                             Ver Detalles
                           </span>
                           <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
