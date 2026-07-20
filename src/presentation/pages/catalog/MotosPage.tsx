@@ -64,7 +64,7 @@ export default function MotosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Page header */}
       <div className="bg-[#070708] border-b border-neutral-900 py-10">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
@@ -81,7 +81,7 @@ export default function MotosPage() {
       </div>
 
       {/* Filters bar */}
-      <div className="bg-white border-b border-neutral-200 shadow-sm sticky top-[80px] z-30">
+      <div className="bg-card border-b border-border shadow-sm sticky top-[80px] z-30 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
             {/* Search */}
@@ -89,7 +89,7 @@ export default function MotosPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
               <Input
                 placeholder="Buscar modelo o color..."
-                className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-10 text-xs"
+                className="pl-9 bg-card border-border text-card-foreground rounded-none h-10 text-xs focus-visible:ring-1 focus-visible:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -109,7 +109,7 @@ export default function MotosPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Todas las categorías</option>
                 {categories.filter((c) => c.estado).map((cat) => (
@@ -122,7 +122,7 @@ export default function MotosPage() {
               <select
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Todas las marcas</option>
                 {brands.filter((b) => b.estado).map((b) => (
@@ -135,7 +135,7 @@ export default function MotosPage() {
               <select
                 value={selectedOrder}
                 onChange={(e) => setSelectedOrder(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Ordenar por</option>
                 <option value="precio">Precio: Menor a Mayor</option>
@@ -284,7 +284,7 @@ export default function MotosPage() {
                   <span className="text-[9px] font-black text-primary uppercase tracking-widest">
                     {moto.marca || 'Sport'}
                   </span>
-                  <CardTitle className="text-base font-black text-neutral-900 mt-0.5 truncate uppercase">
+                  <CardTitle className="text-base font-black text-card-foreground mt-0.5 truncate uppercase">
                     {moto.modelo}
                   </CardTitle>
                   <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
@@ -293,15 +293,15 @@ export default function MotosPage() {
                 </CardHeader>
 
                 <CardContent className="px-5 pb-5 pt-0">
-                  <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
+                  <p className="text-xl font-extrabold text-card-foreground">{formatPrice(moto.precio)}</p>
                 </CardContent>
 
-                <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
+                <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-border">
                   <Link
                     to={`/products/${moto.idMoto}`}
                     className="w-full flex justify-between items-center group"
                   >
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-card-foreground/75 group-hover:text-primary transition-colors">
                       Ver Detalles
                     </span>
                     <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
