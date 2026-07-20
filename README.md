@@ -1,3 +1,43 @@
+<div align="center">
+
+<img src="https://ute.edu.ec/wp-content/uploads/2021/08/LogoUteTrans.png" alt="UTE - Escuela de Tecnologías" width="250"/>
+
+</div>
+
+<hr>
+<br>
+
+<div style="border-left: 4px solid #1e88e5; padding-left: 15px; margin-top: 20px;">
+
+<p><strong>Universidad Tecnológica Equinoccial</strong></p>
+
+<p><strong>Escuela de Tecnologías</strong></p>
+
+<p><strong>Carrera:</strong> Desarrollo de Software</p>
+
+<p><strong>Asignatura:</strong> Programación IV - Seminario de Integración</p>
+
+</div>
+
+<br>
+
+<p><strong>Tema:</strong> Proyecto Web en ReactJS + Consumo de API Django</p>
+
+<p><strong>Fecha:</strong> 20/07/2026</p>
+
+<p><strong>Presentado por:</strong></p>
+
+<ul>
+  <li>Alquinga Carlos</li>
+  <li>Zambrano Andrés</li>
+  <li>Estévez Melanie</li>
+  <li>Frías David</li>
+</ul>
+
+<p><strong>Docente:</strong> Francisco Javier Higuera González</p>
+
+<br>
+
 # Aura Rider - Motoshop App (Frontend)
 
 Este es el repositorio Frontend para la aplicación web **Aura Rider**, una plataforma de comercio electrónico de lujo diseñada para la venta y gestión de motocicletas de alta gama.
