@@ -8,7 +8,6 @@ import {
 } from '../../components/ui/table';
 import { Skeleton } from '../../components/ui/skeleton';
 import { StatusBadge } from '../../components/StatusBadge';
-import { formatDate } from '../../utils/formatters';
 import type { Garantia, GarantiaEstado } from '../../../domain/entities/garantia.entity';
 import {
   AlertCircle, ArrowLeftRight, Calendar, CheckCircle2,

@@ -1,6 +1,6 @@
 // src/presentation/store/pago.store.ts
 import { create } from 'zustand';
-import type { Pago, PagoStats, PagoEstado, PagoMetodo } from '../../domain/entities/pago.entity';
+import type { Pago, PagoStats, PagoEstado } from '../../domain/entities/pago.entity';
 import type { PagoFilters } from '../../domain/ports/pago.repository';
 import {
   createPagoUseCase,

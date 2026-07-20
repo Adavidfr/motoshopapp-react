@@ -55,10 +55,7 @@ function AdminRoute({ element }: RouteGuardProps) {
   return element;
 }
 
-function AdminRoute({ element }: PrivateRouteProps) {
-  const { isAuthenticated, user } = useAuthStore();
-  return isAuthenticated && user?.isStaff ? element : <Navigate to="/" replace />;
-}
+
 
 export default function AppRouter() {
   return (

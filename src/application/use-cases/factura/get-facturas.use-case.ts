@@ -1,6 +1,7 @@
-// src/application/use-cases/factura/get-facturas.use-case.ts
+﻿// src/application/use-cases/factura/get-facturas.use-case.ts
 import type { FacturaRepository, FacturaFilters } from '../../../domain/ports/factura.repository';
 export class GetFacturasUseCase {
-  constructor(private readonly repository: FacturaRepository) {}
+  private repository: FacturaRepository;
+  constructor(r: FacturaRepository) { this.repository = r; }
   execute(filters?: FacturaFilters) { return this.repository.listFacturas(filters); }
 }

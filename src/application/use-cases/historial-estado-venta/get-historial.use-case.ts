@@ -1,6 +1,7 @@
-// src/application/use-cases/historial-estado-venta/get-historial.use-case.ts
+﻿// src/application/use-cases/historial-estado-venta/get-historial.use-case.ts
 import type { HistorialEstadoVentaRepository } from '../../../domain/ports/historial-estado-venta.repository';
 export class GetHistorialUseCase {
-  constructor(private readonly repository: HistorialEstadoVentaRepository) {}
+  private repository: HistorialEstadoVentaRepository;
+  constructor(r: HistorialEstadoVentaRepository) { this.repository = r; }
   execute(id: number) { return this.repository.getHistorial(id); }
 }

@@ -12,7 +12,7 @@ import { formatPrice, formatDate } from '../../utils/formatters';
 import type { Devolucion, DevolucionEstado } from '../../../domain/entities/devolucion.entity';
 import {
   AlertCircle, CheckCircle2, RefreshCcw, DollarSign,
-  Pencil, Plus, Search, Trash2, X, Undo2,
+  Pencil, Plus, Search, X, Undo2,
 } from 'lucide-react';
 
 interface DevForm {
@@ -27,7 +27,7 @@ const EMPTY: DevForm = { id_venta: '', motivo: '', estado: 'solicitada', monto_d
 export default function DevolucionesAdminPage() {
   const {
     devoluciones, count, filters, stats, isLoading, isSaving, error, successMessage,
-    fetchDevoluciones, fetchStats, createDevolucion, updateDevolucion, deleteDevolucion,
+    fetchDevoluciones, fetchStats, createDevolucion, updateDevolucion,
     setFilters, clearMessages, selectedDevolucion, fetchDevolucionById, clearSelectedDevolucion,
   } = useDevolucionStore();
 
@@ -66,9 +66,6 @@ export default function DevolucionesAdminPage() {
     if (p >= 1 && p <= totalPages) { setFilters({ page: p }); fetchDevoluciones({ page: p }); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('¿Eliminar esta devolución?')) { const ok = await deleteDevolucion(id); if (ok) load(); }
-  };
 
   const handleStatusChangeFast = async (id: number, estado: DevolucionEstado) => {
     if (confirm(`¿Marcar devolución como ${estado}?`)) {
