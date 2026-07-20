@@ -69,7 +69,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-      <header className="sticky top-0 z-50 w-full bg-[#070708] border-b border-neutral-900 shadow-lg">
+      <header className="sticky top-0 z-50 w-full bg-card border-b border-border shadow-lg transition-colors duration-300">
         <div className="container mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-10">
             <Link to="/" className="flex items-center gap-3">
@@ -79,19 +79,19 @@ export default function Layout({ children }: LayoutProps) {
                 className="h-12 w-12 rounded-full border border-neutral-700/50 object-cover"
               />
 
-              <span className="text-xl font-black uppercase tracking-tighter text-white">
+              <span className="text-xl font-black uppercase tracking-tighter text-card-foreground">
                 AURA
                 <span className="text-primary">RIDER</span>
               </span>
             </Link>
 
-            <nav className="hidden items-center space-x-8 text-xs font-bold uppercase tracking-widest text-neutral-300 lg:flex">
+            <nav className="hidden items-center space-x-8 text-xs font-bold uppercase tracking-widest text-card-foreground lg:flex">
               <Link
                 to="/"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                   isActive('/')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+                    ? 'border-primary text-card-foreground'
+                    : 'border-transparent text-muted-foreground'
                 }`}
               >
                 Inicio
@@ -99,10 +99,10 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/catalog"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                   isActive('/catalog')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+                    ? 'border-primary text-card-foreground'
+                    : 'border-transparent text-muted-foreground'
                 }`}
               >
                 Motos
@@ -111,10 +111,10 @@ export default function Layout({ children }: LayoutProps) {
               {isAuthenticated && (
                 <Link
                   to="/orders"
-                  className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                  className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                     isActive('/orders')
-                      ? 'border-primary text-white'
-                      : 'border-transparent text-neutral-400'
+                      ? 'border-primary text-card-foreground'
+                      : 'border-transparent text-muted-foreground'
                   }`}
                 >
                   Mis pedidos
@@ -124,10 +124,10 @@ export default function Layout({ children }: LayoutProps) {
               {isAuthenticated && user?.isStaff && (
                 <Link
                   to="/admin"
-                  className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                  className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                     isAdminActive('/admin')
-                      ? 'border-primary text-white'
-                      : 'border-transparent text-neutral-400'
+                      ? 'border-primary text-card-foreground'
+                      : 'border-transparent text-muted-foreground'
                   }`}
                 >
                   Panel Admin
