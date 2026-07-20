@@ -150,3 +150,53 @@
 .animate-pulse-glow {
   animation: pulse-glow 2.5s ease-in-out infinite;
 }
+
+/* InfiniteScroll – seamless horizontal marquee */
+@keyframes infinite-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Float effect for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%      { transform: translateY(-10px) rotate(1deg); }
+  66%      { transform: translateY(5px) rotate(-1deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Ken Burns zoom for hero images */
+@keyframes ken-burns {
+  0%   { transform: scale(1) translate(0, 0); }
+  50%  { transform: scale(1.08) translate(-1%, -1%); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+.animate-ken-burns {
+  animation: ken-burns 20s ease-in-out infinite;
+}
+
+/* Slide-up stagger for catalog cards */
+@keyframes slide-up-card {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Speed lines dashing for racing feel */
+@keyframes dash-speed {
+  from { stroke-dashoffset: 300; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Breathing glow for highlighted elements */
+@keyframes breathe-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 26, 26, 0.3)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255, 26, 26, 0.6)); }
+}
+
+.animate-breathe-glow {
+  animation: breathe-glow 3s ease-in-out infinite;
+}
