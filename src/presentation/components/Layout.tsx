@@ -50,6 +50,24 @@ export default function Layout({ children }: LayoutProps) {
 
   const isAdminActive = (pathPrefix: string) => location.pathname.startsWith(pathPrefix);
 
+  const SidebarLink = ({ to, label, icon: Icon, checkAdmin = false }: { to: string, label: string, icon?: any, checkAdmin?: boolean }) => {
+    const active = checkAdmin ? isAdminActive(to) : isActive(to);
+    return (
+      <Link
+        to={to}
+        onClick={() => setIsSidebarOpen(false)}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide ${
+          active 
+            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
+            : 'text-neutral-400 hover:bg-neutral-900 hover:text-white border border-transparent'
+        }`}
+      >
+        {Icon && <Icon className={`size-4 ${active ? 'text-primary' : 'text-neutral-500'}`} />}
+        {label}
+      </Link>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <header className="sticky top-0 z-50 w-full bg-[#070708] border-b border-neutral-900 shadow-lg">
