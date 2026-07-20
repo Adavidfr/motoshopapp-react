@@ -38,92 +38,133 @@
 
 <br>
 
-# Aura Rider - Motoshop App (Frontend)
+---
 
-Este es el repositorio Frontend para la aplicación web **Aura Rider**, una plataforma de comercio electrónico de lujo diseñada para la venta y gestión de motocicletas de alta gama.
+# 🏍️ Aura Rider - Plataforma E-Commerce Premium (Frontend)
 
-El proyecto está desarrollado con **ReactJS** y construido con **Vite**, utilizando arquitectura hexagonal, Zustand para el manejo global del estado, y Tailwind CSS junto a Framer Motion para lograr una interfaz cinemática "Glassmorphism" con animaciones y microinteracciones de nivel premium.
+Bienvenido al repositorio oficial del **Frontend de Aura Rider**, una solución de comercio electrónico de élite diseñada específicamente para la exhibición, venta y administración de motocicletas de alta gama, repuestos y servicios de mantenimiento.
 
-## 📋 Requisitos Previos
+Esta aplicación web ha sido construida con los más altos estándares de la industria, priorizando una interfaz de usuario (UI) espectacular mediante **Glassmorphism**, animaciones fluidas, y una experiencia de usuario (UX) de vanguardia. La aplicación consume de manera eficiente un robusto backend construido en **Django REST Framework**.
 
-Asegúrate de tener instalados los siguientes requerimientos en tu entorno local antes de iniciar:
+---
 
-- **Node.js**: v18.0.0 o superior (se recomienda la versión LTS).
-- **npm** (v9+), **yarn** o **pnpm**.
-- Un backend funcional (motoshop-api) en ejecución para consumir los datos.
+## 🌟 Características Principales
 
-## 🛠️ Instalación
+*   **Diseño Premium UI/UX:** Interfaz basada en *Glassmorphism* (cristal esmerilado) que se adapta automáticamente a modos Claro y Oscuro (`Dark Mode/Light Mode`), ofreciendo una experiencia inmersiva.
+*   **Animaciones y Microinteracciones:** Uso avanzado de **Framer Motion** y utilidades CSS (`tw-animate-css`) para transiciones de página, *scroll parallax*, efectos *hover* dinámicos y pedestales estilo "Showroom" para el catálogo.
+*   **Arquitectura Hexagonal Modular:** El código fuente está rigurosamente estructurado separando la capa de presentación (UI), infraestructura (Axios, configuraciones) y lógica de estado, garantizando escalabilidad y mantenibilidad.
+*   **Gestión de Estado Global Centralizada:** Implementación de **Zustand** para controlar carritos de compras, perfiles de usuario, autenticación (JWT) y temas de la aplicación sin recurrir al *prop-drilling*.
+*   **Validación de Formularios de Nivel Corporativo:** Integración de **React Hook Form** junto a **Zod** para la resolución y validación de esquemas de datos estrictos (Login, Registro, Checkout) antes de enviar peticiones a la API.
 
-1. **Clona el repositorio** en tu máquina local:
-   ```bash
-   git clone https://github.com/Adavidfr/motoshopapp-react.git
-   cd motoshopapp-react
-   ```
+---
 
-2. **Instala las dependencias**:
-   ```bash
-   npm install
-   ```
-   *(Si utilizas otro gestor de paquetes, ejecuta `yarn install` o `pnpm install`)*.
+## 🛠️ Stack Tecnológico
 
-## ⚙️ Variables de Entorno
+*   **Core:** React 19 + TypeScript
+*   **Build Tool:** Vite 8 (Ultra rápido, Hot-Module Replacement)
+*   **Estilos:** Tailwind CSS v4 + integraciones customizadas (clsx, tailwind-merge)
+*   **Componentes de UI:** Radix UI (Accesibilidad) y Lucide React (Iconografía)
+*   **Animaciones:** Framer Motion
+*   **Peticiones HTTP:** Axios interceptors
+*   **Gestión de Estado:** Zustand
+*   **Enrutamiento:** React Router DOM v7
+*   **Validaciones:** Zod + React Hook Form
 
-El proyecto requiere variables de entorno para conectarse exitosamente con el backend. 
-Crea un archivo llamado `.env` en la raíz del proyecto (al mismo nivel que `package.json`) y agrega las siguientes variables:
+---
 
-```env
-# URL base de la API del Backend (Django/Python)
-VITE_API_BASE_URL=http://localhost:8000/api
+## 📋 Requisitos de Entorno
+
+Antes de comenzar la instalación local, debes asegurarte de contar con:
+1. **Node.js**: Versión 18.x o superior.
+2. **Gestor de paquetes**: `npm` (incluido con Node), `yarn`, o `pnpm`.
+3. **Backend Funcional**: El proyecto hermano `motoshop-api` (Django) debe estar clonado, con las migraciones ejecutadas y el servidor corriendo localmente.
+
+---
+
+## 🚀 Instalación y Despliegue Local
+
+Sigue estos pasos detallados para ejecutar la plataforma en tu entorno de desarrollo:
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/Adavidfr/motoshopapp-react.git
+cd motoshopapp-react
 ```
 
-*Nota: Si tu backend corre en otro puerto u host distinto, actualiza el valor de `VITE_API_BASE_URL` correspondientemente.*
+### 2. Instalar las dependencias
+Instala todos los paquetes requeridos definidos en el `package.json`:
+```bash
+npm install
+```
 
-## 🚀 Comandos Disponibles
+### 3. Configurar las Variables de Entorno
+En la raíz del proyecto (al mismo nivel que `package.json`), debes crear obligatoriamente un archivo llamado `.env` para establecer la conexión con tu API. 
 
-En el directorio del proyecto, puedes ejecutar los siguientes comandos:
+Escribe lo siguiente dentro de tu archivo `.env`:
 
-- **Levantar el servidor de desarrollo local (Hot-Reload):**
-  ```bash
-  npm run dev
-  ```
-  Esto iniciará la aplicación, típicamente en `http://localhost:5173/`.
+```env
+# Define la ruta exacta donde el Backend expone su API
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+*(Nota: Ajusta el puerto `8000` si tu instancia de Django se está ejecutando en un puerto diferente).*
 
-- **Compilar para producción:**
-  ```bash
-  npm run build
-  ```
-  Genera la carpeta `dist/` con los archivos optimizados y minificados listos para despliegue.
+### 4. Inicializar el Servidor de Desarrollo
+```bash
+npm run dev
+```
+La aplicación Vite compilará rápidamente y se expondrá, por defecto, en: `http://localhost:5173`. 
+Ábrelo en tu navegador favorito. El sistema actualizará los cambios en tiempo real gracias al HMR (Hot Module Replacement).
 
-- **Previsualizar la compilación de producción:**
-  ```bash
-  npm run preview
-  ```
-  Permite probar localmente cómo se ejecutará la aplicación ya compilada.
+---
 
-- **Ejecutar el linter:**
-  ```bash
-  npm run lint
-  ```
-  Ejecuta `oxlint` para validar el estilo y sintaxis del código.
+## 📦 Comandos de Scripts Disponibles
 
-## 🔌 Cómo conectarse a la API (Backend)
+El proyecto incluye scripts en `package.json` para facilitar el flujo de desarrollo y producción:
 
-La plataforma utiliza **Axios** (configurado en `src/infrastructure/config/api.config.ts`) para realizar las solicitudes HTTP. 
-Para que el Frontend funcione correctamente:
+| Comando | Descripción |
+| :--- | :--- |
+| `npm run dev` | Levanta el servidor local de desarrollo utilizando Vite. |
+| `npm run build` | Ejecuta el compilador de TypeScript (`tsc -b`) y construye los binarios estáticos de producción dentro de la carpeta `dist/`. |
+| `npm run preview` | Levanta un servidor local apuntando a la carpeta `dist/` para probar cómo se comportará la app ya compilada en producción. |
+| `npm run lint` | Ejecuta `oxlint` para realizar análisis de código estático súper rápido, garantizando convenciones y limpieza de sintaxis. |
 
-1. Asegúrate de iniciar tu servidor Backend de Django. Por lo general, se corre con: `python manage.py runserver` en el puerto `8000`.
-2. Verifica que el backend tenga los permisos CORS habilitados para aceptar peticiones desde `http://localhost:5173` (la URL del Frontend de Vite).
-3. Asegúrate de tener el archivo `.env` configurado como se indica en la sección de Variables de Entorno.
+---
 
-## 🔐 Credenciales de Prueba
+## 🔌 Conexión a la API y Solución de Problemas (CORS)
 
-Para probar el flujo completo (Carrito de compras, perfiles, y panel de administración) debes registrar o utilizar un usuario existente en la API.
+Esta aplicación hace un uso intensivo de endpoints RESTful. Para que la comunicación sea exitosa:
 
-Dado que la aplicación maneja autenticación JWT contra el backend, tienes dos opciones:
+1. **Tokens JWT:** Cuando un usuario inicia sesión, Axios almacena el Access Token y lo inyecta automáticamente en los encabezados (`Authorization: Bearer <token>`) a través de un interceptor.
+2. **Política CORS:** Si experimentas errores de red al hacer Login o cargar el catálogo, verifica que el backend de Django tenga configurado `django-cors-headers` y que `http://localhost:5173` esté dentro de su variable `CORS_ALLOWED_ORIGINS` o que `CORS_ALLOW_ALL_ORIGINS = True` para etapa de desarrollo.
+3. **Paginación e Imágenes:** Las URLs de imágenes en el catálogo se concatenan automáticamente en la UI en caso de venir como paths relativos desde la base de datos.
 
-1. **Crear una cuenta nueva** desde el frontend navegando a `/register`.
-2. **Si el backend tiene datos semilla (seed)** precargados, puedes probar iniciando sesión en `/login` con las credenciales oficiales de Administrador de la API:
-   - **Usuario / Correo:** `admin` (o `admin@motoshop.com`)
-   - **Contraseña:** `Motoshop1234!`
+---
 
-*(Nota: Solo los usuarios que tengan el flag `is_staff=True` o `is_superuser=True` en el backend podrán acceder a la ruta `/admin` del Frontend).*
+## 🔐 Credenciales de Prueba del Sistema
+
+El proyecto cuenta con un sistema robusto de roles y permisos. Para evaluar por completo las capacidades del sistema (Módulos de Cliente vs. Módulos de Administración), se proporcionan las siguientes credenciales correspondientes a la semilla de la base de datos del Backend:
+
+**Credenciales de Administrador (Superusuario)**
+Con esta cuenta podrás visualizar reportes, gestionar inventario, ventas y servicios post-venta (si las vistas de administrador están montadas).
+- **Usuario (o Correo):** `admin` ó `admin@motoshop.com`
+- **Contraseña:** `Motoshop1234!`
+
+**¿Cómo crear usuarios regulares?**
+Cualquier miembro del panel evaluador puede dirigirse a la vista `/register` en la plataforma web para crear un perfil de cliente estándar. Ese perfil automáticamente tendrá su propio carrito de compras, historial de facturación y capacidad para agendar mantenimientos.
+
+---
+
+## 📂 Estructura de Directorios
+
+Una vista rápida de la organización limpia (Clean Architecture) del repositorio:
+```text
+src/
+ ├── core/              # Entidades, interfaces (Typescript) de dominio.
+ ├── infrastructure/    # Servicios externos (Axios), Auth Services, API Config.
+ ├── presentation/      # Capa visual (React).
+ │   ├── components/    # Componentes reusables (Layout, Navbar, Footer, UI).
+ │   ├── pages/         # Vistas completas de la aplicación (Auth, Catalog, Home).
+ │   ├── store/         # Estado global (Zustand: AuthStore, CartStore, ThemeStore).
+ ├── index.css          # Configuración principal de Tailwind v4 y variables CSS.
+ └── App.tsx            # Punto de entrada de React Router y Layouts.
+```
