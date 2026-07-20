@@ -1,7 +1,6 @@
-// src/presentation/components/Layout.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Search, ShoppingCart, User } from 'lucide-react';
+import { LogOut, Search, ShoppingCart, User, Sun, Moon } from 'lucide-react';
 
 import { useAuthStore } from '../store/auth.store';
 import { useCartStore } from '../store/cart.store';
@@ -14,6 +13,26 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return 'dark'; // Default premium dark theme
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
 
   const {
     isAuthenticated,
@@ -124,6 +143,15 @@ export default function Layout({ children }: LayoutProps) {
               className="p-1 text-neutral-400 transition-colors hover:text-white"
             >
               <Search className="size-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Cambiar tema"
+              className="p-1 text-neutral-400 transition-colors hover:text-white"
+            >
+              {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
             </button>
 
             {isAuthenticated ? (
