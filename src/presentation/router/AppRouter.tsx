@@ -19,6 +19,10 @@ import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
 import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
 import MotosAdminPage from '../pages/admin/MotosAdminPage';
 
+// Páginas de Repuestos e Inventario (Fase 3)
+import RepuestosPage from '../pages/repuestos/RepuestosPage';
+import InventoryPage from '../pages/inventario/InventoryPage';
+
 // Componente para proteger rutas privadas
 interface PrivateRouteProps {
   element: React.ReactElement;
@@ -54,8 +58,12 @@ export default function AppRouter() {
           <Route path="/admin/brands" element={<PrivateRoute element={<BrandsAdminPage />} />} />
           <Route path="/admin/categories" element={<PrivateRoute element={<CategoriesAdminPage />} />} />
           <Route path="/admin/motos" element={<PrivateRoute element={<MotosAdminPage />} />} />
+          <Route path="/admin/inventory" element={<PrivateRoute element={<InventoryPage />} />} />
           <Route path="/admin/orders" element={<PrivateRoute element={<PlaceholderPage title="Admin Órdenes — Módulo 12" />} />} />
           <Route path="/admin/users" element={<PrivateRoute element={<PlaceholderPage title="Admin Usuarios — Módulo 13" />} />} />
+          
+          {/* Repuestos Público */}
+          <Route path="/repuestos" element={<RepuestosPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
