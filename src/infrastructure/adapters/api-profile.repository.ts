@@ -24,13 +24,23 @@ export class ApiProfileRepository implements ProfileRepository {
   }
 
   async updateProfile(dto: UpdateProfileDto): Promise<ClientePerfil> {
-    const response = await httpClient.patch('/clientes/perfil/', {
+    const payload = {
       cedula: dto.cedula,
       telefono: dto.telefono,
       direccion: dto.direccion,
       fecha_nacimiento: dto.fechaNacimiento,
       foto_perfil: dto.fotoPerfil,
-    });
-    return this.mapProfile(response.data);
+    };
+    
+    try {
+      const response = await httpClient.patch('/clientes/perfil/', payload);
+      return this.mapProfile(response.data);
+    } catch (err: any) {
+      if (err.response?.status === 404 || err.response?.data?.detail?.includes('no encontrado')) {
+        const response = await httpClient.post('/clientes/perfil/', payload);
+        return this.mapProfile(response.data);
+      }
+      throw err;
+    }
   }
 }
