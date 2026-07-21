@@ -66,16 +66,16 @@ export default function MotosPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Page header */}
-      <div className="bg-[#070708] border-b border-neutral-900 py-10">
+      <div className="bg-neutral-100 dark:bg-[#070708] border-b border-neutral-200 dark:border-neutral-900 py-10 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
           <span className="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">
             Catálogo completo
           </span>
-          <h1 className="text-4xl font-black uppercase tracking-tight text-white mt-1">
+          <h1 className="text-4xl font-black uppercase tracking-tight text-foreground mt-1">
             Nuestras Motos
           </h1>
           <p className="text-neutral-500 text-sm font-medium mt-2">
-            Explora toda nuestra colección — {isLoading ? '...' : motos.length} modelos disponibles
+            Explora toda nuestra colección
           </p>
         </div>
       </div>
