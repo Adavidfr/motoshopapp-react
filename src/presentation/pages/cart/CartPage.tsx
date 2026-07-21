@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCartStore } from '../../store/cart.store';
 import { useOrderStore } from '../../store/order.store';
+import { useMotoStore } from '../../store/moto.store';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
 import { Trash2, ShoppingBag, ArrowRight, ArrowLeft, ShoppingCart, AlertCircle, CreditCard } from 'lucide-react';
@@ -11,11 +12,18 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { cart, fetchActiveCart, removeFromCart, clearCart, isLoading, error: cartError } = useCartStore();
   const { createOrder, isLoading: isOrderCreating } = useOrderStore();
+  const { motos, fetchMotos } = useMotoStore();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchActiveCart();
   }, [fetchActiveCart]);
+
+  useEffect(() => {
+    if (motos.length === 0) {
+      fetchMotos({ limit: 100 });
+    }
+  }, [motos.length, fetchMotos]);
 
   const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) return;
@@ -126,7 +134,9 @@ export default function CartPage() {
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="font-bold text-base text-foreground">
-                          {item.idMoto ? `Motocicleta #${item.idMoto}` : `Repuesto #${item.idRepuesto}`}
+                          {item.idMoto 
+                            ? (motos.find(m => m.idMoto === item.idMoto) ? `${motos.find(m => m.idMoto === item.idMoto)?.marca} ${motos.find(m => m.idMoto === item.idMoto)?.modelo}` : `Motocicleta #${item.idMoto}`)
+                            : `Repuesto #${item.idRepuesto}`}
                         </h3>
                         <p className="text-sm text-muted-foreground font-medium">
                           Precio unitario: <span className="text-foreground">{formatPrice(item.precioUnitario)}</span>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderStore } from '../../store/order.store';
 import { useVentaStore } from '../../store/venta.store';
+import { useMotoStore } from '../../store/moto.store';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -14,6 +15,7 @@ export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { selectedOrder, fetchOrderById, confirmOrder, isLoading, error, clearSelectedOrder } = useOrderStore();
   const { createVenta } = useVentaStore();
+  const { motos, fetchMotos } = useMotoStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
@@ -25,6 +27,12 @@ export default function OrderDetailPage() {
       clearSelectedOrder();
     };
   }, [id, fetchOrderById, clearSelectedOrder]);
+
+  useEffect(() => {
+    if (motos.length === 0) {
+      fetchMotos({ limit: 100 });
+    }
+  }, [motos.length, fetchMotos]);
 
   const handleConfirm = async () => {
     if (selectedOrder && paymentMethod) {
@@ -102,9 +110,13 @@ export default function OrderDetailPage() {
             <Card key={item.idItem} className="border-border/40">
               <CardContent className="p-4 flex justify-between items-center gap-4">
                 <div className="flex gap-3 items-center">
-                  <span className="text-2xl bg-muted p-2 rounded-xl">🏍️</span>
+                  <span className="text-2xl bg-muted p-2 rounded-xl">{item.idMoto ? '🏍️' : '⚙️'}</span>
                   <div>
-                    <h4 className="font-bold text-sm">Moto ID: {item.idMoto}</h4>
+                    <h4 className="font-bold text-sm">
+                      {item.idMoto 
+                        ? (motos.find(m => m.idMoto === item.idMoto) ? `${motos.find(m => m.idMoto === item.idMoto)?.marca} ${motos.find(m => m.idMoto === item.idMoto)?.modelo}` : `Moto ID: #${item.idMoto}`)
+                        : `Repuesto ID: #${item.idRepuesto}`}
+                    </h4>
                     <p className="text-xs text-muted-foreground">
                       {item.cantidad} x {formatPrice(item.precioUnitario)}
                     </p>
