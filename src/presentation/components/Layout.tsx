@@ -1,7 +1,6 @@
-// src/presentation/components/Layout.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Search, ShoppingCart, User } from 'lucide-react';
+import { LogOut, Search, ShoppingCart, User, Sun, Moon } from 'lucide-react';
 
 import { useAuthStore } from '../store/auth.store';
 import { useCartStore } from '../store/cart.store';
@@ -14,6 +13,26 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return 'dark'; // Default premium dark theme
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
 
   const {
     isAuthenticated,
@@ -49,8 +68,8 @@ export default function Layout({ children }: LayoutProps) {
     location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-      <header className="sticky top-0 z-50 w-full bg-[#070708] border-b border-neutral-900 shadow-lg">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-500">
+      <header className="sticky top-0 z-50 w-full bg-card border-b border-border shadow-lg transition-colors duration-300">
         <div className="container mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-10">
             <Link to="/" className="flex items-center gap-3">
@@ -60,19 +79,19 @@ export default function Layout({ children }: LayoutProps) {
                 className="h-12 w-12 rounded-full border border-neutral-700/50 object-cover"
               />
 
-              <span className="text-xl font-black uppercase tracking-tighter text-white">
+              <span className="text-xl font-black uppercase tracking-tighter text-card-foreground">
                 AURA
                 <span className="text-primary">RIDER</span>
               </span>
             </Link>
 
-            <nav className="hidden items-center space-x-8 text-xs font-bold uppercase tracking-widest text-neutral-300 lg:flex">
+            <nav className="hidden items-center space-x-8 text-xs font-bold uppercase tracking-widest text-card-foreground lg:flex">
               <Link
                 to="/"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                   isActive('/')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+                    ? 'border-primary text-card-foreground'
+                    : 'border-transparent text-muted-foreground'
                 }`}
               >
                 Inicio
@@ -80,10 +99,10 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/catalog"
-                className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                   isActive('/catalog')
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-400'
+                    ? 'border-primary text-card-foreground'
+                    : 'border-transparent text-muted-foreground'
                 }`}
               >
                 Motos
@@ -92,10 +111,10 @@ export default function Layout({ children }: LayoutProps) {
               {isAuthenticated && (
                 <Link
                   to="/orders"
-                  className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                  className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                     isActive('/orders')
-                      ? 'border-primary text-white'
-                      : 'border-transparent text-neutral-400'
+                      ? 'border-primary text-card-foreground'
+                      : 'border-transparent text-muted-foreground'
                   }`}
                 >
                   Mis pedidos
@@ -105,10 +124,10 @@ export default function Layout({ children }: LayoutProps) {
               {isAuthenticated && user?.isStaff && (
                 <Link
                   to="/admin"
-                  className={`border-b-2 pb-1 transition-colors hover:text-white ${
+                  className={`border-b-2 pb-1 transition-colors hover:text-card-foreground ${
                     isAdminActive('/admin')
-                      ? 'border-primary text-white'
-                      : 'border-transparent text-neutral-400'
+                      ? 'border-primary text-card-foreground'
+                      : 'border-transparent text-muted-foreground'
                   }`}
                 >
                   Panel Admin
@@ -124,6 +143,15 @@ export default function Layout({ children }: LayoutProps) {
               className="p-1 text-neutral-400 transition-colors hover:text-white"
             >
               <Search className="size-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Cambiar tema"
+              className="flex items-center justify-center size-9 rounded-full bg-neutral-100/10 hover:bg-neutral-100/20 dark:bg-neutral-900/50 dark:hover:bg-neutral-900 border border-neutral-700/30 dark:border-neutral-800 text-neutral-400 hover:text-white hover:scale-105 hover:rotate-12 transition-all duration-300 cursor-pointer"
+            >
+              {theme === 'dark' ? <Sun className="size-4.5 text-amber-500" /> : <Moon className="size-4.5 text-indigo-400" />}
             </button>
 
             {isAuthenticated ? (

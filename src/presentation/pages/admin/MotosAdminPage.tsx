@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2, Loader2, Upload, FileImage, Search } from 'lucide-r
 import type { Moto } from '../../../domain/entities/moto.entity';
 
 export default function MotosAdminPage() {
-  const { motos, isLoading, error, fetchMotos, createMoto, updateMoto, deleteMoto } = useMotoStore();
+  const { motos, totalCount, isLoading, error, fetchMotos, createMoto, updateMoto, deleteMoto } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
   const { categories, fetchCategories } = useCategoryStore();
 
@@ -29,14 +29,22 @@ export default function MotosAdminPage() {
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load auxiliary data once
   useEffect(() => {
-    fetchMotos();
     fetchBrands();
     fetchCategories();
-  }, [fetchMotos, fetchBrands, fetchCategories]);
+  }, [fetchBrands, fetchCategories]);
+
+  // Load motos on filters/page change
+  useEffect(() => {
+    const params: any = { page };
+    if (searchTerm) params.search = searchTerm;
+    fetchMotos(params);
+  }, [page, fetchMotos]);
 
   const handleOpenCreate = () => {
     setEditingId(null);
@@ -126,33 +134,34 @@ export default function MotosAdminPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchMotos({ search: searchTerm });
+    setPage(1);
+    fetchMotos({ search: searchTerm, page: 1 });
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight">Administrar Motos</h1>
-          <p className="text-neutral-400 text-sm">Gestiona el inventario de motocicletas del catálogo</p>
+          <h1 className="text-3xl font-black text-foreground uppercase tracking-tight">Administrar Motos</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">Gestiona el inventario de motocicletas del catálogo</p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="bg-primary hover:bg-primary/95 text-white flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] self-start"
+          className="bg-primary hover:bg-primary/95 text-white flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] self-start cursor-pointer"
         >
           <Plus className="size-4" /> Agregar Motocicleta
         </button>
       </div>
 
       {/* Filter and Search bar */}
-      <form onSubmit={handleSearch} className="flex gap-3 bg-[#0c0c0e] border border-neutral-900 rounded-full px-5 py-2.5 max-w-md items-center">
+      <form onSubmit={handleSearch} className="flex gap-3 bg-card border border-border rounded-full px-5 py-2.5 max-w-md items-center transition-colors duration-300">
         <Search className="text-neutral-500 size-4 shrink-0" />
         <input
           type="text"
           placeholder="Buscar por modelo..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-transparent border-none text-white text-xs placeholder-neutral-500 font-semibold focus:outline-none focus:ring-0 w-full"
+          className="bg-transparent border-none text-card-foreground text-xs placeholder-neutral-500 font-semibold focus:outline-none focus:ring-0 w-full"
         />
         <button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors">
           Buscar
@@ -172,7 +181,7 @@ export default function MotosAdminPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {motos.map((moto) => (
-            <div key={moto.idMoto} className="bg-[#0c0c0e] border border-neutral-900/60 rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col group">
+            <div key={moto.idMoto} className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-colors duration-300 flex flex-col group">
               {/* Product Image */}
               <div className="relative h-48 w-full bg-neutral-950 overflow-hidden">
                 {moto.imagen ? (
@@ -207,25 +216,25 @@ export default function MotosAdminPage() {
               <div className="p-6 flex flex-col flex-1 space-y-4">
                 <div>
                   <span className="text-[10px] text-primary font-black uppercase tracking-wider">{moto.categoria}</span>
-                  <h3 className="text-lg font-black text-white uppercase tracking-tight truncate">{moto.modelo}</h3>
+                  <h3 className="text-lg font-black text-card-foreground uppercase tracking-tight truncate">{moto.modelo}</h3>
                   <p className="text-neutral-500 text-xs font-semibold">Año {moto.anio} • {moto.cilindraje}cc • {moto.color}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-900/60">
+                <div className="flex items-center justify-between pt-2 border-t border-border">
                   <div>
                     <span className="text-neutral-500 text-[10px] font-bold block uppercase">Precio</span>
-                    <span className="text-base font-black text-white">${moto.precio.toLocaleString()}</span>
+                    <span className="text-base font-black text-card-foreground">${moto.precio.toLocaleString()}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-neutral-500 text-[10px] font-bold block uppercase">Stock</span>
-                    <span className="text-sm font-black text-white">{moto.stock} u.</span>
+                    <span className="text-sm font-black text-card-foreground">{moto.stock} u.</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 pt-2">
                   <button
                     onClick={() => handleOpenEdit(moto)}
-                    className="w-1/2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-white rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                    className="w-1/2 bg-card hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-border text-card-foreground rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Edit className="size-3.5" /> Editar
                   </button>
@@ -239,6 +248,29 @@ export default function MotosAdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination controls */}
+      {totalCount > 10 && (
+        <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-neutral-900">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+          >
+            Anterior
+          </button>
+          <span className="text-xs font-bold text-neutral-400">
+            Página {page} de {Math.ceil(totalCount / 10)}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / 10), p + 1))}
+            disabled={page >= Math.ceil(totalCount / 10)}
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+          >
+            Siguiente
+          </button>
         </div>
       )}
 

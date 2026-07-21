@@ -11,7 +11,7 @@ import { formatPrice } from '../../utils/formatters';
 import { Search, ArrowRight, Bike, SlidersHorizontal, X } from 'lucide-react';
 
 export default function MotosPage() {
-  const { motos, fetchMotos, isLoading, error } = useMotoStore();
+  const { motos, totalCount, fetchMotos, isLoading, error } = useMotoStore();
   const { brands, fetchBrands } = useBrandStore();
   const { categories, fetchCategories } = useCategoryStore();
 
@@ -21,12 +21,21 @@ export default function MotosPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedOrder, setSelectedOrder] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
 
   // Debounce búsqueda
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 450);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1); // Reset page on new search
+    }, 450);
     return () => clearTimeout(handler);
   }, [searchTerm]);
+
+  // Reset page when other filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedBrand, selectedCategory, selectedOrder]);
 
   // Cargar datos auxiliares
   useEffect(() => {
@@ -34,15 +43,15 @@ export default function MotosPage() {
     fetchCategories();
   }, [fetchBrands, fetchCategories]);
 
-  // Cargar motos con filtros
+  // Cargar motos con filtros y página
   useEffect(() => {
-    const params: Record<string, string | number> = {};
+    const params: Record<string, string | number> = { page };
     if (debouncedSearch) params.search = debouncedSearch;
     if (selectedBrand) params.marca = selectedBrand;
     if (selectedCategory) params.categoria = selectedCategory;
     if (selectedOrder) params.ordering = selectedOrder;
     fetchMotos(params);
-  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, fetchMotos]);
+  }, [debouncedSearch, selectedBrand, selectedCategory, selectedOrder, page, fetchMotos]);
 
   const hasFilters = searchTerm || selectedBrand || selectedCategory || selectedOrder;
 
@@ -51,10 +60,11 @@ export default function MotosPage() {
     setSelectedBrand('');
     setSelectedCategory('');
     setSelectedOrder('');
+    setPage(1);
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Page header */}
       <div className="bg-[#070708] border-b border-neutral-900 py-10">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
@@ -71,7 +81,7 @@ export default function MotosPage() {
       </div>
 
       {/* Filters bar */}
-      <div className="bg-white border-b border-neutral-200 shadow-sm sticky top-[80px] z-30">
+      <div className="bg-card border-b border-border shadow-sm sticky top-[80px] z-30 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
             {/* Search */}
@@ -79,7 +89,7 @@ export default function MotosPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
               <Input
                 placeholder="Buscar modelo o color..."
-                className="pl-9 bg-white border-neutral-300 text-neutral-900 rounded-none h-10 text-xs"
+                className="pl-9 bg-card border-border text-card-foreground rounded-none h-10 text-xs focus-visible:ring-1 focus-visible:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -99,7 +109,7 @@ export default function MotosPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Todas las categorías</option>
                 {categories.filter((c) => c.estado).map((cat) => (
@@ -112,7 +122,7 @@ export default function MotosPage() {
               <select
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Todas las marcas</option>
                 {brands.filter((b) => b.estado).map((b) => (
@@ -125,7 +135,7 @@ export default function MotosPage() {
               <select
                 value={selectedOrder}
                 onChange={(e) => setSelectedOrder(e.target.value)}
-                className="bg-white border border-neutral-300 text-neutral-700 rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                className="bg-card border border-border text-card-foreground rounded-none h-10 px-3 text-xs font-semibold focus:outline-none focus:border-primary transition-colors cursor-pointer"
               >
                 <option value="">Ordenar por</option>
                 <option value="precio">Precio: Menor a Mayor</option>
@@ -274,7 +284,7 @@ export default function MotosPage() {
                   <span className="text-[9px] font-black text-primary uppercase tracking-widest">
                     {moto.marca || 'Sport'}
                   </span>
-                  <CardTitle className="text-base font-black text-neutral-900 mt-0.5 truncate uppercase">
+                  <CardTitle className="text-base font-black text-card-foreground mt-0.5 truncate uppercase">
                     {moto.modelo}
                   </CardTitle>
                   <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
@@ -283,15 +293,15 @@ export default function MotosPage() {
                 </CardHeader>
 
                 <CardContent className="px-5 pb-5 pt-0">
-                  <p className="text-xl font-extrabold text-neutral-900">{formatPrice(moto.precio)}</p>
+                  <p className="text-xl font-extrabold text-card-foreground">{formatPrice(moto.precio)}</p>
                 </CardContent>
 
-                <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-neutral-100">
+                <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-border">
                   <Link
                     to={`/products/${moto.idMoto}`}
                     className="w-full flex justify-between items-center group"
                   >
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-700 group-hover:text-primary transition-colors">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-card-foreground/75 group-hover:text-primary transition-colors">
                       Ver Detalles
                     </span>
                     <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
@@ -299,6 +309,29 @@ export default function MotosPage() {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Pagination buttons */}
+        {totalCount > 10 && (
+          <div className="flex justify-center items-center gap-4 mt-12 pt-6 border-t border-neutral-200">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-300 bg-white text-neutral-800 disabled:opacity-50 hover:bg-neutral-50 transition-colors cursor-pointer"
+            >
+              Anterior
+            </button>
+            <span className="text-xs font-bold text-neutral-600">
+              Página {page} de {Math.ceil(totalCount / 10)}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / 10), p + 1))}
+              disabled={page >= Math.ceil(totalCount / 10)}
+              className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-300 bg-white text-neutral-800 disabled:opacity-50 hover:bg-neutral-50 transition-colors cursor-pointer"
+            >
+              Siguiente
+            </button>
           </div>
         )}
       </div>

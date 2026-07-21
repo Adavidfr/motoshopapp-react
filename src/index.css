@@ -38,6 +38,17 @@
     --radius: 0.5rem;
   }
 
+  html:not(.dark) {
+    --background: 220 20% 97%; /* Soft premium slate-gray tint */
+    --foreground: 224 71% 4%; /* Deep luxury slate-black text */
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+    --border: 220 15% 91%;
+    --input: 220 15% 91%;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -100,5 +111,5 @@
 }
 
 .racing-card {
-  @apply bg-white border border-neutral-200 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col justify-between;
+  @apply bg-white dark:bg-[#121214] border border-neutral-200 dark:border-neutral-800 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col justify-between;
 }
