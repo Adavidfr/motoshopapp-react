@@ -106,26 +106,36 @@ export default function OrderDetailPage() {
         {/* Items List */}
         <div className="md:col-span-2 space-y-4">
           <h2 className="text-lg font-bold">Motos Solicitadas</h2>
-          {(selectedOrder.carrito?.items || []).map((item) => (
-            <Card key={item.idItem} className="border-border/40">
-              <CardContent className="p-4 flex justify-between items-center gap-4">
-                <div className="flex gap-3 items-center">
-                  <span className="text-2xl bg-muted p-2 rounded-xl">{item.idMoto ? '🏍️' : '⚙️'}</span>
-                  <div>
-                    <h4 className="font-bold text-sm">
-                      {item.idMoto 
-                        ? (motos.find(m => m.idMoto === item.idMoto) ? `${motos.find(m => m.idMoto === item.idMoto)?.marca} ${motos.find(m => m.idMoto === item.idMoto)?.modelo}` : `Moto ID: #${item.idMoto}`)
-                        : `Repuesto ID: #${item.idRepuesto}`}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {item.cantidad} x {formatPrice(item.precioUnitario)}
-                    </p>
+          {(selectedOrder.carrito?.items || []).map((item) => {
+            const moto = item.idMoto ? motos.find(m => m.idMoto === item.idMoto) : null;
+            return (
+              <Card key={item.idItem} className="border-border/40">
+                <CardContent className="p-4 flex justify-between items-center gap-4">
+                  <div className="flex gap-3 items-center">
+                    <div className="size-10 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                      {moto && moto.imagen ? (
+                        <img src={moto.imagen} alt={moto.modelo} className="w-full h-full object-cover" />
+                      ) : (
+                        item.idMoto ? '🏍️' : '⚙️'
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">
+                        {moto 
+                          ? `${moto.marca} ${moto.modelo}` 
+                          : (item.idMoto ? `Moto ID: #${item.idMoto}` : `Repuesto ID: #${item.idRepuesto}`)
+                        }
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {item.cantidad} x {formatPrice(item.precioUnitario)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <span className="text-sm font-bold text-primary">{formatPrice(item.subtotal)}</span>
-              </CardContent>
-            </Card>
-          ))}
+                  <span className="text-sm font-bold text-primary">{formatPrice(item.subtotal)}</span>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Pricing Summary */}

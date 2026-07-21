@@ -120,25 +120,32 @@ export default function CartPage() {
 
             {/* Items */}
             <div className="lg:col-span-2 space-y-4">
-              {cart.items.map((item, idx) => (
-                <div
-                  key={item.idItem}
-                  className="bg-card/60 border border-border/50 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-border transition-all duration-300 group"
-                  style={{ animationDelay: `${idx * 80}ms` }}
-                >
-                  <div className="p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex gap-4 items-center">
-                      {/* Icon */}
-                      <div className="size-16 rounded-2xl bg-primary/[0.08] border border-primary/[0.12] flex items-center justify-center text-2xl shrink-0">
-                        {item.idMoto ? '🏍️' : '⚙️'}
-                      </div>
-                      <div className="space-y-0.5">
-                        <h3 className="font-bold text-base text-foreground">
-                          {item.idMoto 
-                            ? (motos.find(m => m.idMoto === item.idMoto) ? `${motos.find(m => m.idMoto === item.idMoto)?.marca} ${motos.find(m => m.idMoto === item.idMoto)?.modelo}` : `Motocicleta #${item.idMoto}`)
-                            : `Repuesto #${item.idRepuesto}`}
-                        </h3>
-                        <p className="text-sm text-muted-foreground font-medium">
+              {cart.items.map((item, idx) => {
+                const moto = item.idMoto ? motos.find(m => m.idMoto === item.idMoto) : null;
+                return (
+                  <div
+                    key={item.idItem}
+                    className="bg-card/60 border border-border/50 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-border transition-all duration-300 group"
+                    style={{ animationDelay: `${idx * 80}ms` }}
+                  >
+                    <div className="p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex gap-4 items-center">
+                        {/* Icon / Image */}
+                        <div className="size-16 rounded-2xl bg-primary/[0.08] border border-primary/[0.12] flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                          {moto && moto.imagen ? (
+                            <img src={moto.imagen} alt={moto.modelo} className="w-full h-full object-cover" />
+                          ) : (
+                            item.idMoto ? '🏍️' : '⚙️'
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <h3 className="font-bold text-base text-foreground">
+                            {moto 
+                              ? `${moto.marca} ${moto.modelo}` 
+                              : (item.idMoto ? `Motocicleta #${item.idMoto}` : `Repuesto #${item.idRepuesto}`)
+                            }
+                          </h3>
+                          <p className="text-sm text-muted-foreground font-medium">
                           Precio unitario: <span className="text-foreground">{formatPrice(item.precioUnitario)}</span>
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -159,7 +166,8 @@ export default function CartPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {/* Controls */}
               <div className="flex justify-between items-center pt-2">
