@@ -138,16 +138,16 @@ function Sidebar({ onClose }: SidebarProps) {
   };
 
   return (
-    <aside className="admin-sidebar flex h-full flex-col bg-[#080809] border-r border-neutral-900">
+    <aside className="admin-sidebar flex h-full flex-col bg-white dark:bg-[#080809] border-r border-neutral-200 dark:border-neutral-900 transition-colors duration-300">
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-neutral-900">
+      <div className="flex items-center justify-between px-5 py-5 border-b border-neutral-200 dark:border-neutral-900 transition-colors duration-300">
         <Link to="/admin" className="flex items-center gap-3">
           <img
             src="/logo.png"
             alt="Aura Rider Logo"
             className="h-9 w-9 rounded-full border border-neutral-700/50 object-cover"
           />
-          <span className="text-sm font-black uppercase tracking-tighter text-white">
+          <span className="text-sm font-black uppercase tracking-tighter text-foreground">
             AURA<span className="text-primary">RIDER</span>
           </span>
         </Link>
@@ -155,7 +155,7 @@ function Sidebar({ onClose }: SidebarProps) {
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-500 hover:text-white transition-colors lg:hidden"
+            className="text-neutral-500 hover:text-foreground dark:hover:text-white transition-colors lg:hidden"
           >
             <X className="size-5" />
           </button>
@@ -171,7 +171,7 @@ function Sidebar({ onClose }: SidebarProps) {
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
             location.pathname === '/admin'
               ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-neutral-400 hover:bg-neutral-900 hover:text-white border border-transparent'
+              : 'text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-foreground dark:hover:text-white border border-transparent'
           }`}
         >
           <LayoutDashboard className="size-4 shrink-0" />
@@ -205,7 +205,7 @@ function Sidebar({ onClose }: SidebarProps) {
               </button>
 
               {isOpen && (
-                <div className="ml-4 mt-1 space-y-0.5 border-l border-neutral-800 pl-3">
+                <div className="ml-4 mt-1 space-y-0.5 border-l border-neutral-200 dark:border-neutral-800 pl-3 transition-colors duration-300">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     const active = isActive(item.path);
@@ -217,7 +217,7 @@ function Sidebar({ onClose }: SidebarProps) {
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all duration-150 ${
                           active
                             ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_12px_rgba(239,68,68,0.08)]'
-                            : 'text-neutral-500 hover:bg-neutral-900/60 hover:text-white border border-transparent'
+                            : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900/60 hover:text-foreground dark:hover:text-white border border-transparent'
                         }`}
                       >
                         <ItemIcon className="size-3.5 shrink-0" />
@@ -236,10 +236,10 @@ function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* User section */}
-      <div className="border-t border-neutral-900 p-4 space-y-3">
+      <div className="border-t border-neutral-200 dark:border-neutral-900 p-4 space-y-3 transition-colors duration-300">
         <Link
           to="/"
-          className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors font-semibold"
+          className="flex items-center gap-2 text-xs text-neutral-500 hover:text-foreground dark:hover:text-white transition-colors font-semibold"
         >
           <ToggleRight className="size-4" />
           Volver al sitio
@@ -249,7 +249,7 @@ function Sidebar({ onClose }: SidebarProps) {
             {user?.username?.[0] ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-white truncate">{user?.username ?? 'Admin'}</p>
+            <p className="text-xs font-bold text-foreground truncate">{user?.username ?? 'Admin'}</p>
             <p className="text-[10px] text-neutral-500 truncate">{user?.email ?? ''}</p>
           </div>
           <button

@@ -24,8 +24,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
       const profile = await getProfileUseCase.execute();
       set({ profile, isLoading: false });
     } catch (err: any) {
+      const isNotFound = err.response?.status === 404 || err.response?.data?.detail?.includes('no encontrado');
       set({
-        error: err.response?.data?.detail || 'Error al obtener el perfil',
+        profile: null,
+        error: isNotFound ? null : (err.response?.data?.detail || 'Error al obtener el perfil'),
         isLoading: false,
       });
     }

@@ -4,7 +4,6 @@ import { useAuthStore } from '../store/auth.store';
 
 import Layout from '../components/Layout';
 import AdminLayout from '../components/AdminLayout';
-import PlaceholderPage from '../pages/PlaceholderPage';
 
 // Páginas públicas y privadas
 import LoginPage from '../pages/auth/LoginPage';
@@ -47,6 +46,8 @@ import ComprasAdminPage from '../pages/admin/ComprasAdminPage';
 // Páginas administrativas — reportes / sistema
 import HistorialVentasAdminPage from '../pages/admin/HistorialVentasAdminPage';
 import NotificacionesAdminPage from '../pages/admin/NotificacionesAdminPage';
+import OrdersAdminPage from '../pages/admin/OrdersAdminPage';
+import UsersAdminPage from '../pages/admin/UsersAdminPage';
 
 // Repuestos e inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
@@ -202,8 +203,8 @@ export default function AppRouter() {
         {/* Reportes / sistema */}
         <Route path="/admin/historial-ventas" element={<AdminPage element={<HistorialVentasAdminPage />} />} />
         <Route path="/admin/notificaciones" element={<AdminPage element={<NotificacionesAdminPage />} />} />
-        <Route path="/admin/orders" element={<AdminPage element={<PlaceholderPage title="Órdenes de clientes" />} />} />
-        <Route path="/admin/users" element={<AdminPage element={<PlaceholderPage title="Gestión de usuarios" />} />} />
+        <Route path="/admin/orders" element={<AdminPage element={<OrdersAdminPage />} />} />
+        <Route path="/admin/users" element={<AdminPage element={<UsersAdminPage />} />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

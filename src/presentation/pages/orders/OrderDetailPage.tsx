@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderStore } from '../../store/order.store';
+import { useVentaStore } from '../../store/venta.store';
+import { useMotoStore } from '../../store/moto.store';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -12,7 +14,10 @@ import { StatusBadge } from '../../components/StatusBadge';
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { selectedOrder, fetchOrderById, confirmOrder, isLoading, error, clearSelectedOrder } = useOrderStore();
+  const { createVenta } = useVentaStore();
+  const { motos, fetchMotos } = useMotoStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   useEffect(() => {
     if (id) {
@@ -23,11 +28,25 @@ export default function OrderDetailPage() {
     };
   }, [id, fetchOrderById, clearSelectedOrder]);
 
+  useEffect(() => {
+    if (motos.length === 0) {
+      fetchMotos({ limit: 100 });
+    }
+  }, [motos.length, fetchMotos]);
+
   const handleConfirm = async () => {
-    if (selectedOrder) {
+    if (selectedOrder && paymentMethod) {
       try {
         await confirmOrder(selectedOrder.idPedido);
-        setSuccessMsg('¡Pedido confirmado exitosamente!');
+        
+        // Integración con Ventas: Sincronizar el pedido pagado con el módulo de Ventas
+        await createVenta({
+          id_pedido: selectedOrder.idPedido,
+          total_venta: selectedOrder.total.toString(),
+          estado: 'completada'
+        });
+
+        setSuccessMsg('¡Pedido y Pago procesados exitosamente!');
         setTimeout(() => setSuccessMsg(null), 3000);
       } catch {
         // Error manejado en el store
@@ -87,22 +106,36 @@ export default function OrderDetailPage() {
         {/* Items List */}
         <div className="md:col-span-2 space-y-4">
           <h2 className="text-lg font-bold">Motos Solicitadas</h2>
-          {(selectedOrder.carrito?.items || []).map((item) => (
-            <Card key={item.idItem} className="border-border/40">
-              <CardContent className="p-4 flex justify-between items-center gap-4">
-                <div className="flex gap-3 items-center">
-                  <span className="text-2xl bg-muted p-2 rounded-xl">🏍️</span>
-                  <div>
-                    <h4 className="font-bold text-sm">Moto ID: {item.idMoto}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {item.cantidad} x {formatPrice(item.precioUnitario)}
-                    </p>
+          {(selectedOrder.carrito?.items || []).map((item) => {
+            const moto = item.idMoto ? motos.find(m => m.idMoto === item.idMoto) : null;
+            return (
+              <Card key={item.idItem} className="border-border/40">
+                <CardContent className="p-4 flex justify-between items-center gap-4">
+                  <div className="flex gap-3 items-center">
+                    <div className="size-10 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                      {moto && moto.imagen ? (
+                        <img src={moto.imagen} alt={moto.modelo} className="w-full h-full object-cover" />
+                      ) : (
+                        item.idMoto ? '🏍️' : '⚙️'
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">
+                        {moto 
+                          ? `${moto.marca} ${moto.modelo}` 
+                          : (item.idMoto ? `Moto ID: #${item.idMoto}` : `Repuesto ID: #${item.idRepuesto}`)
+                        }
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {item.cantidad} x {formatPrice(item.precioUnitario)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <span className="text-sm font-bold text-primary">{formatPrice(item.subtotal)}</span>
-              </CardContent>
-            </Card>
-          ))}
+                  <span className="text-sm font-bold text-primary">{formatPrice(item.subtotal)}</span>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Pricing Summary */}
@@ -124,10 +157,28 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
             {selectedOrder.estado === 'pending' && (
-              <CardFooter className="pt-2">
-                <Button className="w-full gap-2 font-semibold shadow-xs" onClick={handleConfirm}>
+              <CardFooter className="flex-col gap-4 pt-4 border-t border-border/40">
+                <div className="w-full space-y-2">
+                  <label className="text-sm font-semibold text-foreground">Método de Pago</label>
+                  <select
+                    className="w-full h-10 px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="" disabled>Selecciona un método de pago...</option>
+                    <option value="tarjeta">Tarjeta de Crédito / Débito</option>
+                    <option value="transferencia">Transferencia Bancaria</option>
+                    <option value="efectivo">Efectivo (Pago en tienda)</option>
+                  </select>
+                </div>
+                
+                <Button 
+                  className="w-full gap-2 font-semibold shadow-xs" 
+                  onClick={handleConfirm}
+                  disabled={!paymentMethod}
+                >
                   <CreditCard className="size-4" />
-                  Confirmar Pedido
+                  {paymentMethod ? 'Pagar y Confirmar' : 'Selecciona método de pago'}
                 </Button>
               </CardFooter>
             )}

@@ -5,7 +5,7 @@ import { useMotoStore } from '../../store/moto.store';
 import { useBrandStore } from '../../store/brand.store';
 import { useCategoryStore } from '../../store/category.store';
 import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
 import { Search, ArrowRight, Bike, SlidersHorizontal, X } from 'lucide-react';
@@ -66,16 +66,16 @@ export default function MotosPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Page header */}
-      <div className="bg-[#070708] border-b border-neutral-900 py-10">
+      <div className="bg-neutral-100 dark:bg-[#070708] border-b border-neutral-200 dark:border-neutral-900 py-10 transition-colors duration-300">
         <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6">
           <span className="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">
             Catálogo completo
           </span>
-          <h1 className="text-4xl font-black uppercase tracking-tight text-white mt-1">
+          <h1 className="text-4xl font-black uppercase tracking-tight text-foreground mt-1">
             Nuestras Motos
           </h1>
           <p className="text-neutral-500 text-sm font-medium mt-2">
-            Explora toda nuestra colección — {isLoading ? '...' : motos.length} modelos disponibles
+            Explora toda nuestra colección
           </p>
         </div>
       </div>
@@ -257,56 +257,73 @@ export default function MotosPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {motos.map((moto) => (
-              <Card key={moto.idMoto} className="racing-card rounded-none h-[400px]">
-                {/* Imagen */}
-                <div className="aspect-video w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center p-4">
+              <Card key={moto.idMoto} className="glass-panel h-[480px] overflow-hidden group flex flex-col justify-between rounded-[2.5rem] hover:shadow-[0_20px_50px_rgba(255,26,26,0.2)] hover:-translate-y-2 transition-all duration-700 ease-out border border-white/5 relative bg-neutral-100/50 dark:bg-black/40">
+                {/* Ambient card glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/0 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                {/* Image Container - Showroom Style */}
+                <div className="h-[55%] w-full relative overflow-hidden flex items-center justify-center p-6 bg-white dark:bg-neutral-100 rounded-b-[2.5rem] shadow-[inset_0_-15px_30px_rgba(0,0,0,0.05)] z-10 transition-colors duration-500">
+                  {/* Pedestal Shadow */}
+                  <div className="absolute bottom-4 w-3/4 h-4 bg-black/20 blur-xl rounded-full scale-y-50" />
+                  
                   {moto.imagen ? (
                     <img
                       src={moto.imagen}
                       alt={moto.modelo}
-                      className="object-contain w-full h-full hover:scale-105 transition-transform duration-500"
+                      className="object-contain w-full h-full mix-blend-multiply group-hover:scale-110 group-hover:-rotate-3 group-hover:-translate-y-2 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-10"
                     />
                   ) : (
-                    <span className="text-5xl">🏍️</span>
+                    <span className="text-6xl drop-shadow-2xl relative z-10">🏍️</span>
                   )}
-                  <span
-                    className={`absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border ${
-                      moto.stock > 0
-                        ? 'bg-green-500/10 text-green-600 border-green-500/25'
-                        : 'bg-destructive/10 text-destructive border-destructive/20'
-                    }`}
-                  >
+                  
+                  {/* Premium Stock Badge */}
+                  <div className={`absolute top-5 right-5 text-[9px] font-black uppercase px-4 py-2 rounded-2xl tracking-widest backdrop-blur-xl border shadow-lg z-20 ${
+                    moto.stock > 0
+                      ? 'bg-green-500/10 text-green-700 dark:text-green-600 border-green-500/30 shadow-green-500/20'
+                      : 'bg-red-500/10 text-red-700 dark:text-red-600 border-red-500/30 shadow-red-500/20'
+                  }`}>
                     {moto.stock > 0 ? 'En Stock' : 'Agotado'}
-                  </span>
+                  </div>
+                  
+                  {/* Floating Brand Tag */}
+                  <div className="absolute top-5 left-5 z-20">
+                    <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] bg-black/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-xl">
+                      {moto.marca || 'Sport'}
+                    </span>
+                  </div>
                 </div>
 
-                <CardHeader className="p-5 pb-2">
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest">
-                    {moto.marca || 'Sport'}
-                  </span>
-                  <CardTitle className="text-base font-black text-card-foreground mt-0.5 truncate uppercase">
-                    {moto.modelo}
-                  </CardTitle>
-                  <p className="text-[11px] text-neutral-400 font-bold mt-0.5">
-                    {moto.categoria || 'Naked'}
-                  </p>
-                </CardHeader>
+                {/* Info Section */}
+                <div className="flex-1 flex flex-col p-8 z-10 relative">
+                  <div className="mb-auto">
+                    <CardTitle className="text-2xl font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors duration-300 drop-shadow-sm">
+                      {moto.modelo}
+                    </CardTitle>
+                    <p className="text-[11px] text-neutral-500 font-black mt-2 uppercase tracking-[0.2em]">
+                      {moto.categoria || 'Naked'}
+                    </p>
+                  </div>
 
-                <CardContent className="px-5 pb-5 pt-0">
-                  <p className="text-xl font-extrabold text-card-foreground">{formatPrice(moto.precio)}</p>
-                </CardContent>
-
-                <CardFooter className="px-5 py-4 mt-auto flex justify-between items-center border-t border-border">
-                  <Link
-                    to={`/products/${moto.idMoto}`}
-                    className="w-full flex justify-between items-center group"
-                  >
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-card-foreground/75 group-hover:text-primary transition-colors">
-                      Ver Detalles
-                    </span>
-                    <ArrowRight className="size-4 text-neutral-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                  </Link>
-                </CardFooter>
+                  {/* Price & Action */}
+                  <div className="flex items-end justify-between pt-6 mt-4 relative">
+                    {/* Accent line */}
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-neutral-200 dark:from-white/10 to-transparent" />
+                    
+                    <div>
+                      <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-1">Precio base</p>
+                      <p className="text-3xl font-black text-foreground tracking-tighter group-hover:drop-shadow-[0_0_15px_rgba(255,26,26,0.4)] transition-all duration-300">
+                        {formatPrice(moto.precio)}
+                      </p>
+                    </div>
+                    
+                    {/* Animated Arrow Button */}
+                    <Link to={`/products/${moto.idMoto}`} className="relative size-12 rounded-full bg-neutral-200 dark:bg-white/5 group-hover:bg-primary text-foreground group-hover:text-white flex items-center justify-center border border-neutral-300 dark:border-white/10 group-hover:border-primary transition-all duration-500 overflow-hidden shadow-lg group-hover:shadow-[0_0_20px_rgba(255,26,26,0.6)]">
+                      <ArrowRight className="size-5 -rotate-45 group-hover:rotate-0 transition-transform duration-500 relative z-10" />
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shiny-slide_1s_ease-in-out_infinite]" />
+                    </Link>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>

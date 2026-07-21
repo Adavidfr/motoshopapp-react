@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema } from '../../../application/dtos/auth.dto';
 import type { RegisterDto } from '../../../application/dtos/auth.dto';
 import { useAuthStore } from '../../store/auth.store';
-import { User, Mail, Lock, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { User, Mail, Lock, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -31,170 +32,212 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative flex min-h-[90vh] items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-[#070708] overflow-hidden">
-      {/* Background Grid & Ambient Red Glow */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,rgba(255,26,26,0.12)_0%,rgba(7,7,8,0)_70%)] pointer-events-none z-0 blur-xl animate-pulse duration-[8000ms]" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black font-sans">
+      
+      {/* 1. CINEMATIC BACKGROUND (Mirrored from Login) */}
+      <motion.div 
+        initial={{ scale: 1.1, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }} 
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="absolute inset-0 z-0"
+      >
+        <img 
+          src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=2070&auto=format&fit=crop" 
+          alt="Night Rider" 
+          className="w-full h-full object-cover opacity-50 contrast-125 saturate-50 scale-x-[-1]"
+        />
+        {/* Dynamic Vignette & Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-transparent to-black/80" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,26,26,0.1)_0%,transparent_60%)] animate-pulse-glow" />
+      </motion.div>
 
-      {/* Split Design Card */}
-      <div className="relative w-full max-w-[1050px] min-h-[580px] bg-[#0c0c0e] rounded-[2.5rem] shadow-[0_0_80px_rgba(255,26,26,0.05),0_30px_70px_rgba(0,0,0,0.85)] border border-neutral-900/60 overflow-hidden z-10 grid grid-cols-1 md:grid-cols-2">
-        
-        {/* Left Side: Form */}
-        <div className="p-10 sm:p-14 flex flex-col justify-center">
-          {/* Brand header */}
-          <div className="flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="Aura Rider Logo" className="h-7 w-7 object-contain" />
-            <span className="text-sm font-black tracking-widest text-white uppercase">AURA RIDER</span>
+      {/* 2. FLOATING AMBIENT ORBS */}
+      <motion.div 
+        animate={{ y: [0, -20, 0], x: [0, 10, 0], rotate: [0, 5, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none z-0" 
+      />
+      <motion.div 
+        animate={{ y: [0, 30, 0], x: [0, -15, 0], rotate: [0, -5, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute bottom-1/4 left-1/4 w-[30rem] h-[30rem] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none z-0" 
+      />
+
+      {/* 3. CENTER FLOATING GLASS FORM */}
+      <motion.div 
+        initial={{ y: 50, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, type: "spring", stiffness: 200, damping: 25, delay: 0.2 }}
+        className="relative z-10 w-full max-w-2xl p-10 sm:p-14 mx-4 my-8 rounded-[2.5rem] bg-black/40 backdrop-blur-[40px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(255,255,255,0.02)] before:absolute before:inset-0 before:rounded-[2.5rem] before:border before:border-white/5 before:pointer-events-none"
+      >
+        {/* Glowing Top Edge */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent" />
+
+        {/* Brand Header */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col items-center justify-center gap-4 mb-10 text-center"
+        >
+          <div className="relative group cursor-pointer">
+            <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+            <img src="/logo.png" alt="Aura Rider Logo" className="relative h-14 w-14 object-contain drop-shadow-[0_0_15px_rgba(255,26,26,0.6)]" />
           </div>
+          <div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-[0.1em] drop-shadow-md">Únete a la Élite</h2>
+            <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mt-2">Crea tu Perfil de Piloto</p>
+          </div>
+        </motion.div>
 
-          <h3 className="text-2xl font-black text-white tracking-tight mb-4 uppercase">
-            Crear Cuenta
-          </h3>
-
-          {success ? (
-            <div className="p-6 text-center text-sm bg-green-500/10 border border-green-500/20 text-green-400 rounded-[2rem] space-y-3 font-semibold">
-              <ShieldCheck className="size-8 mx-auto text-green-400 animate-bounce" />
-              <div>
-                <p className="font-bold text-base text-white">¡Registro Exitoso!</p>
-                <p className="text-neutral-400 text-xs mt-1 font-medium">Redirigiendo al inicio de sesión...</p>
+        {success ? (
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-10 text-center bg-black/30 border border-green-500/20 rounded-3xl space-y-6 backdrop-blur-md">
+            <div className="relative size-24 mx-auto">
+              <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse-glow" />
+              <div className="relative size-24 rounded-full bg-black/50 border border-green-500/40 flex items-center justify-center shadow-[inset_0_0_20px_rgba(34,197,94,0.2)]">
+                <ShieldCheck className="size-12 text-green-400" />
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <div className="p-3.5 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-full flex items-center gap-2 font-semibold justify-center">
-                  <ShieldAlert className="size-4 shrink-0" />
-                  {error}
-                </div>
-              )}
-              
-              {/* Username Input */}
-              <div className="space-y-1">
+            <div>
+              <p className="font-black text-2xl text-white uppercase tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">¡Acelerando!</p>
+              <p className="text-neutral-400 text-sm font-bold mt-2 uppercase tracking-widest">Credenciales Aprobadas</p>
+            </div>
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-6">
+              <div className="h-full bg-gradient-to-r from-green-500 to-green-300 rounded-full shadow-[0_0_15px_rgba(34,197,94,0.8)]" style={{ animation: 'progress-bar 2.5s linear forwards' }} />
+            </div>
+          </motion.div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {error && (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-4 text-xs bg-destructive/10 border border-destructive/30 text-destructive rounded-xl flex items-center gap-3 font-bold shadow-[0_0_20px_rgba(255,26,26,0.2)]">
+                <ShieldAlert className="size-5 shrink-0" />
+                {error}
+              </motion.div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Username Field */}
+              <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.45 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Usuario</label>
                 <div className="relative flex items-center group">
-                  <User className="absolute left-5 size-4.5 text-neutral-500 group-focus-within:text-primary transition-colors" />
+                  <User className="absolute left-5 size-5 text-neutral-500 group-focus-within:text-primary transition-colors duration-500" />
                   <input
                     id="username"
                     type="text"
-                    placeholder="Usuario"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="Piloto123"
+                    className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 pl-14 pr-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
                     {...register('username')}
-                    aria-invalid={errors.username ? 'true' : 'false'}
                   />
                 </div>
-                {errors.username && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.username.message}</p>
-                )}
-              </div>
+                {errors.username && <p className="text-xs text-primary font-bold pl-2 mt-1.5">{errors.username.message}</p>}
+              </motion.div>
 
-              {/* Email Input */}
-              <div className="space-y-1">
+              {/* Email Field */}
+              <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Correo</label>
                 <div className="relative flex items-center group">
-                  <Mail className="absolute left-5 size-4.5 text-neutral-500" />
+                  <Mail className="absolute left-5 size-5 text-neutral-500 group-focus-within:text-primary transition-colors duration-500" />
                   <input
                     id="email"
                     type="email"
-                    placeholder="Correo Electrónico"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="piloto@aura.com"
+                    className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 pl-14 pr-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
                     {...register('email')}
-                    aria-invalid={errors.email ? 'true' : 'false'}
                   />
                 </div>
-                {errors.email && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.email.message}</p>
-                )}
-              </div>
+                {errors.email && <p className="text-xs text-primary font-bold pl-2 mt-1.5">{errors.email.message}</p>}
+              </motion.div>
+            </div>
 
-              {/* First Name & Last Name Side by Side */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <input
-                    id="firstName"
-                    type="text"
-                    placeholder="Nombre"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                    {...register('firstName')}
-                  />
-                </div>
-                <div>
-                  <input
-                    id="lastName"
-                    type="text"
-                    placeholder="Apellido"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                    {...register('lastName')}
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Names */}
+              <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.55 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Nombre</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  placeholder="Nombre"
+                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 px-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
+                  {...register('firstName')}
+                />
+              </motion.div>
+              <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Apellido</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  placeholder="Apellido"
+                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 px-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
+                  {...register('lastName')}
+                />
+              </motion.div>
+            </div>
 
-              {/* Password Input */}
-              <div className="space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Passwords */}
+              <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.65 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Contraseña</label>
                 <div className="relative flex items-center group">
-                  <Lock className="absolute left-5 size-4.5 text-neutral-500" />
+                  <Lock className="absolute left-5 size-5 text-neutral-500 group-focus-within:text-primary transition-colors duration-500" />
                   <input
                     id="password"
                     type="password"
-                    placeholder="Contraseña"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="••••••••"
+                    className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 pl-14 pr-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
                     {...register('password')}
-                    aria-invalid={errors.password ? 'true' : 'false'}
                   />
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.password.message}</p>
-                )}
-              </div>
-
-              {/* Confirm Password Input */}
-              <div className="space-y-1">
+                {errors.password && <p className="text-xs text-primary font-bold pl-2 mt-1.5">{errors.password.message}</p>}
+              </motion.div>
+              <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.7 }} className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 pl-2">Confirmar</label>
                 <div className="relative flex items-center group">
-                  <Lock className="absolute left-5 size-4.5 text-neutral-500" />
+                  <Lock className="absolute left-5 size-5 text-neutral-500 group-focus-within:text-primary transition-colors duration-500" />
                   <input
                     id="confirmPassword"
                     type="password"
-                    placeholder="Confirmar Contraseña"
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 pl-14 pr-5 text-sm font-semibold placeholder-neutral-500 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    placeholder="••••••••"
+                    className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4.5 pl-14 pr-5 text-sm font-medium placeholder-neutral-600 focus:outline-none focus:border-primary/50 focus:bg-white/5 focus:shadow-[0_0_30px_rgba(255,26,26,0.15)] transition-all duration-500"
                     {...register('confirmPassword')}
-                    aria-invalid={errors.confirmPassword ? 'true' : 'false'}
                   />
                 </div>
-                {errors.confirmPassword && (
-                  <p className="text-xs text-destructive font-bold pl-5 mt-1">{errors.confirmPassword.message}</p>
+                {errors.confirmPassword && <p className="text-xs text-primary font-bold pl-2 mt-1.5">{errors.confirmPassword.message}</p>}
+              </motion.div>
+            </div>
+
+            <motion.button
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              type="submit"
+              className="relative w-full mt-8 bg-white hover:bg-primary text-black hover:text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl py-5 transition-all duration-500 overflow-hidden group shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,26,26,0.4)] hover:-translate-y-1"
+              disabled={isLoading}
+            >
+              {/* Shimmer Effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shiny-slide_1.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+              
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <svg className="size-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="28" strokeLinecap="round" /></svg>
+                    CREANDO PERFIL...
+                  </>
+                ) : (
+                  <>COMBUSTIÓN <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" /></>
                 )}
               </div>
-              <button 
-                type="submit" 
-                className="w-full mt-6 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-widest rounded-full py-4.5 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_25px_rgba(255,26,26,0.4)] disabled:opacity-50"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Creando...' : 'REGISTRARSE'}
-              </button>
-            </form>
-          )}
-        </div>
+            </motion.button>
 
-        {/* Right Side: Spectacular Image Banner with Welcome Text */}
-        <div className="relative hidden md:block w-full h-full bg-[url('https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center">
-          {/* Glossy gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-primary/10" />
-          
-          {/* Welcome Text elements */}
-          <div className="absolute inset-0 flex flex-col justify-end p-14 text-left space-y-4 z-20">
-            <h2 className="text-5xl sm:text-6xl font-black text-white leading-none uppercase tracking-tighter">
-              ÚNETE AL EQUIPO.
-            </h2>
-            <p className="text-neutral-350 text-sm max-w-sm font-semibold leading-relaxed">
-              Crea tu cuenta de piloto para ver los mejores modelos y gestionar tus reservas con total facilidad.
-            </p>
-            <div className="pt-4 text-sm font-semibold text-neutral-400">
-              ¿Ya tienes una cuenta?{' '}
-              <Link to="/login" onClick={clearError} className="text-white hover:text-primary underline font-bold transition-all ml-1">
-                Inicia sesión aquí
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} className="text-center text-xs font-bold text-neutral-500 pt-6 uppercase tracking-widest">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" onClick={clearError} className="text-primary hover:text-white transition-colors ml-2 border-b border-primary/30 hover:border-white pb-1">
+                Iniciar Sesión
               </Link>
-            </div>
-          </div>
-        </div>
-
-      </div>
+            </motion.p>
+          </form>
+        )}
+      </motion.div>
     </div>
   );
 }

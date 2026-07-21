@@ -4,6 +4,7 @@ import type { User } from '../../domain/entities/user.entity';
 import type { LoginDto, RegisterPayload } from '../../application/dtos/auth.dto';
 import { loginUseCase, registerUseCase, logoutUseCase } from '../../infrastructure/factories/auth.factory';
 import { LocalTokenStorage } from '../../infrastructure/storage/local-token-storage';
+import { useProfileStore } from './profile.store';
 
 interface AuthState {
   user: User | null;
@@ -81,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       LocalTokenStorage.clearTokens();
       localStorage.removeItem('motoshop_user');
+      useProfileStore.getState().clearProfile();
       set({
         user: null,
         isAuthenticated: false,
