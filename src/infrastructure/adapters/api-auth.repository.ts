@@ -39,6 +39,7 @@ export class ApiAuthRepository implements AuthRepository {
       username: dto.username,
       email: dto.email,
       password: dto.password,
+      password2: dto.confirmPassword,
       first_name: dto.firstName,
       last_name: dto.lastName,
     });

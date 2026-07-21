@@ -19,9 +19,7 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterDto) => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword: _confirm, ...payload } = data;
-      await registerApi(payload);
+      await registerApi(data);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');

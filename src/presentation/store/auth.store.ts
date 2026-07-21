@@ -66,7 +66,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: false });
     } catch (err: any) {
       set({
-        error: err.response?.data?.username?.[0] || err.response?.data?.email?.[0] || 'Error en el registro',
+        error: 
+          err.response?.data?.password2?.[0] || 
+          err.response?.data?.password_confirm?.[0] || 
+          err.response?.data?.re_password?.[0] || 
+          err.response?.data?.password?.[0] || 
+          err.response?.data?.username?.[0] || 
+          err.response?.data?.email?.[0] || 
+          err.response?.data?.detail || 
+          'Error en el registro',
         isLoading: false,
       });
       throw err;

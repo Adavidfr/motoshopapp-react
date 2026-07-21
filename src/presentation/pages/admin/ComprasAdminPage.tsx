@@ -633,11 +633,11 @@ export default function ComprasAdminPage() {
             Abastecimiento
           </p>
 
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground md:text-4xl">
             Administrar compras
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Gestiona las compras de motos y repuestos realizadas a proveedores.
           </p>
         </div>
@@ -645,7 +645,7 @@ export default function ComprasAdminPage() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Nueva compra
@@ -690,7 +690,7 @@ export default function ComprasAdminPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+      <section className="rounded-[2rem] border border-border bg-card p-4 shadow-2xl md:p-5">
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
           <div className="relative xl:col-span-2">
             <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
@@ -701,14 +701,14 @@ export default function ComprasAdminPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Proveedor, moto, repuesto o estado..."
-              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-11 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
 
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="size-4" />
@@ -727,7 +727,7 @@ export default function ComprasAdminPage() {
                     | undefined,
               })
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los estados</option>
 
@@ -748,7 +748,7 @@ export default function ComprasAdminPage() {
                   event.target.value || undefined,
               })
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
             title="Fecha desde"
           />
 
@@ -762,7 +762,7 @@ export default function ComprasAdminPage() {
                   event.target.value || undefined,
               })
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
             title="Fecha hasta"
           />
         </div>
@@ -777,7 +777,7 @@ export default function ComprasAdminPage() {
                   event.target.value as CompraFilters['ordering'],
               })
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary sm:min-w-64"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary sm:min-w-64"
           >
             <option value="-fecha_compra">Más recientes</option>
             <option value="fecha_compra">Más antiguas</option>
@@ -791,14 +791,14 @@ export default function ComprasAdminPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="rounded-full bg-neutral-800 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700"
+            className="rounded-full bg-muted px-5 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-colors hover:bg-neutral-700"
           >
             Limpiar filtros
           </button>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+      <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
         {isLoading && compras.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-10 animate-spin text-primary" />
@@ -807,7 +807,7 @@ export default function ComprasAdminPage() {
           <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
             <ShoppingCart className="mb-4 size-12 text-neutral-700" />
 
-            <h2 className="text-lg font-black uppercase text-white">
+            <h2 className="text-lg font-black uppercase text-foreground">
               No se encontraron compras
             </h2>
 
@@ -819,7 +819,7 @@ export default function ComprasAdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1150px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-muted-foreground">
                   <th className="px-6 py-4">Compra</th>
                   <th className="px-6 py-4">Proveedor</th>
                   <th className="px-6 py-4">Producto</th>
@@ -835,7 +835,7 @@ export default function ComprasAdminPage() {
                 {compras.map((compra) => (
                   <tr
                     key={compra.id_compra}
-                    className="transition-colors hover:bg-neutral-900/20"
+                    className="transition-colors hover:bg-muted/20"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -844,7 +844,7 @@ export default function ComprasAdminPage() {
                         </div>
 
                         <div>
-                          <p className="font-bold text-white">
+                          <p className="font-bold text-foreground">
                             #{compra.id_compra}
                           </p>
 
@@ -855,13 +855,13 @@ export default function ComprasAdminPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {proveedoresMap.get(compra.proveedor) ??
                         `Proveedor #${compra.proveedor}`}
                     </td>
 
                     <td className="px-6 py-4">
-                      <p className="font-bold text-white">
+                      <p className="font-bold text-foreground">
                         {getProductoDescription(compra)}
                       </p>
 
@@ -870,15 +870,15 @@ export default function ComprasAdminPage() {
                       </p>
                     </td>
 
-                    <td className="px-6 py-4 text-right text-neutral-300">
+                    <td className="px-6 py-4 text-right text-muted-foreground">
                       {compra.cantidad}
                     </td>
 
-                    <td className="px-6 py-4 text-right text-neutral-300">
+                    <td className="px-6 py-4 text-right text-muted-foreground">
                       {formatCurrency(compra.precio_unitario)}
                     </td>
 
-                    <td className="px-6 py-4 text-right font-bold text-white">
+                    <td className="px-6 py-4 text-right font-bold text-foreground">
                       {formatCurrency(compra.subtotal)}
                     </td>
 
@@ -897,7 +897,7 @@ export default function ComprasAdminPage() {
                         <button
                           type="button"
                           onClick={() => openEditModal(compra)}
-                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                           title="Editar compra"
                         >
                           <Edit className="size-4" />
@@ -930,13 +930,13 @@ export default function ComprasAdminPage() {
               type="button"
               disabled={page <= 1 || isLoading}
               onClick={() => handlePageChange(page - 1)}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
             </button>
 
-            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+            <span className="min-w-24 text-center text-xs font-bold text-muted-foreground">
               Página {page} de {totalPages}
             </span>
 
@@ -944,7 +944,7 @@ export default function ComprasAdminPage() {
               type="button"
               disabled={page >= totalPages || isLoading}
               onClick={() => handlePageChange(page + 1)}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />
@@ -955,14 +955,14 @@ export default function ComprasAdminPage() {
 
       {isFormOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-7 shadow-2xl md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
                   Compras
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase text-foreground">
                   {editingCompra
                     ? `Editar compra #${editingCompra.id_compra}`
                     : 'Nueva compra'}
@@ -977,7 +977,7 @@ export default function ComprasAdminPage() {
                 type="button"
                 onClick={closeFormModal}
                 disabled={isSaving}
-                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
+                className="rounded-full bg-muted p-2 text-neutral-500 transition-colors hover:text-foreground disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
@@ -1027,7 +1027,7 @@ export default function ComprasAdminPage() {
                     className={`rounded-full border py-3 text-xs font-black uppercase tracking-wider transition-colors ${
                       form.tipoProducto === 'moto'
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-neutral-800 bg-[#141417] text-neutral-500 hover:text-white'
+                        : 'border-border bg-background text-neutral-500 hover:text-primary-foreground'
                     }`}
                   >
                     Moto
@@ -1039,7 +1039,7 @@ export default function ComprasAdminPage() {
                     className={`rounded-full border py-3 text-xs font-black uppercase tracking-wider transition-colors ${
                       form.tipoProducto === 'repuesto'
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-neutral-800 bg-[#141417] text-neutral-500 hover:text-white'
+                        : 'border-border bg-background text-neutral-500 hover:text-primary-foreground'
                     }`}
                   >
                     Repuesto
@@ -1149,7 +1149,7 @@ export default function ComprasAdminPage() {
                     type="text"
                     value={form.subtotal}
                     readOnly
-                    className="w-full rounded-full border border-neutral-800 bg-neutral-900 px-5 py-3 text-sm font-bold text-neutral-300 outline-none"
+                    className="w-full rounded-full border border-border bg-muted px-5 py-3 text-sm font-bold text-muted-foreground outline-none"
                   />
                 </FormField>
               </div>
@@ -1182,7 +1182,7 @@ export default function ComprasAdminPage() {
                   type="button"
                   disabled={isSaving}
                   onClick={closeFormModal}
-                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                  className="w-full rounded-full border border-border py-4 text-xs font-black uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -1190,7 +1190,7 @@ export default function ComprasAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSaving && (
                     <Loader2 className="size-4 animate-spin" />
@@ -1210,18 +1210,18 @@ export default function ComprasAdminPage() {
 
       {deletingCompra && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 shadow-2xl">
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
               <Trash2 className="size-6" />
             </div>
 
-            <h2 className="text-center text-xl font-black uppercase text-white">
+            <h2 className="text-center text-xl font-black uppercase text-foreground">
               Eliminar compra
             </h2>
 
-            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+            <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
               Se eliminará la compra{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 #{deletingCompra.id_compra}
               </span>
               . Esta acción no se puede deshacer.
@@ -1232,7 +1232,7 @@ export default function ComprasAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={() => setDeletingCompra(null)}
-                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                className="w-full rounded-full border border-border py-3 text-xs font-black uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -1241,7 +1241,7 @@ export default function ComprasAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={() => void handleDelete()}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isSaving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -1264,14 +1264,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+    <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
             {title}
           </p>
 
-          <p className="mt-2 text-3xl font-black text-white">
+          <p className="mt-2 text-3xl font-black text-foreground">
             {value}
           </p>
         </div>
@@ -1299,7 +1299,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
         {label}
 
         {required && (
@@ -1320,10 +1320,10 @@ function FormField({
 
 function inputClass(hasError: boolean): string {
   return [
-    'w-full rounded-full border bg-[#141417] px-5 py-3 text-sm font-semibold text-white',
+    'w-full rounded-full border bg-background px-5 py-3 text-sm font-semibold text-foreground',
     'placeholder:text-neutral-600 focus:outline-none focus:ring-4 focus:ring-primary/10',
     hasError
       ? 'border-destructive'
-      : 'border-neutral-800 focus:border-primary/80',
+      : 'border-border focus:border-primary/80',
   ].join(' ');
 }

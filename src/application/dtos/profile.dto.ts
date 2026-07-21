@@ -6,7 +6,7 @@ export const updateProfileSchema = z.object({
   telefono: z.string().max(20, 'Teléfono no puede tener más de 20 caracteres').min(1, 'Teléfono es requerido'),
   direccion: z.string().min(1, 'Dirección es requerida'),
   fechaNacimiento: z.string().nullable().optional(),
-  fotoPerfil: z.string().nullable().optional(),
+  fotoPerfil: z.any().nullable().optional(),
 });
 
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;

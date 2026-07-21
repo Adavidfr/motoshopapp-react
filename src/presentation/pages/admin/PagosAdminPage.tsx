@@ -227,7 +227,7 @@ export default function PagosAdminPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">
             Módulo de Pagos
           </h1>
           <p className="text-muted-foreground text-sm">
@@ -236,7 +236,7 @@ export default function PagosAdminPage() {
         </div>
         <Button
           onClick={handleOpenCreate}
-          className="bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider text-xs gap-2 shrink-0"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider text-xs gap-2 shrink-0"
         >
           <Plus className="size-4" />
           Nuevo Pago
@@ -260,22 +260,22 @@ export default function PagosAdminPage() {
       {/* ── Stats Cards ── */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Total Pagos
                 </p>
-                <h3 className="text-2xl font-black text-white mt-1">{stats.total_pagos}</h3>
+                <h3 className="text-2xl font-black text-foreground mt-1">{stats.total_pagos}</h3>
               </div>
               <ListChecks className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Monto Total
                 </p>
                 <h3 className="text-2xl font-black text-primary mt-1">
@@ -286,10 +286,10 @@ export default function PagosAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Completados
                 </p>
                 <h3 className="text-2xl font-black text-green-400 mt-1">
@@ -300,10 +300,10 @@ export default function PagosAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Pendientes
                 </p>
                 <h3 className="text-2xl font-black text-yellow-400 mt-1">
@@ -319,16 +319,16 @@ export default function PagosAdminPage() {
       {/* ── Search & Filter Bar ── */}
       <form
         onSubmit={handleSearchSubmit}
-        className="flex flex-col sm:flex-row gap-3 bg-neutral-900/30 border border-border/30 p-4 rounded-xl"
+        className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl"
       >
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 size-4 text-neutral-400" />
+          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar por referencia o método de pago..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-neutral-950 border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-background border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -339,7 +339,7 @@ export default function PagosAdminPage() {
             setFilters({ metodo_pago: val, page: 1 });
             fetchPagos({ metodo_pago: val, page: 1 });
           }}
-          className="bg-neutral-950 border border-border/30 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-primary transition-colors"
+          className="bg-background border border-border/30 rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:border-primary transition-colors"
         >
           <option value="">Todos los Métodos</option>
           <option value="efectivo">Efectivo</option>
@@ -356,7 +356,7 @@ export default function PagosAdminPage() {
             setFilters({ estado: val, page: 1 });
             fetchPagos({ estado: val, page: 1 });
           }}
-          className="bg-neutral-950 border border-border/30 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-primary transition-colors"
+          className="bg-background border border-border/30 rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:border-primary transition-colors"
         >
           <option value="">Todos los Estados</option>
           <option value="pendiente">Pendiente</option>
@@ -367,7 +367,7 @@ export default function PagosAdminPage() {
 
         <Button
           type="submit"
-          className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider px-6"
+          className="bg-muted hover:bg-neutral-700 text-foreground font-bold rounded-lg text-xs uppercase tracking-wider px-6"
         >
           Buscar
         </Button>
@@ -382,24 +382,24 @@ export default function PagosAdminPage() {
           <Skeleton className="h-16 w-full" />
         </div>
       ) : pagos.length === 0 ? (
-        <div className="text-center py-16 bg-neutral-900/10 border border-border/30 rounded-2xl">
+        <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <ReceiptText className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
-          <h3 className="text-lg font-bold text-white">No se encontraron pagos</h3>
+          <h3 className="text-lg font-bold text-foreground">No se encontraron pagos</h3>
           <p className="text-muted-foreground text-sm mt-1">
             Intente ajustar los filtros o registre un nuevo pago
           </p>
           <Button
             onClick={handleOpenCreate}
-            className="mt-6 bg-primary/90 hover:bg-primary text-white gap-2 text-xs font-bold uppercase"
+            className="mt-6 bg-primary/90 hover:bg-primary text-primary-foreground gap-2 text-xs font-bold uppercase"
           >
             <Plus className="size-4" /> Nuevo Pago
           </Button>
         </div>
       ) : (
-        <Card className="border-border/30 bg-neutral-900/10 backdrop-blur-md overflow-hidden">
+        <Card className="border-border/30 bg-muted/10 backdrop-blur-md overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-neutral-950">
+              <TableHeader className="bg-background">
                 <TableRow>
                   <TableHead className="w-[70px]">ID</TableHead>
                   <TableHead>Venta</TableHead>
@@ -415,9 +415,9 @@ export default function PagosAdminPage() {
                 {pagos.map((pago) => (
                   <TableRow
                     key={pago.id_pago}
-                    className="hover:bg-neutral-900/20 border-b border-border/20"
+                    className="hover:bg-muted/20 border-b border-border/20"
                   >
-                    <TableCell className="font-mono font-bold text-neutral-400">
+                    <TableCell className="font-mono font-bold text-muted-foreground">
                       #{pago.id_pago}
                     </TableCell>
                     <TableCell className="font-mono">#{pago.id_venta}</TableCell>
@@ -425,7 +425,7 @@ export default function PagosAdminPage() {
                       {formatPrice(pago.monto)}
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center gap-1.5 text-neutral-300 font-medium text-xs bg-neutral-800/60 px-2.5 py-1 rounded-full border border-border/20">
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground font-medium text-xs bg-muted/60 px-2.5 py-1 rounded-full border border-border/20">
                         {METODO_ICONS[pago.metodo_pago]}
                         {METODO_LABELS[pago.metodo_pago] ?? pago.metodo_pago}
                       </span>
@@ -433,10 +433,10 @@ export default function PagosAdminPage() {
                     <TableCell>
                       <StatusBadge status={pago.estado} />
                     </TableCell>
-                    <TableCell className="text-neutral-400 text-xs">
+                    <TableCell className="text-muted-foreground text-xs">
                       {formatDate(pago.fecha_pago)}
                     </TableCell>
-                    <TableCell className="text-neutral-400 text-xs max-w-[140px] truncate">
+                    <TableCell className="text-muted-foreground text-xs max-w-[140px] truncate">
                       {pago.referencia || '—'}
                     </TableCell>
                     <TableCell>
@@ -481,10 +481,10 @@ export default function PagosAdminPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-neutral-950/40">
-              <span className="text-xs text-neutral-400 font-semibold">
-                Página <span className="text-white">{page}</span> de{' '}
-                <span className="text-white">{totalPages}</span> — {count} registros
+            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
+              <span className="text-xs text-muted-foreground font-semibold">
+                Página <span className="text-foreground">{page}</span> de{' '}
+                <span className="text-foreground">{totalPages}</span> — {count} registros
               </span>
               <div className="flex gap-2">
                 <Button
@@ -521,18 +521,18 @@ export default function PagosAdminPage() {
           />
 
           {/* Modal */}
-          <div className="relative w-full max-w-lg bg-[#0e0e10] border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="relative w-full max-w-lg bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-neutral-900/50">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
                   <CreditCard className="size-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-extrabold text-white tracking-tight">
+                  <h2 className="text-lg font-extrabold text-foreground tracking-tight">
                     {editingId !== null ? 'Editar Pago' : 'Registrar Nuevo Pago'}
                   </h2>
-                  <p className="text-xs text-neutral-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {editingId !== null
                       ? `Pago #${editingId}`
                       : 'Completa los campos para registrar el pago'}
@@ -543,7 +543,7 @@ export default function PagosAdminPage() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={handleCloseForm}
-                className="text-neutral-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="size-5" />
               </Button>
@@ -561,7 +561,7 @@ export default function PagosAdminPage() {
 
               {/* ID Venta */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   ID de Venta <span className="text-primary">*</span>
                 </label>
                 <input
@@ -569,7 +569,7 @@ export default function PagosAdminPage() {
                   placeholder="Ej: 1"
                   value={formData.id_venta}
                   onChange={(e) => setFormData((p) => ({ ...p, id_venta: e.target.value }))}
-                  className={`w-full bg-neutral-950 border rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition-colors ${
+                  className={`w-full bg-background border rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${
                     formErrors.id_venta
                       ? 'border-destructive focus:border-destructive'
                       : 'border-border/30 focus:border-primary'
@@ -582,11 +582,11 @@ export default function PagosAdminPage() {
 
               {/* Monto */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Monto <span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-neutral-400 text-sm font-bold">$</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-bold">$</span>
                   <input
                     type="number"
                     step="0.01"
@@ -594,7 +594,7 @@ export default function PagosAdminPage() {
                     placeholder="0.00"
                     value={formData.monto}
                     onChange={(e) => setFormData((p) => ({ ...p, monto: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg pl-8 pr-4 py-2.5 text-sm text-white focus:outline-none transition-colors ${
+                    className={`w-full bg-background border rounded-lg pl-8 pr-4 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${
                       formErrors.monto
                         ? 'border-destructive focus:border-destructive'
                         : 'border-border/30 focus:border-primary'
@@ -609,7 +609,7 @@ export default function PagosAdminPage() {
               {/* Método de Pago + Estado (2 cols) */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Método de Pago <span className="text-primary">*</span>
                   </label>
                   <select
@@ -617,7 +617,7 @@ export default function PagosAdminPage() {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, metodo_pago: e.target.value as PagoMetodo }))
                     }
-                    className="w-full bg-neutral-950 border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors"
+                    className="w-full bg-background border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors"
                   >
                     <option value="efectivo">Efectivo</option>
                     <option value="tarjeta">Tarjeta</option>
@@ -628,7 +628,7 @@ export default function PagosAdminPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Estado <span className="text-primary">*</span>
                   </label>
                   <select
@@ -636,7 +636,7 @@ export default function PagosAdminPage() {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, estado: e.target.value as PagoEstado }))
                     }
-                    className="w-full bg-neutral-950 border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors"
+                    className="w-full bg-background border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="completado">Completado</option>
@@ -648,7 +648,7 @@ export default function PagosAdminPage() {
 
               {/* Referencia */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Referencia{' '}
                   <span className="text-neutral-500 font-normal normal-case tracking-normal">
                     (opcional)
@@ -659,7 +659,7 @@ export default function PagosAdminPage() {
                   placeholder="Número de transacción, voucher, etc."
                   value={formData.referencia}
                   onChange={(e) => setFormData((p) => ({ ...p, referencia: e.target.value }))}
-                  className="w-full bg-neutral-950 border border-border/30 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+                  className="w-full bg-background border border-border/30 rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
 
@@ -669,14 +669,14 @@ export default function PagosAdminPage() {
                   type="button"
                   variant="outline"
                   onClick={handleCloseForm}
-                  className="flex-1 border-border/40 text-neutral-300 hover:text-white text-xs font-bold uppercase tracking-wider"
+                  className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wider gap-2"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider gap-2"
                 >
                   {isSaving ? (
                     <span className="animate-pulse">Guardando…</span>

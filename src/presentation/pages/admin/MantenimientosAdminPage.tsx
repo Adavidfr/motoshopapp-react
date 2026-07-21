@@ -136,7 +136,7 @@ const getEstadoClasses = (
       return 'border border-destructive/20 bg-destructive/10 text-destructive';
 
     default:
-      return 'border border-neutral-700 bg-neutral-800 text-neutral-300';
+      return 'border border-neutral-700 bg-muted text-muted-foreground';
   }
 };
 
@@ -645,11 +645,11 @@ export default function MantenimientosAdminPage() {
             Taller
           </p>
 
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground md:text-4xl">
             Administrar mantenimientos
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Administra los mantenimientos, servicios y estados de las motos.
           </p>
         </div>
@@ -657,7 +657,7 @@ export default function MantenimientosAdminPage() {
         <button
           type="button"
           onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Nuevo mantenimiento
@@ -714,7 +714,7 @@ export default function MantenimientosAdminPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+      <section className="rounded-[2rem] border border-border bg-card p-4 shadow-2xl md:p-5">
         <form
           onSubmit={handleSearch}
           className="grid grid-cols-1 gap-3 xl:grid-cols-5"
@@ -730,7 +730,7 @@ export default function MantenimientosAdminPage() {
                 setSearch(event.target.value);
               }}
               placeholder="Cliente, moto, servicio..."
-              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-4 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
           </div>
 
@@ -740,7 +740,7 @@ export default function MantenimientosAdminPage() {
             onChange={(event) => {
               setEstadoFilter(event.target.value);
             }}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los estados</option>
 
@@ -757,7 +757,7 @@ export default function MantenimientosAdminPage() {
             onChange={(event) => {
               setMotoFilter(event.target.value);
             }}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todas las motos</option>
 
@@ -774,7 +774,7 @@ export default function MantenimientosAdminPage() {
             onChange={(event) => {
               setServicioFilter(event.target.value);
             }}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los servicios</option>
 
@@ -789,7 +789,7 @@ export default function MantenimientosAdminPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 rounded-full bg-primary px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-full bg-primary px-4 py-3 text-xs font-black uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Filtrar
             </button>
@@ -800,7 +800,7 @@ export default function MantenimientosAdminPage() {
                 void handleClearFilters();
               }}
               disabled={isLoading}
-              className="rounded-full bg-neutral-800 px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
+              className="rounded-full bg-muted px-4 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-colors hover:bg-neutral-700 disabled:opacity-50"
             >
               Limpiar
             </button>
@@ -808,7 +808,7 @@ export default function MantenimientosAdminPage() {
         </form>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+      <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
         {isLoading && mantenimientos.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-10 animate-spin text-primary" />
@@ -817,7 +817,7 @@ export default function MantenimientosAdminPage() {
           <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
             <Wrench className="mb-4 size-12 text-neutral-700" />
 
-            <h2 className="text-lg font-black uppercase text-white">
+            <h2 className="text-lg font-black uppercase text-foreground">
               No existen mantenimientos
             </h2>
 
@@ -829,7 +829,7 @@ export default function MantenimientosAdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1250px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-muted-foreground">
                   <th className="px-6 py-4">Mantenimiento</th>
                   <th className="px-6 py-4">Moto</th>
                   <th className="px-6 py-4">Cliente</th>
@@ -846,7 +846,7 @@ export default function MantenimientosAdminPage() {
                 {mantenimientos.map((mantenimiento) => (
                   <tr
                     key={mantenimiento.idMantenimiento}
-                    className="transition-colors hover:bg-neutral-900/20"
+                    className="transition-colors hover:bg-muted/20"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -854,34 +854,34 @@ export default function MantenimientosAdminPage() {
                           <Wrench className="size-4" />
                         </div>
 
-                        <p className="font-bold text-white">
+                        <p className="font-bold text-foreground">
                           #{mantenimiento.idMantenimiento}
                         </p>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 font-semibold text-white">
+                    <td className="px-6 py-4 font-semibold text-foreground">
                       {getMotoLabel(mantenimiento.moto)}
                     </td>
 
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {getClienteLabel(
                         mantenimiento.usuarioCliente,
                       )}
                     </td>
 
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {getServicioLabel(mantenimiento.servicio)}
                     </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-neutral-300">
+                    <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
                       {mantenimiento.kilometrajeActual.toLocaleString(
                         'es-EC',
                       )}{' '}
                       km
                     </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 font-bold text-white">
+                    <td className="whitespace-nowrap px-6 py-4 font-bold text-foreground">
                       {formatCurrency(mantenimiento.costoFinal)}
                     </td>
 
@@ -906,7 +906,7 @@ export default function MantenimientosAdminPage() {
                           onClick={() => {
                             handleOpenEditModal(mantenimiento);
                           }}
-                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                           title="Editar mantenimiento"
                         >
                           <Edit className="size-4" />
@@ -943,13 +943,13 @@ export default function MantenimientosAdminPage() {
               onClick={() => {
                 void handleChangePage(page - 1);
               }}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
             </button>
 
-            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+            <span className="min-w-24 text-center text-xs font-bold text-muted-foreground">
               Página {page} de {totalPages}
             </span>
 
@@ -959,7 +959,7 @@ export default function MantenimientosAdminPage() {
               onClick={() => {
                 void handleChangePage(page + 1);
               }}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />
@@ -970,14 +970,14 @@ export default function MantenimientosAdminPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-7 shadow-2xl md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
                   Taller
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase text-foreground">
                   {editingMantenimiento
                     ? 'Editar mantenimiento'
                     : 'Nuevo mantenimiento'}
@@ -992,7 +992,7 @@ export default function MantenimientosAdminPage() {
                 type="button"
                 onClick={handleCloseModal}
                 disabled={isSaving}
-                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
+                className="rounded-full bg-muted p-2 text-neutral-500 transition-colors hover:text-foreground disabled:opacity-50"
                 aria-label="Cerrar"
               >
                 <X className="size-5" />
@@ -1171,7 +1171,7 @@ export default function MantenimientosAdminPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSaving}
-                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                  className="w-full rounded-full border border-border py-4 text-xs font-black uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -1179,7 +1179,7 @@ export default function MantenimientosAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSaving && (
                     <Loader2 className="size-4 animate-spin" />
@@ -1199,18 +1199,18 @@ export default function MantenimientosAdminPage() {
 
       {deleteTarget && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 shadow-2xl">
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
               <Trash2 className="size-6" />
             </div>
 
-            <h2 className="text-center text-xl font-black uppercase text-white">
+            <h2 className="text-center text-xl font-black uppercase text-foreground">
               Eliminar mantenimiento
             </h2>
 
-            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+            <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
               Se eliminará el mantenimiento{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 #{deleteTarget.idMantenimiento}
               </span>
               . Esta acción no se puede deshacer.
@@ -1223,7 +1223,7 @@ export default function MantenimientosAdminPage() {
                 onClick={() => {
                   setDeleteTarget(null);
                 }}
-                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                className="w-full rounded-full border border-border py-3 text-xs font-black uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -1234,7 +1234,7 @@ export default function MantenimientosAdminPage() {
                 onClick={() => {
                   void handleConfirmDelete();
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isSaving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -1257,14 +1257,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+    <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
             {title}
           </p>
 
-          <p className="mt-2 text-3xl font-black text-white">
+          <p className="mt-2 text-3xl font-black text-foreground">
             {value}
           </p>
         </div>
@@ -1290,7 +1290,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
         {label}
 
         {required && (
@@ -1305,17 +1305,17 @@ function FormField({
 
 function inputClass(): string {
   return [
-    'w-full rounded-full border border-neutral-800 bg-[#141417] px-5 py-3',
-    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'w-full rounded-full border border-border bg-background px-5 py-3',
+    'text-sm font-semibold text-foreground placeholder:text-neutral-600',
     'outline-none transition focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
-    'disabled:cursor-not-allowed disabled:bg-neutral-900 disabled:text-neutral-600',
+    'disabled:cursor-not-allowed disabled:bg-muted disabled:text-neutral-600',
   ].join(' ');
 }
 
 function textareaClass(): string {
   return [
-    'w-full resize-y rounded-3xl border border-neutral-800 bg-[#141417] px-5 py-4',
-    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'w-full resize-y rounded-3xl border border-border bg-background px-5 py-4',
+    'text-sm font-semibold text-foreground placeholder:text-neutral-600',
     'outline-none transition focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
   ].join(' ');
 }

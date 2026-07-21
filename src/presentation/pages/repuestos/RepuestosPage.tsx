@@ -175,7 +175,7 @@ export default function RepuestosPage() {
                   </div>
                 )}
                 {/* SKU Badge */}
-                <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-neutral-800/50 text-[9px] font-black text-white uppercase tracking-wider">
+                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-border/50 text-[9px] font-black text-foreground uppercase tracking-wider">
                   SKU: {rep.sku}
                 </div>
               </div>

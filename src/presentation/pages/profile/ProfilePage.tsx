@@ -12,15 +12,16 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import {
-  CheckCircle2, AlertCircle, Save, Calendar, Phone, CreditCard, MapPin, User, Mail, Shield
+  CheckCircle2, AlertCircle, Save, Calendar, Phone, CreditCard, MapPin, User, Mail, Shield, Camera
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
   const { profile, fetchProfile, updateProfile, isLoading, error } = useProfileStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateProfileDto>({
+  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<UpdateProfileDto>({
     resolver: zodResolver(updateProfileSchema),
   });
 
@@ -37,8 +38,23 @@ export default function ProfilePage() {
         fechaNacimiento: profile.fechaNacimiento || '',
         fotoPerfil: profile.fotoPerfil || '',
       });
+      if (profile.fotoPerfil) {
+        setPreviewImage(typeof profile.fotoPerfil === 'string' ? profile.fotoPerfil : URL.createObjectURL(profile.fotoPerfil as Blob));
+      }
     }
   }, [profile, reset]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue('fotoPerfil', file, { shouldDirty: true });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (data: UpdateProfileDto) => {
     setSuccessMsg(null);
@@ -91,10 +107,36 @@ export default function ProfilePage() {
 
             <div className="relative flex items-center gap-5">
               {/* Avatar */}
-              <div className="relative">
-                <div className="size-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <span className="text-2xl font-black text-primary">{initials}</span>
+              <div className="relative group cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                <div className="size-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
+                  {previewImage ? (
+                    <img 
+                      src={previewImage.startsWith('http') || previewImage.startsWith('data:') ? previewImage : `http://localhost:8000${previewImage}`} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        if (!previewImage.startsWith('http') && !previewImage.startsWith('data:')) {
+                          e.currentTarget.src = `http://localhost:8000${previewImage}`; 
+                        }
+                      }} 
+                    />
+                  ) : (
+                    <span className="text-2xl font-black text-primary">{initials}</span>
+                  )}
+                  
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera className="size-6 text-white" />
+                  </div>
                 </div>
+                
+                <input 
+                  type="file" 
+                  id="avatar-upload" 
+                  className="hidden" 
+                  accept="image/png, image/jpeg, image/webp" 
+                  onChange={handleImageChange}
+                />
+
                 {/* Online indicator */}
                 <div className="absolute -bottom-1 -right-1 size-5 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
                   <div className="size-2 rounded-full bg-green-300 animate-pulse" />
@@ -150,7 +192,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     id="cedula"
-                    placeholder="1722883394"
+                    placeholder="Ej: 1722883394"
                     className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
                     {...register('cedula')}
                     aria-invalid={errors.cedula ? 'true' : 'false'}
@@ -167,7 +209,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     id="telefono"
-                    placeholder="0992384732"
+                    placeholder="Ej: 0992384732"
                     className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
                     {...register('telefono')}
                     aria-invalid={errors.telefono ? 'true' : 'false'}
@@ -204,7 +246,7 @@ export default function ProfilePage() {
                 </Label>
                 <Input
                   id="direccion"
-                  placeholder="Av. 10 de Agosto N34 y Av. Eloy Alfaro, Quito"
+                  placeholder="Ej: Av. 10 de Agosto N34 y Av. Eloy Alfaro, Quito"
                   className="bg-white/[0.04] border-white/[0.08] focus:border-primary/40 focus:bg-white/[0.06] rounded-xl h-11 text-sm font-medium placeholder:text-neutral-600 transition-all duration-300"
                   {...register('direccion')}
                   aria-invalid={errors.direccion ? 'true' : 'false'}

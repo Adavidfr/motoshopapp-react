@@ -350,11 +350,11 @@ export default function ProveedoresAdminPage() {
             Abastecimiento
           </p>
 
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground md:text-4xl">
             Administrar proveedores
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Gestiona los proveedores utilizados para las compras
             de motos y repuestos.
           </p>
@@ -364,7 +364,7 @@ export default function ProveedoresAdminPage() {
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+            className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Nuevo proveedor
@@ -404,7 +404,7 @@ export default function ProveedoresAdminPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+      <section className="rounded-[2rem] border border-border bg-card p-4 shadow-2xl md:p-5">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
@@ -417,14 +417,14 @@ export default function ProveedoresAdminPage() {
               }
               onKeyDown={handleSearchKeyDown}
               placeholder="Buscar por nombre, contacto, correo o teléfono..."
-              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-11 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
 
             {searchText && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="size-4" />
@@ -435,7 +435,7 @@ export default function ProveedoresAdminPage() {
           <button
             type="button"
             onClick={handleSearch}
-            className="rounded-full bg-neutral-800 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700"
+            className="rounded-full bg-muted px-5 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-colors hover:bg-neutral-700"
           >
             Buscar
           </button>
@@ -456,7 +456,7 @@ export default function ProveedoresAdminPage() {
                   | 'inactive',
               )
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="all">Todos los estados</option>
             <option value="active">Activos</option>
@@ -474,7 +474,7 @@ export default function ProveedoresAdminPage() {
                   | '-estado',
               )
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="nombre">Nombre A-Z</option>
             <option value="-nombre">Nombre Z-A</option>
@@ -488,7 +488,7 @@ export default function ProveedoresAdminPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+      <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
         {isLoading && proveedores.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-10 animate-spin text-primary" />
@@ -497,7 +497,7 @@ export default function ProveedoresAdminPage() {
           <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
             <Building2 className="mb-4 size-12 text-neutral-700" />
 
-            <h2 className="text-lg font-black uppercase text-white">
+            <h2 className="text-lg font-black uppercase text-foreground">
               No se encontraron proveedores
             </h2>
 
@@ -510,7 +510,7 @@ export default function ProveedoresAdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[950px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-muted-foreground">
                   <th className="px-6 py-4">Proveedor</th>
                   <th className="px-6 py-4">Contacto</th>
                   <th className="px-6 py-4">Teléfono</th>
@@ -528,7 +528,7 @@ export default function ProveedoresAdminPage() {
                 {proveedores.map((proveedor) => (
                   <tr
                     key={proveedor.id}
-                    className="transition-colors hover:bg-neutral-900/20"
+                    className="transition-colors hover:bg-muted/20"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -537,7 +537,7 @@ export default function ProveedoresAdminPage() {
                         </div>
 
                         <div>
-                          <p className="font-bold text-white">
+                          <p className="font-bold text-foreground">
                             {proveedor.nombre}
                           </p>
 
@@ -548,13 +548,13 @@ export default function ProveedoresAdminPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {proveedor.contacto || 'Sin contacto'}
                     </td>
 
                     <td className="px-6 py-4">
                       {proveedor.telefono ? (
-                        <span className="inline-flex items-center gap-2 text-neutral-300">
+                        <span className="inline-flex items-center gap-2 text-muted-foreground">
                           <Phone className="size-3.5 text-neutral-600" />
                           {proveedor.telefono}
                         </span>
@@ -567,7 +567,7 @@ export default function ProveedoresAdminPage() {
 
                     <td className="px-6 py-4">
                       {proveedor.correo ? (
-                        <span className="inline-flex items-center gap-2 text-neutral-300">
+                        <span className="inline-flex items-center gap-2 text-muted-foreground">
                           <Mail className="size-3.5 text-neutral-600" />
                           {proveedor.correo}
                         </span>
@@ -597,7 +597,7 @@ export default function ProveedoresAdminPage() {
                             Activo
                           </span>
                         ) : (
-                          <span className="inline-flex rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-bold uppercase text-neutral-500">
+                          <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold uppercase text-neutral-500">
                             Inactivo
                           </span>
                         )}
@@ -612,7 +612,7 @@ export default function ProveedoresAdminPage() {
                             onClick={() =>
                               handleOpenEdit(proveedor)
                             }
-                            className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                            className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                             title="Editar proveedor"
                           >
                             <Edit className="size-4" />
@@ -652,13 +652,13 @@ export default function ProveedoresAdminPage() {
               type="button"
               disabled={page <= 1 || isLoading}
               onClick={handlePreviousPage}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
             </button>
 
-            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+            <span className="min-w-24 text-center text-xs font-bold text-muted-foreground">
               Página {page} de {totalPages}
             </span>
 
@@ -666,7 +666,7 @@ export default function ProveedoresAdminPage() {
               type="button"
               disabled={page >= totalPages || isLoading}
               onClick={handleNextPage}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />
@@ -677,14 +677,14 @@ export default function ProveedoresAdminPage() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-7 shadow-2xl md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
                   Proveedores
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase text-foreground">
                   {editingProveedor
                     ? 'Editar proveedor'
                     : 'Nuevo proveedor'}
@@ -694,7 +694,7 @@ export default function ProveedoresAdminPage() {
               <button
                 type="button"
                 onClick={handleCloseForm}
-                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white"
+                className="rounded-full bg-muted p-2 text-neutral-500 transition-colors hover:text-foreground"
               >
                 <X className="size-5" />
               </button>
@@ -796,13 +796,13 @@ export default function ProveedoresAdminPage() {
                     }))
                   }
                   placeholder="Dirección del proveedor..."
-                  className="h-28 w-full resize-none rounded-[1.5rem] border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+                  className="h-28 w-full resize-none rounded-[1.5rem] border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
                 />
               </FormField>
 
-              <div className="flex items-center justify-between rounded-[1.5rem] border border-neutral-800 bg-[#141417] px-5 py-4">
+              <div className="flex items-center justify-between rounded-[1.5rem] border border-border bg-background px-5 py-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-white">
+                  <p className="text-xs font-black uppercase tracking-wider text-foreground">
                     Proveedor activo
                   </p>
 
@@ -833,7 +833,7 @@ export default function ProveedoresAdminPage() {
                   type="button"
                   disabled={isSaving}
                   onClick={handleCloseForm}
-                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                  className="w-full rounded-full border border-border py-4 text-xs font-black uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -841,7 +841,7 @@ export default function ProveedoresAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSaving && (
                     <Loader2 className="size-4 animate-spin" />
@@ -861,18 +861,18 @@ export default function ProveedoresAdminPage() {
 
       {deleteModalOpen && deletingProveedor && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 shadow-2xl">
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
               <Trash2 className="size-6" />
             </div>
 
-            <h2 className="text-center text-xl font-black uppercase text-white">
+            <h2 className="text-center text-xl font-black uppercase text-foreground">
               Eliminar proveedor
             </h2>
 
-            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+            <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
               Se eliminará el proveedor{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 {deletingProveedor.nombre}
               </span>
               . Esta acción no se puede deshacer.
@@ -883,7 +883,7 @@ export default function ProveedoresAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={handleCloseDelete}
-                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                className="w-full rounded-full border border-border py-3 text-xs font-black uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -892,7 +892,7 @@ export default function ProveedoresAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={handleConfirmDelete}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isSaving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -916,14 +916,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+    <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
             {title}
           </p>
 
-          <p className="mt-2 text-3xl font-black text-white">
+          <p className="mt-2 text-3xl font-black text-foreground">
             {value}
           </p>
         </div>
@@ -951,7 +951,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
         {label}
 
         {required && (
@@ -972,10 +972,10 @@ function FormField({
 
 function inputClass(hasError: boolean): string {
   return [
-    'w-full rounded-full border bg-[#141417] px-5 py-3 text-sm font-semibold text-white',
+    'w-full rounded-full border bg-background px-5 py-3 text-sm font-semibold text-foreground',
     'placeholder:text-neutral-600 focus:outline-none focus:ring-4 focus:ring-primary/10',
     hasError
       ? 'border-destructive'
-      : 'border-neutral-800 focus:border-primary/80',
+      : 'border-border focus:border-primary/80',
   ].join(' ');
 }

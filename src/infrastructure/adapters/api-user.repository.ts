@@ -38,8 +38,46 @@ export class ApiUserRepository implements UserRepository {
     if (data.isActive !== undefined) payload.is_active = data.isActive;
     if (data.isStaff !== undefined) payload.is_staff = data.isStaff;
     if (data.role !== undefined) payload.role = data.role;
+    if (data.firstName !== undefined) payload.first_name = data.firstName;
+    if (data.lastName !== undefined) payload.last_name = data.lastName;
+    if (data.email !== undefined) payload.email = data.email;
+    if (data.username !== undefined) payload.username = data.username;
     
     const response = await httpClient.patch(`/users/${id}/`, payload);
     return this.mapUser(response.data);
+  }
+
+  async createUser(data: Partial<User> & { password?: string, passwordConfirm?: string }): Promise<User> {
+    // 1. Crear el usuario base usando el endpoint de registro público
+    const registerPayload = {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      password2: data.passwordConfirm || data.password,
+      role: data.role || 'usuario',
+    };
+    
+    const registerResponse = await httpClient.post('/auth/register/', registerPayload);
+    const userId = registerResponse.data.user_id;
+
+    // 2. Hacer PATCH al endpoint de administrador para agregar detalles adicionales (is_staff, is_active, nombres)
+    const patchPayload: any = {};
+    if (data.firstName !== undefined) patchPayload.first_name = data.firstName;
+    if (data.lastName !== undefined) patchPayload.last_name = data.lastName;
+    if (data.isStaff !== undefined) patchPayload.is_staff = data.isStaff;
+    if (data.isActive !== undefined) patchPayload.is_active = data.isActive;
+
+    if (Object.keys(patchPayload).length > 0) {
+      const patchResponse = await httpClient.patch(`/users/${userId}/`, patchPayload);
+      return this.mapUser(patchResponse.data);
+    }
+    
+    // Si no hubo PATCH, hacemos un GET para retornar el usuario mapeado completamente
+    const getResponse = await httpClient.get(`/users/${userId}/`);
+    return this.mapUser(getResponse.data);
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await httpClient.delete(`/users/${id}/`);
   }
 }

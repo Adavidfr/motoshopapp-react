@@ -353,11 +353,11 @@ export default function ServiciosAdminPage() {
             Abastecimiento
           </p>
 
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground md:text-4xl">
             Gestión de servicios
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Administra los servicios del taller, precios y tiempos estimados.
           </p>
         </div>
@@ -365,7 +365,7 @@ export default function ServiciosAdminPage() {
         <button
           type="button"
           onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Nuevo servicio
@@ -418,7 +418,7 @@ export default function ServiciosAdminPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+      <section className="rounded-[2rem] border border-border bg-card p-4 shadow-2xl md:p-5">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
@@ -428,14 +428,14 @@ export default function ServiciosAdminPage() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Buscar por nombre o descripción..."
-              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-11 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
 
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="size-4" />
@@ -446,7 +446,7 @@ export default function ServiciosAdminPage() {
           <select
             value={estadoFilter}
             onChange={(event) => setEstadoFilter(event.target.value)}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los estados</option>
             <option value="true">Activos</option>
@@ -460,7 +460,7 @@ export default function ServiciosAdminPage() {
                 event.target.value as ServicioFilters['ordering'],
               )
             }
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="nombre">Nombre A-Z</option>
             <option value="-nombre">Nombre Z-A</option>
@@ -473,7 +473,7 @@ export default function ServiciosAdminPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+      <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
         {isLoading && servicios.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-10 animate-spin text-primary" />
@@ -482,7 +482,7 @@ export default function ServiciosAdminPage() {
           <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
             <Wrench className="mb-4 size-12 text-neutral-700" />
 
-            <h2 className="text-lg font-black uppercase text-white">
+            <h2 className="text-lg font-black uppercase text-foreground">
               No se encontraron servicios
             </h2>
 
@@ -494,7 +494,7 @@ export default function ServiciosAdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[950px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-muted-foreground">
                   <th className="px-6 py-4">Servicio</th>
                   <th className="px-6 py-4">Precio base</th>
                   <th className="px-6 py-4">Tiempo estimado</th>
@@ -507,7 +507,7 @@ export default function ServiciosAdminPage() {
                 {servicios.map((servicio) => (
                   <tr
                     key={servicio.id}
-                    className="transition-colors hover:bg-neutral-900/20"
+                    className="transition-colors hover:bg-muted/20"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -516,7 +516,7 @@ export default function ServiciosAdminPage() {
                         </div>
 
                         <div className="max-w-md">
-                          <p className="font-bold text-white">
+                          <p className="font-bold text-foreground">
                             {servicio.nombre}
                           </p>
 
@@ -527,12 +527,12 @@ export default function ServiciosAdminPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 font-bold text-white">
+                    <td className="px-6 py-4 font-bold text-foreground">
                       {formatCurrency(servicio.precio_base)}
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-2 text-neutral-300">
+                      <span className="inline-flex items-center gap-2 text-muted-foreground">
                         <Clock3 className="size-3.5 text-neutral-600" />
                         {formatDuration(servicio.tiempo_estimado_minutos)}
                       </span>
@@ -551,7 +551,7 @@ export default function ServiciosAdminPage() {
                             Activo
                           </span>
                         ) : (
-                          <span className="inline-flex rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-bold uppercase text-neutral-500">
+                          <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold uppercase text-neutral-500">
                             Inactivo
                           </span>
                         )}
@@ -563,7 +563,7 @@ export default function ServiciosAdminPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(servicio)}
-                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                           title="Editar servicio"
                         >
                           <Edit className="size-4" />
@@ -596,13 +596,13 @@ export default function ServiciosAdminPage() {
               type="button"
               disabled={currentPage <= 1 || isLoading}
               onClick={() => handlePageChange(currentPage - 1)}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
             </button>
 
-            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+            <span className="min-w-24 text-center text-xs font-bold text-muted-foreground">
               Página {currentPage} de {totalPages}
             </span>
 
@@ -610,7 +610,7 @@ export default function ServiciosAdminPage() {
               type="button"
               disabled={currentPage >= totalPages || isLoading}
               onClick={() => handlePageChange(currentPage + 1)}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />
@@ -621,14 +621,14 @@ export default function ServiciosAdminPage() {
 
       {isFormModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-7 shadow-2xl md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
                   Servicios
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase text-foreground">
                   {selectedServicio ? 'Editar servicio' : 'Nuevo servicio'}
                 </h2>
               </div>
@@ -637,7 +637,7 @@ export default function ServiciosAdminPage() {
                 type="button"
                 onClick={handleCloseFormModal}
                 disabled={isSaving}
-                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
+                className="rounded-full bg-muted p-2 text-neutral-500 transition-colors hover:text-foreground disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
@@ -735,9 +735,9 @@ export default function ServiciosAdminPage() {
                 </FormField>
               </div>
 
-              <div className="flex items-center justify-between rounded-[1.5rem] border border-neutral-800 bg-[#141417] px-5 py-4">
+              <div className="flex items-center justify-between rounded-[1.5rem] border border-border bg-background px-5 py-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-white">
+                  <p className="text-xs font-black uppercase tracking-wider text-foreground">
                     Servicio activo
                   </p>
 
@@ -768,7 +768,7 @@ export default function ServiciosAdminPage() {
                   type="button"
                   disabled={isSaving}
                   onClick={handleCloseFormModal}
-                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                  className="w-full rounded-full border border-border py-4 text-xs font-black uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -776,7 +776,7 @@ export default function ServiciosAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSaving && (
                     <Loader2 className="size-4 animate-spin" />
@@ -796,18 +796,18 @@ export default function ServiciosAdminPage() {
 
       {isDeleteModalOpen && selectedServicio && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 shadow-2xl">
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
               <Trash2 className="size-6" />
             </div>
 
-            <h2 className="text-center text-xl font-black uppercase text-white">
+            <h2 className="text-center text-xl font-black uppercase text-foreground">
               Eliminar servicio
             </h2>
 
-            <p className="mt-3 text-center text-sm leading-relaxed text-neutral-400">
+            <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
               Se eliminará el servicio{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 {selectedServicio.nombre}
               </span>
               . Esta acción no se puede deshacer.
@@ -818,7 +818,7 @@ export default function ServiciosAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={handleCloseDeleteModal}
-                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                className="w-full rounded-full border border-border py-3 text-xs font-black uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -827,7 +827,7 @@ export default function ServiciosAdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={() => void handleDelete()}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isSaving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -850,14 +850,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+    <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
             {title}
           </p>
 
-          <p className="mt-2 text-3xl font-black text-white">
+          <p className="mt-2 text-3xl font-black text-foreground">
             {value}
           </p>
         </div>
@@ -885,7 +885,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
         {label}
 
         {required && (
@@ -906,21 +906,21 @@ function FormField({
 
 function inputClass(hasError: boolean): string {
   return [
-    'w-full rounded-full border bg-[#141417] px-5 py-3 text-sm font-semibold text-white',
+    'w-full rounded-full border bg-background px-5 py-3 text-sm font-semibold text-foreground',
     'placeholder:text-neutral-600 focus:outline-none focus:ring-4 focus:ring-primary/10',
     hasError
       ? 'border-destructive'
-      : 'border-neutral-800 focus:border-primary/80',
+      : 'border-border focus:border-primary/80',
   ].join(' ');
 }
 
 function textareaClass(hasError: boolean): string {
   return [
-    'h-28 w-full resize-none rounded-[1.5rem] border bg-[#141417] px-5 py-3',
-    'text-sm font-semibold text-white placeholder:text-neutral-600',
+    'h-28 w-full resize-none rounded-[1.5rem] border bg-background px-5 py-3',
+    'text-sm font-semibold text-foreground placeholder:text-neutral-600',
     'focus:outline-none focus:ring-4 focus:ring-primary/10',
     hasError
       ? 'border-destructive'
-      : 'border-neutral-800 focus:border-primary/80',
+      : 'border-border focus:border-primary/80',
   ].join(' ');
 }

@@ -132,10 +132,10 @@ export default function GarantiasAdminPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase">Módulo de Garantías</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">Módulo de Garantías</h1>
           <p className="text-muted-foreground text-sm">Gestiona las garantías de las motos vendidas</p>
         </div>
-        <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider text-xs gap-2 shrink-0">
+        <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider text-xs gap-2 shrink-0">
           <Plus className="size-4" /> Nueva Garantía
         </Button>
       </div>
@@ -153,19 +153,19 @@ export default function GarantiasAdminPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+        <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Total Garantías</p>
-              <h3 className="text-2xl font-black text-white mt-1">{count}</h3>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Garantías</p>
+              <h3 className="text-2xl font-black text-foreground mt-1">{count}</h3>
             </div>
             <ShieldCheck className="size-8 text-primary/40" />
           </CardContent>
         </Card>
-        <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+        <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Activas</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Activas</p>
               <h3 className="text-2xl font-black text-green-400 mt-1">
                 {garantias.filter((g) => g.estado === 'activa').length}
               </h3>
@@ -173,10 +173,10 @@ export default function GarantiasAdminPage() {
             <CheckCircle2 className="size-8 text-green-400/40" />
           </CardContent>
         </Card>
-        <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+        <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Vencidas / Anuladas</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Vencidas / Anuladas</p>
               <h3 className="text-2xl font-black text-red-400 mt-1">
                 {garantias.filter((g) => g.estado !== 'activa').length}
               </h3>
@@ -187,38 +187,38 @@ export default function GarantiasAdminPage() {
       </div>
 
       {/* Filters */}
-      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 bg-neutral-900/30 border border-border/30 p-4 rounded-xl">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 size-4 text-neutral-400" />
+          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
           <input type="text" placeholder="Buscar por descripción..." value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-neutral-950 border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-background border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <select value={filters.estado || ''} onChange={(e) => { const v = e.target.value || undefined; setFilters({ estado: v, page: 1 }); fetchGarantias({ estado: v, page: 1 }); }}
-          className="bg-neutral-950 border border-border/30 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-primary transition-colors">
+          className="bg-background border border-border/30 rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:border-primary transition-colors">
           <option value="">Todos los Estados</option>
           <option value="activa">Activa</option>
           <option value="vencida">Vencida</option>
           <option value="anulada">Anulada</option>
         </select>
-        <Button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider px-6">Buscar</Button>
+        <Button type="submit" className="bg-muted hover:bg-neutral-700 text-foreground font-bold rounded-lg text-xs uppercase tracking-wider px-6">Buscar</Button>
       </form>
 
       {/* Table */}
       {isLoading ? (
         <div className="space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
       ) : garantias.length === 0 ? (
-        <div className="text-center py-16 bg-neutral-900/10 border border-border/30 rounded-2xl">
+        <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <ShieldCheck className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
-          <h3 className="text-lg font-bold text-white">No se encontraron garantías</h3>
-          <Button onClick={openCreate} className="mt-6 bg-primary/90 hover:bg-primary text-white gap-2 text-xs font-bold uppercase"><Plus className="size-4" /> Nueva Garantía</Button>
+          <h3 className="text-lg font-bold text-foreground">No se encontraron garantías</h3>
+          <Button onClick={openCreate} className="mt-6 bg-primary/90 hover:bg-primary text-primary-foreground gap-2 text-xs font-bold uppercase"><Plus className="size-4" /> Nueva Garantía</Button>
         </div>
       ) : (
-        <Card className="border-border/30 bg-neutral-900/10 backdrop-blur-md overflow-hidden">
+        <Card className="border-border/30 bg-muted/10 backdrop-blur-md overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-neutral-950">
+              <TableHeader className="bg-background">
                 <TableRow>
                   <TableHead className="w-[70px]">ID</TableHead>
                   <TableHead>Venta</TableHead>
@@ -233,15 +233,15 @@ export default function GarantiasAdminPage() {
               </TableHeader>
               <TableBody>
                 {garantias.map((g) => (
-                  <TableRow key={g.id_garantia} className="hover:bg-neutral-900/20 border-b border-border/20">
-                    <TableCell className="font-mono font-bold text-neutral-400">#{g.id_garantia}</TableCell>
+                  <TableRow key={g.id_garantia} className="hover:bg-muted/20 border-b border-border/20">
+                    <TableCell className="font-mono font-bold text-muted-foreground">#{g.id_garantia}</TableCell>
                     <TableCell className="font-mono">#{g.id_venta}</TableCell>
                     <TableCell className="font-mono">#{g.id_moto}</TableCell>
-                    <TableCell className="text-center font-bold text-white">{g.meses_garantia}m</TableCell>
-                    <TableCell className="text-neutral-400 text-xs">{g.fecha_inicio}</TableCell>
-                    <TableCell className="text-neutral-400 text-xs">{g.fecha_fin}</TableCell>
+                    <TableCell className="text-center font-bold text-foreground">{g.meses_garantia}m</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{g.fecha_inicio}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{g.fecha_fin}</TableCell>
                     <TableCell><StatusBadge status={g.estado} /></TableCell>
-                    <TableCell className="text-neutral-400 text-xs max-w-[160px] truncate">{g.descripcion || '—'}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs max-w-[160px] truncate">{g.descripcion || '—'}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
                         <Button variant="ghost" size="icon-sm" onClick={() => handleStatusCycle(g.id_garantia, g.estado)} title="Cambiar Estado" className="text-primary hover:bg-primary/10"><ArrowLeftRight className="size-4" /></Button>
@@ -255,8 +255,8 @@ export default function GarantiasAdminPage() {
             </Table>
           </div>
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-neutral-950/40">
-              <span className="text-xs text-neutral-400 font-semibold">Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span></span>
+            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
+              <span className="text-xs text-muted-foreground font-semibold">Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span></span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => handlePage(page - 1)} disabled={page <= 1} className="rounded-lg text-xs">Anterior</Button>
                 <Button variant="outline" size="sm" onClick={() => handlePage(page + 1)} disabled={page >= totalPages} className="rounded-lg text-xs">Siguiente</Button>
@@ -270,16 +270,16 @@ export default function GarantiasAdminPage() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeForm} />
-          <div className="relative w-full max-w-xl bg-[#0e0e10] border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-neutral-900/50">
+          <div className="relative w-full max-w-xl bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg border border-primary/20"><ShieldCheck className="size-5 text-primary" /></div>
                 <div>
-                  <h2 className="text-lg font-extrabold text-white tracking-tight">{editingId !== null ? 'Editar Garantía' : 'Registrar Garantía'}</h2>
-                  <p className="text-xs text-neutral-400 mt-0.5">{editingId !== null ? `Garantía #${editingId}` : 'Completa los datos de la garantía'}</p>
+                  <h2 className="text-lg font-extrabold text-foreground tracking-tight">{editingId !== null ? 'Editar Garantía' : 'Registrar Garantía'}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{editingId !== null ? `Garantía #${editingId}` : 'Completa los datos de la garantía'}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={closeForm} className="text-neutral-400 hover:text-white"><X className="size-5" /></Button>
+              <Button variant="ghost" size="icon-sm" onClick={closeForm} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></Button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -291,23 +291,23 @@ export default function GarantiasAdminPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">ID Venta <span className="text-primary">*</span></label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">ID Venta <span className="text-primary">*</span></label>
                   <input type="number" placeholder="1" value={form.id_venta} onChange={(e) => setForm((p) => ({ ...p, id_venta: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${errs.id_venta ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.id_venta ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
                   />
                   {errs.id_venta && <p className="text-xs text-destructive">{errs.id_venta}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">ID Moto <span className="text-primary">*</span></label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">ID Moto <span className="text-primary">*</span></label>
                   <input type="number" placeholder="1" value={form.id_moto} onChange={(e) => setForm((p) => ({ ...p, id_moto: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${errs.id_moto ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.id_moto ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
                   />
                   {errs.id_moto && <p className="text-xs text-destructive">{errs.id_moto}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Meses <span className="text-primary">*</span></label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Meses <span className="text-primary">*</span></label>
                   <input type="number" placeholder="12" value={form.meses_garantia} onChange={(e) => setForm((p) => ({ ...p, meses_garantia: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${errs.meses_garantia ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.meses_garantia ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
                   />
                   {errs.meses_garantia && <p className="text-xs text-destructive">{errs.meses_garantia}</p>}
                 </div>
@@ -315,25 +315,25 @@ export default function GarantiasAdminPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Fecha Inicio <span className="text-primary">*</span></label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Fecha Inicio <span className="text-primary">*</span></label>
                   <input type="date" value={form.fecha_inicio} onChange={(e) => setForm((p) => ({ ...p, fecha_inicio: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${errs.fecha_inicio ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.fecha_inicio ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
                   />
                   {errs.fecha_inicio && <p className="text-xs text-destructive">{errs.fecha_inicio}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Fecha Fin <span className="text-primary">*</span></label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Fecha Fin <span className="text-primary">*</span></label>
                   <input type="date" value={form.fecha_fin} onChange={(e) => setForm((p) => ({ ...p, fecha_fin: e.target.value }))}
-                    className={`w-full bg-neutral-950 border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${errs.fecha_fin ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.fecha_fin ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
                   />
                   {errs.fecha_fin && <p className="text-xs text-destructive">{errs.fecha_fin}</p>}
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Estado</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Estado</label>
                 <select value={form.estado} onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as GarantiaEstado }))}
-                  className="w-full bg-neutral-950 border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors">
+                  className="w-full bg-background border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors">
                   <option value="activa">Activa</option>
                   <option value="vencida">Vencida</option>
                   <option value="anulada">Anulada</option>
@@ -341,16 +341,16 @@ export default function GarantiasAdminPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Descripción <span className="text-neutral-500 font-normal normal-case">(opcional)</span></label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Descripción <span className="text-neutral-500 font-normal normal-case">(opcional)</span></label>
                 <textarea rows={3} placeholder="Cobertura, términos de la garantía..." value={form.descripcion}
                   onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
-                  className="w-full bg-neutral-950 border border-border/30 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary transition-colors resize-none"
+                  className="w-full bg-background border border-border/30 rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-colors resize-none"
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={closeForm} className="flex-1 border-border/40 text-neutral-300 hover:text-white text-xs font-bold uppercase tracking-wider">Cancelar</Button>
-                <Button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wider gap-2">
+                <Button type="button" variant="outline" onClick={closeForm} className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider">Cancelar</Button>
+                <Button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider gap-2">
                   {isSaving ? <span className="animate-pulse">Guardando…</span> : <><CheckCircle2 className="size-4" />{editingId !== null ? 'Actualizar' : 'Registrar Garantía'}</>}
                 </Button>
               </div>

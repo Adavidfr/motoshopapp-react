@@ -47,6 +47,10 @@
     --popover-foreground: 224 71% 4%;
     --border: 220 15% 91%;
     --input: 220 15% 91%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 8% 46%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 224 71% 4%;
   }
 
   * {

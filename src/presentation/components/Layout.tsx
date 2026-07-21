@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { useCartStore } from '../store/cart.store';
 import { Button } from './ui/button';
+import { httpClient } from '../../infrastructure/http/axios-client';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,9 @@ export default function Layout({ children }: LayoutProps) {
     }
     return 'dark';
   });
+
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const root = document.documentElement;
@@ -67,6 +71,21 @@ export default function Layout({ children }: LayoutProps) {
 
   const isAdminActive = (path: string) =>
     location.pathname.startsWith(path);
+
+  const handleSubscribeNewsletter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || newsletterStatus === 'loading') return;
+    
+    setNewsletterStatus('loading');
+    try {
+      await httpClient.post('/newsletter/subscribe/', { email: newsletterEmail });
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
+    } catch (err) {
+      setNewsletterStatus('error');
+      setTimeout(() => setNewsletterStatus('idle'), 3000);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-500">
@@ -273,16 +292,29 @@ export default function Layout({ children }: LayoutProps) {
                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground mb-4 flex items-center gap-2">
                   <span className="w-4 h-[2px] bg-primary"></span> Boletín Exclusivo
                 </h4>
-                <div className="relative flex items-center group">
-                  <input 
-                    type="email" 
-                    placeholder="Tu correo electrónico..." 
-                    className="w-full bg-white/40 dark:bg-white/5 border border-neutral-300 dark:border-white/10 rounded-2xl py-4 pl-5 pr-32 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary/50 focus:bg-white/60 dark:focus:bg-white/10 transition-all duration-300 backdrop-blur-md shadow-[inset_0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]"
-                  />
-                  <button className="absolute right-2 top-2 bottom-2 bg-black dark:bg-white hover:bg-primary dark:hover:bg-primary text-white dark:text-black hover:text-white px-5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,26,26,0.5)] dark:hover:shadow-[0_0_30px_rgba(255,26,26,0.5)]">
-                    Unirse
-                  </button>
-                </div>
+                {newsletterStatus === 'success' ? (
+                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl py-4 px-5 text-sm font-bold flex items-center justify-center animate-in fade-in zoom-in duration-500">
+                    ¡Gracias por unirte! Revisa tu bandeja de entrada.
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribeNewsletter} className="relative flex items-center group">
+                    <input 
+                      type="email" 
+                      required
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      placeholder="Tu correo electrónico..." 
+                      className={`w-full bg-white/40 dark:bg-white/5 border ${newsletterStatus === 'error' ? 'border-red-500' : 'border-neutral-300 dark:border-white/10'} rounded-2xl py-4 pl-5 pr-32 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary/50 focus:bg-white/60 dark:focus:bg-white/10 transition-all duration-300 backdrop-blur-md shadow-[inset_0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]`}
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={newsletterStatus === 'loading'}
+                      className="absolute right-2 top-2 bottom-2 bg-black dark:bg-white hover:bg-primary dark:hover:bg-primary text-white dark:text-black hover:text-white px-5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,26,26,0.5)] dark:hover:shadow-[0_0_30px_rgba(255,26,26,0.5)] disabled:opacity-50"
+                    >
+                      {newsletterStatus === 'loading' ? 'Enviando...' : 'Unirse'}
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
 

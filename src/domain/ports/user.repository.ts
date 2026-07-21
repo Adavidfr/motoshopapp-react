@@ -10,4 +10,6 @@ export interface PaginatedUsers {
 export interface UserRepository {
   listUsers(limit?: number, offset?: number, search?: string): Promise<PaginatedUsers>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
+  createUser(data: Partial<User> & { password?: string, passwordConfirm?: string }): Promise<User>;
+  deleteUser(id: number): Promise<void>;
 }

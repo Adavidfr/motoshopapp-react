@@ -9,6 +9,9 @@ import {
   Bell, Users, TrendingUp, DollarSign, AlertCircle,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
+import { useVentaStore } from '../../store/venta.store';
+import { usePagoStore } from '../../store/pago.store';
+import { useNotificacionStore } from '../../store/notificacion.store';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 interface StatCardProps {
@@ -21,12 +24,12 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon: Icon, color, trend }: StatCardProps) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-border/50 bg-neutral-200/50 dark:bg-neutral-900/30 backdrop-blur-md p-5 flex items-center gap-4 ${color}`}>
+    <div className={`relative overflow-hidden rounded-2xl border border-border/50 bg-neutral-200/50 dark:bg-muted/30 backdrop-blur-md p-5 flex items-center gap-4 ${color}`}>
       <div className="shrink-0 size-12 flex items-center justify-center rounded-xl bg-current/10 border border-current/20">
         <Icon className="size-5 text-current" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">{title}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{title}</p>
         <p className="text-2xl font-black text-foreground mt-0.5">{value}</p>
         {trend && <p className="text-[10px] text-neutral-500 mt-0.5">{trend}</p>}
       </div>
@@ -50,7 +53,7 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
   return (
     <Link
       to={path}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-neutral-300 dark:border-neutral-800/60 bg-neutral-100 dark:bg-neutral-900/20 p-5 hover:border-neutral-400 dark:hover:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-900/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+      className="group relative flex flex-col gap-3 rounded-2xl border border-neutral-300 dark:border-border/60 bg-neutral-100 dark:bg-muted/20 p-5 hover:border-neutral-400 dark:hover:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-muted/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
     >
       <div className="flex items-start justify-between">
         <div className={`flex size-10 items-center justify-center rounded-xl border ${accent} transition-all duration-200 group-hover:scale-110`}>
@@ -68,7 +71,7 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
         </p>
         <p className="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">{description}</p>
       </div>
-      <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-neutral-400 transition-colors">
+      <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-muted-foreground transition-colors">
         Gestionar
         <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
       </div>
@@ -83,10 +86,10 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: React.Eleme
       <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
         <Icon className="size-3.5 text-primary" />
       </div>
-      <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400">
+      <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
         {title}
       </h2>
-      <div className="flex-1 h-px bg-neutral-800/60" />
+      <div className="flex-1 h-px bg-muted/60" />
     </div>
   );
 }
@@ -94,10 +97,17 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: React.Eleme
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   const { user } = useAuthStore();
+  
+  const { count: ventasCount, fetchVentas } = useVentaStore();
+  const { count: pagosCount, fetchPagos } = usePagoStore();
+  const { count: notificacionesCount, fetchNotificaciones } = useNotificacionStore();
 
   useEffect(() => {
     document.title = 'Dashboard — Admin · Aura Rider';
-  }, []);
+    fetchVentas({ page: 1 });
+    fetchPagos({ page: 1 });
+    fetchNotificaciones({ page: 1 });
+  }, [fetchVentas, fetchPagos, fetchNotificaciones]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
@@ -126,9 +136,9 @@ export default function AdminDashboardPage() {
       {/* Quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard title="Módulos activos" value="18" icon={Settings} color="text-primary" trend="Sistema completo" />
-        <StatCard title="Ventas" value="—" icon={TrendingUp} color="text-green-400" trend="Ver módulo" />
-        <StatCard title="Pagos" value="—" icon={DollarSign} color="text-blue-400" trend="Ver módulo" />
-        <StatCard title="Notificaciones" value="—" icon={Bell} color="text-yellow-400" trend="Ver módulo" />
+        <StatCard title="Ventas" value={ventasCount ?? '—'} icon={TrendingUp} color="text-green-400" trend="Ver módulo" />
+        <StatCard title="Pagos" value={pagosCount ?? '—'} icon={DollarSign} color="text-blue-400" trend="Ver módulo" />
+        <StatCard title="Notificaciones" value={notificacionesCount ?? '—'} icon={Bell} color="text-yellow-400" trend="Ver módulo" />
       </div>
 
       {/* Catalogo */}
@@ -287,7 +297,7 @@ export default function AdminDashboardPage() {
             description="Estados e historial de ventas"
             path="/admin/historial-ventas"
             icon={ClipboardList}
-            accent="bg-neutral-500/10 border-neutral-500/30 text-neutral-400"
+            accent="bg-neutral-500/10 border-neutral-500/30 text-muted-foreground"
           />
           <ModuleCard
             title="Notificaciones"
@@ -302,14 +312,14 @@ export default function AdminDashboardPage() {
             description="Gestión de cuentas y roles"
             path="/admin/users"
             icon={Users}
-            accent="bg-neutral-500/10 border-neutral-500/30 text-neutral-400"
+            accent="bg-neutral-500/10 border-neutral-500/30 text-muted-foreground"
           />
           <ModuleCard
             title="Órdenes"
             description="Pedidos de clientes en el sistema"
             path="/admin/orders"
             icon={Package}
-            accent="bg-neutral-500/10 border-neutral-500/30 text-neutral-400"
+            accent="bg-neutral-500/10 border-neutral-500/30 text-muted-foreground"
           />
         </div>
       </section>

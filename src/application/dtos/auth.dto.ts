@@ -24,5 +24,4 @@ export const registerSchema = z
 
 export type RegisterDto = z.infer<typeof registerSchema>;
 
-// Payload que se envía a la API (sin confirmPassword)
-export type RegisterPayload = Omit<RegisterDto, 'confirmPassword'>;
+export type RegisterPayload = RegisterDto;

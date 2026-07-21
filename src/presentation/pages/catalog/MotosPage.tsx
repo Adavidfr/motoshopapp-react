@@ -287,8 +287,8 @@ export default function MotosPage() {
                   
                   {/* Floating Brand Tag */}
                   <div className="absolute top-5 left-5 z-20">
-                    <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] bg-black/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-xl">
-                      {moto.marca || 'Sport'}
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] bg-background/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-border shadow-xl">
+                      {moto.marca}
                     </span>
                   </div>
                 </div>

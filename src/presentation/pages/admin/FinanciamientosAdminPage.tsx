@@ -94,7 +94,7 @@ export default function FinanciamientosAdminPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase">Módulo de Financiamientos</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">Módulo de Financiamientos</h1>
         <p className="text-muted-foreground text-sm">Gestiona y supervisa los convenios de financiamiento y créditos otorgados</p>
       </div>
 
@@ -114,41 +114,41 @@ export default function FinanciamientosAdminPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Total Acuerdos</p>
-                <h3 className="text-2xl font-black text-white mt-1">{stats.total_financiamientos}</h3>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Acuerdos</p>
+                <h3 className="text-2xl font-black text-foreground mt-1">{stats.total_financiamientos}</h3>
               </div>
               <TrendingUp className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Monto Total Financiado</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Monto Total Financiado</p>
                 <h3 className="text-2xl font-black text-primary mt-1">{formatPrice(stats.monto_total)}</h3>
               </div>
               <DollarSign className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Cuota Promedio</p>
-                <h3 className="text-2xl font-black text-white mt-1">{formatPrice(stats.cuota_promedio)}</h3>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cuota Promedio</p>
+                <h3 className="text-2xl font-black text-foreground mt-1">{formatPrice(stats.cuota_promedio)}</h3>
               </div>
               <CreditCard className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Plazo Promedio</p>
-                <h3 className="text-2xl font-black text-white mt-1">{stats.plazo_promedio_meses} meses</h3>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Plazo Promedio</p>
+                <h3 className="text-2xl font-black text-foreground mt-1">{stats.plazo_promedio_meses} meses</h3>
               </div>
               <Calendar className="size-8 text-primary/40" />
             </CardContent>
@@ -157,15 +157,15 @@ export default function FinanciamientosAdminPage() {
       )}
 
       {/* Filter and Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-neutral-900/30 border border-border/30 p-4 rounded-xl">
+      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 size-4 text-neutral-400" />
+          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar por entidad financiera..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-neutral-950 border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-background border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <select
@@ -175,7 +175,7 @@ export default function FinanciamientosAdminPage() {
             setFilters({ estado: nextStatus, page: 1 });
             fetchFinanciamientos({ estado: nextStatus, page: 1 });
           }}
-          className="bg-neutral-950 border border-border/30 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-primary transition-colors"
+          className="bg-background border border-border/30 rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:border-primary transition-colors"
         >
           <option value="">Todos los Estados</option>
           <option value="activo">Activo</option>
@@ -183,7 +183,7 @@ export default function FinanciamientosAdminPage() {
           <option value="vencido">Vencido</option>
           <option value="cancelado">Cancelado</option>
         </select>
-        <Button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider px-6">
+        <Button type="submit" className="bg-muted hover:bg-neutral-700 text-foreground font-bold rounded-lg text-xs uppercase tracking-wider px-6">
           Buscar
         </Button>
       </form>
@@ -196,16 +196,16 @@ export default function FinanciamientosAdminPage() {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : financiamientos.length === 0 ? (
-        <div className="text-center py-16 bg-neutral-900/10 border border-border/30 rounded-2xl">
+        <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <ClipboardList className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
-          <h3 className="text-lg font-bold text-white">No se encontraron financiamientos</h3>
+          <h3 className="text-lg font-bold text-foreground">No se encontraron financiamientos</h3>
           <p className="text-muted-foreground text-sm mt-1">Intente ajustar los filtros de búsqueda</p>
         </div>
       ) : (
-        <Card className="border-border/30 bg-neutral-900/10 backdrop-blur-md overflow-hidden">
+        <Card className="border-border/30 bg-muted/10 backdrop-blur-md overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-neutral-950">
+              <TableHeader className="bg-background">
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
                   <TableHead>Venta</TableHead>
@@ -220,19 +220,19 @@ export default function FinanciamientosAdminPage() {
               </TableHeader>
               <TableBody>
                 {financiamientos.map((fin) => (
-                  <TableRow key={fin.id_financiamiento} className="hover:bg-neutral-900/20 border-b border-border/20">
-                    <TableCell className="font-mono font-bold text-neutral-400">#{fin.id_financiamiento}</TableCell>
+                  <TableRow key={fin.id_financiamiento} className="hover:bg-muted/20 border-b border-border/20">
+                    <TableCell className="font-mono font-bold text-muted-foreground">#{fin.id_financiamiento}</TableCell>
                     <TableCell className="font-mono">#{fin.id_venta}</TableCell>
-                    <TableCell className="font-bold text-white">{fin.entidad_financiera}</TableCell>
+                    <TableCell className="font-bold text-foreground">{fin.entidad_financiera}</TableCell>
                     <TableCell className="text-right font-semibold text-neutral-200">
                       {formatPrice(fin.monto_financiado)}
                     </TableCell>
-                    <TableCell className="text-center text-neutral-300">
+                    <TableCell className="text-center text-muted-foreground">
                       <span className="inline-flex items-center gap-0.5">
                         {fin.tasa_interes}% <Percent className="size-3 text-neutral-500" />
                       </span>
                     </TableCell>
-                    <TableCell className="text-center font-medium text-white">{fin.plazo_meses} meses</TableCell>
+                    <TableCell className="text-center font-medium text-foreground">{fin.plazo_meses} meses</TableCell>
                     <TableCell className="text-right font-black text-primary">
                       {formatPrice(fin.cuota_mensual)}
                     </TableCell>
@@ -267,9 +267,9 @@ export default function FinanciamientosAdminPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-neutral-950/40">
-              <span className="text-xs text-neutral-400 font-semibold">
-                Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
+            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
+              <span className="text-xs text-muted-foreground font-semibold">
+                Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span>
               </span>
               <div className="flex gap-2">
                 <Button

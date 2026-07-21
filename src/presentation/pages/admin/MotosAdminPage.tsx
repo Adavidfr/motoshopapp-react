@@ -143,11 +143,11 @@ export default function MotosAdminPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-foreground uppercase tracking-tight">Administrar Motos</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm">Gestiona el inventario de motocicletas del catálogo</p>
+          <p className="text-neutral-500 dark:text-muted-foreground text-sm">Gestiona el inventario de motocicletas del catálogo</p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="bg-primary hover:bg-primary/95 text-white flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] self-start cursor-pointer"
+          className="bg-primary hover:bg-primary/95 text-primary-foreground flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] self-start cursor-pointer"
         >
           <Plus className="size-4" /> Agregar Motocicleta
         </button>
@@ -163,7 +163,7 @@ export default function MotosAdminPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="bg-transparent border-none text-card-foreground text-xs placeholder-neutral-500 font-semibold focus:outline-none focus:ring-0 w-full"
         />
-        <button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors">
+        <button type="submit" className="bg-muted hover:bg-neutral-700 text-foreground rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors">
           Buscar
         </button>
       </form>
@@ -183,7 +183,7 @@ export default function MotosAdminPage() {
           {motos.map((moto) => (
             <div key={moto.idMoto} className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-colors duration-300 flex flex-col group">
               {/* Product Image */}
-              <div className="relative h-48 w-full bg-neutral-950 overflow-hidden">
+              <div className="relative h-48 w-full bg-background overflow-hidden">
                 {moto.imagen ? (
                   <img
                     src={moto.imagen}
@@ -197,7 +197,7 @@ export default function MotosAdminPage() {
                   </div>
                 )}
                 {/* Brand Badge */}
-                <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-neutral-800/50 text-[10px] font-black text-white uppercase tracking-wider">
+                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-border/50 text-[10px] font-black text-foreground uppercase tracking-wider">
                   {moto.marca}
                 </div>
                 {/* Status Badge */}
@@ -206,7 +206,7 @@ export default function MotosAdminPage() {
                     ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
                     : moto.estado === 'Reservada'
                     ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400'
-                    : 'bg-neutral-900 border border-neutral-800 text-neutral-500'
+                    : 'bg-muted border border-border text-neutral-500'
                 }`}>
                   {moto.estado}
                 </div>
@@ -234,7 +234,7 @@ export default function MotosAdminPage() {
                 <div className="flex items-center gap-2 pt-2">
                   <button
                     onClick={() => handleOpenEdit(moto)}
-                    className="w-1/2 bg-card hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-border text-card-foreground rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-1/2 bg-card hover:bg-neutral-100 dark:hover:bg-muted border border-border text-card-foreground rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Edit className="size-3.5" /> Editar
                   </button>
@@ -253,21 +253,21 @@ export default function MotosAdminPage() {
 
       {/* Pagination controls */}
       {totalCount > 10 && (
-        <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-neutral-900">
+        <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-border">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-border bg-background text-foreground disabled:opacity-40 hover:bg-muted transition-colors cursor-pointer rounded-full"
           >
             Anterior
           </button>
-          <span className="text-xs font-bold text-neutral-400">
+          <span className="text-xs font-bold text-muted-foreground">
             Página {page} de {Math.ceil(totalCount / 10)}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / 10), p + 1))}
             disabled={page >= Math.ceil(totalCount / 10)}
-            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-neutral-800 bg-[#080809] text-white disabled:opacity-40 hover:bg-neutral-900 transition-colors cursor-pointer rounded-full"
+            className="px-4 py-2 text-xs font-black uppercase tracking-widest border border-border bg-background text-foreground disabled:opacity-40 hover:bg-muted transition-colors cursor-pointer rounded-full"
           >
             Siguiente
           </button>
@@ -277,21 +277,21 @@ export default function MotosAdminPage() {
       {/* Modal Form */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#0c0c0e] border border-neutral-900 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-8">
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6">
+          <div className="bg-card border border-border w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-8">
+            <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-6">
               {editingId !== null ? 'Editar Motocicleta' : 'Agregar Motocicleta'}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               
               {/* Image Preview & Upload Button */}
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-800 rounded-3xl p-6 bg-neutral-950/40 relative group">
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-3xl p-6 bg-background/40 relative group">
                 {imagePreview ? (
                   <div className="relative w-full h-32 rounded-2xl overflow-hidden">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     <button 
                       type="button" 
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-bold text-xs uppercase tracking-wider transition-opacity cursor-pointer"
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground font-bold text-xs uppercase tracking-wider transition-opacity cursor-pointer"
                     >
                       <Upload className="size-4 mr-1.5 animate-bounce" /> Cambiar Imagen
                     </button>
@@ -300,7 +300,7 @@ export default function MotosAdminPage() {
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 hover:text-white text-neutral-500 transition-colors py-4 cursor-pointer"
+                    className="flex flex-col items-center gap-2 hover:text-foreground text-neutral-500 transition-colors py-4 cursor-pointer"
                   >
                     <Upload className="size-8 stroke-[1.5]" />
                     <span className="text-[10px] font-black uppercase tracking-wider">Cargar Foto de la Moto</span>
@@ -317,25 +317,25 @@ export default function MotosAdminPage() {
 
               {/* Modelo */}
               <div className="space-y-1">
-                <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">Modelo</label>
+                <label className="text-muted-foreground text-xs font-black uppercase tracking-wider">Modelo</label>
                 <input
                   type="text"
                   required
                   placeholder="Ej: CBR 1000RR Fireblade, Monster 821"
                   value={modelo}
                   onChange={(e) => setModelo(e.target.value)}
-                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                  className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                 />
               </div>
 
               {/* Marca & Categoria Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">Marca</label>
+                  <label className="text-muted-foreground text-xs font-black uppercase tracking-wider">Marca</label>
                   <select
                     value={selectedBrand}
                     onChange={(e) => setSelectedBrand(e.target.value)}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
                     {brands.filter(b => b.estado).map((b) => (
                       <option key={b.idMarca} value={b.idMarca}>{b.nombre}</option>
@@ -343,11 +343,11 @@ export default function MotosAdminPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">Categoría</label>
+                  <label className="text-muted-foreground text-xs font-black uppercase tracking-wider">Categoría</label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
                     {categories.filter(c => c.estado).map((c) => (
                       <option key={c.idCategoria} value={c.idCategoria}>{c.nombre}</option>
@@ -359,34 +359,34 @@ export default function MotosAdminPage() {
               {/* Año, Cilindraje & Color Row */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Año</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Año</label>
                   <input
                     type="number"
                     required
                     value={anio}
                     onChange={(e) => setAnio(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Cilindraje</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Cilindraje</label>
                   <input
                     type="number"
                     required
                     value={cilindraje}
                     onChange={(e) => setCilindraje(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Color</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Color</label>
                   <input
                     type="text"
                     required
                     placeholder="Ej: Rojo"
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   />
                 </div>
               </div>
@@ -394,31 +394,31 @@ export default function MotosAdminPage() {
               {/* Precio, Stock & Estado Row */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Precio</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Precio</label>
                   <input
                     type="number"
                     required
                     value={precio}
                     onChange={(e) => setPrecio(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Stock</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Stock</label>
                   <input
                     type="number"
                     required
                     value={stock}
                     onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Estado</label>
+                  <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Estado</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
+                    className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
                     <option value="Disponible">Disponible</option>
                     <option value="Reservada">Reservada</option>
@@ -431,14 +431,14 @@ export default function MotosAdminPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="w-1/2 border border-neutral-800 text-neutral-400 hover:text-white font-black uppercase text-xs tracking-wider rounded-full py-4 transition-colors"
+                  className="w-1/2 border border-border text-muted-foreground hover:text-foreground font-black uppercase text-xs tracking-wider rounded-full py-4 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-1/2 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-wider rounded-full py-4 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)]"
+                  className="w-1/2 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-xs tracking-wider rounded-full py-4 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)]"
                 >
                   {isLoading ? 'Guardando...' : 'Guardar'}
                 </button>

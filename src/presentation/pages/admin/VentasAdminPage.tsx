@@ -246,7 +246,7 @@ export default function VentasAdminPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase">Gestión de Ventas</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">Gestión de Ventas</h1>
           <p className="text-muted-foreground text-sm">Registra y administra las ventas de motocicletas a partir de pedidos</p>
         </div>
         <Button
@@ -277,41 +277,41 @@ export default function VentasAdminPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Total Ventas</p>
-                <h3 className="text-2xl font-black text-white mt-1">{stats.total_ventas}</h3>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Ventas</p>
+                <h3 className="text-2xl font-black text-foreground mt-1">{stats.total_ventas}</h3>
               </div>
               <Briefcase className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Ingresos Totales</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ingresos Totales</p>
                 <h3 className="text-2xl font-black text-primary mt-1">{formatPrice(stats.total_ingresos)}</h3>
               </div>
               <DollarSign className="size-8 text-primary/40" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Completadas</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Completadas</p>
                 <h3 className="text-2xl font-black text-green-400 mt-1">{stats.por_estado?.completada || 0}</h3>
               </div>
               <StatusBadge status="completada" />
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md">
+          <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Pendientes / Anuladas</p>
-                <h3 className="text-2xl font-black text-neutral-300 mt-1">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pendientes / Anuladas</p>
+                <h3 className="text-2xl font-black text-muted-foreground mt-1">
                   {stats.por_estado?.pendiente || 0} / {stats.por_estado?.anulada || 0}
                 </h3>
               </div>
@@ -325,15 +325,15 @@ export default function VentasAdminPage() {
       )}
 
       {/* Filter and Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-neutral-900/30 border border-border/30 p-4 rounded-xl">
+      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 size-4 text-neutral-400" />
+          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar por cliente o vendedor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-neutral-950 border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-background border border-border/30 rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <select
@@ -343,14 +343,14 @@ export default function VentasAdminPage() {
             setFilters({ estado: nextStatus, page: 1 });
             fetchVentas({ estado: nextStatus, page: 1 });
           }}
-          className="bg-neutral-950 border border-border/30 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-primary transition-colors"
+          className="bg-background border border-border/30 rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:border-primary transition-colors"
         >
           <option value="">Todos los Estados</option>
           <option value="pendiente">Pendiente</option>
           <option value="completada">Completada</option>
           <option value="anulada">Anulada</option>
         </select>
-        <Button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider px-6">
+        <Button type="submit" className="bg-muted hover:bg-neutral-700 text-foreground font-bold rounded-lg text-xs uppercase tracking-wider px-6">
           Buscar
         </Button>
       </form>
@@ -363,16 +363,16 @@ export default function VentasAdminPage() {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : ventas.length === 0 ? (
-        <div className="text-center py-16 bg-neutral-900/10 border border-border/30 rounded-2xl">
+        <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <ClipboardList className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
-          <h3 className="text-lg font-bold text-white">No se encontraron ventas</h3>
+          <h3 className="text-lg font-bold text-foreground">No se encontraron ventas</h3>
           <p className="text-muted-foreground text-sm mt-1">Intente ajustar los filtros de búsqueda</p>
         </div>
       ) : (
-        <Card className="border-border/30 bg-neutral-900/10 backdrop-blur-md overflow-hidden">
+        <Card className="border-border/30 bg-muted/10 backdrop-blur-md overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-neutral-950">
+              <TableHeader className="bg-background">
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
                   <TableHead>Pedido</TableHead>
@@ -386,11 +386,11 @@ export default function VentasAdminPage() {
               </TableHeader>
               <TableBody>
                 {ventas.map((venta) => (
-                  <TableRow key={venta.id_venta} className="hover:bg-neutral-900/20 border-b border-border/20">
-                    <TableCell className="font-mono font-bold text-neutral-400">#{venta.id_venta}</TableCell>
+                  <TableRow key={venta.id_venta} className="hover:bg-muted/20 border-b border-border/20">
+                    <TableCell className="font-mono font-bold text-muted-foreground">#{venta.id_venta}</TableCell>
                     <TableCell className="font-mono">#{venta.id_pedido}</TableCell>
-                    <TableCell className="font-bold text-white">{venta.username_cliente}</TableCell>
-                    <TableCell className="text-neutral-300">{venta.username_vendedor || 'Sistema'}</TableCell>
+                    <TableCell className="font-bold text-foreground">{venta.username_cliente}</TableCell>
+                    <TableCell className="text-muted-foreground">{venta.username_vendedor || 'Sistema'}</TableCell>
                     <TableCell>{formatDate(venta.fecha_venta)}</TableCell>
                     <TableCell>
                       <StatusBadge status={venta.estado} />
@@ -448,9 +448,9 @@ export default function VentasAdminPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-neutral-950/40">
-              <span className="text-xs text-neutral-400 font-semibold">
-                Página <span className="text-white">{page}</span> de <span className="text-white">{totalPages}</span>
+            <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
+              <span className="text-xs text-muted-foreground font-semibold">
+                Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span>
               </span>
               <div className="flex gap-2">
                 <Button
@@ -480,21 +480,21 @@ export default function VentasAdminPage() {
       {/* MODAL: Registrar Venta */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <Card className="w-full max-w-lg bg-neutral-950 border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
+          <Card className="w-full max-w-lg bg-background border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-border/30">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wide">Registrar Nueva Venta</h3>
-              <Button variant="ghost" size="icon-sm" onClick={() => setIsCreateOpen(false)} className="text-neutral-400 hover:text-white">
+              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide">Registrar Nueva Venta</h3>
+              <Button variant="ghost" size="icon-sm" onClick={() => setIsCreateOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="size-4" />
               </Button>
             </div>
             <form onSubmit={submitCreateVenta}>
               <CardContent className="p-5 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Seleccionar Pedido Confirmado</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Seleccionar Pedido Confirmado</label>
                   <select
                     value={ventaForm.id_pedido}
                     onChange={(e) => handleOrderChange(e.target.value)}
-                    className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary"
+                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="">-- Elija un Pedido --</option>
                     {orders.filter(o => o.estado === 'confirmed').map(o => (
@@ -507,35 +507,35 @@ export default function VentasAdminPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Total Venta ($)</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Total Venta ($)</label>
                   <input
                     type="number"
                     step="0.01"
                     placeholder="0.00"
                     value={ventaForm.total_venta}
                     onChange={(e) => setVentaForm(prev => ({ ...prev, total_venta: e.target.value }))}
-                    className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary font-mono"
+                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                   />
                   {formErrors.total_venta && <p className="text-destructive text-xs mt-1">{formErrors.total_venta}</p>}
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Estado Inicial</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Estado Inicial</label>
                   <select
                     value={ventaForm.estado}
                     onChange={(e) => setVentaForm(prev => ({ ...prev, estado: e.target.value as any }))}
-                    className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary"
+                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="completada">Completada</option>
                   </select>
                 </div>
               </CardContent>
-              <div className="flex items-center justify-end gap-2 p-5 border-t border-border/30 bg-neutral-900/20">
+              <div className="flex items-center justify-end gap-2 p-5 border-t border-border/30 bg-muted/20">
                 <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} className="rounded-lg text-xs py-4 px-5 font-bold uppercase tracking-wider">
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/95 text-white font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider">
+                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider">
                   {isSaving ? 'Registrando...' : 'Confirmar Venta'}
                 </Button>
               </div>
@@ -547,49 +547,49 @@ export default function VentasAdminPage() {
       {/* MODAL: Financiar Venta */}
       {isFinanciarOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <Card className="w-full max-w-lg bg-neutral-950 border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
+          <Card className="w-full max-w-lg bg-background border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-border/30">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wide">Registrar Financiamiento</h3>
-              <Button variant="ghost" size="icon-sm" onClick={() => setIsFinanciarOpen(false)} className="text-neutral-400 hover:text-white">
+              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide">Registrar Financiamiento</h3>
+              <Button variant="ghost" size="icon-sm" onClick={() => setIsFinanciarOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="size-4" />
               </Button>
             </div>
             <form onSubmit={submitFinanciamiento}>
               <CardContent className="p-5 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Entidad Financiera</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Entidad Financiera</label>
                   <input
                     type="text"
                     placeholder="Ej. Banco Pichincha, Cooperativa JEP"
                     value={financiarForm.entidad_financiera}
                     onChange={(e) => setFinanciarForm(prev => ({ ...prev, entidad_financiera: e.target.value }))}
-                    className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary"
+                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                   {formErrors.entidad_financiera && <p className="text-destructive text-xs mt-1">{formErrors.entidad_financiera}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Monto Financiado ($)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Monto Financiado ($)</label>
                     <input
                       type="number"
                       step="0.01"
                       placeholder="0.00"
                       value={financiarForm.monto_financiado}
                       onChange={(e) => setFinanciarForm(prev => ({ ...prev, monto_financiado: e.target.value }))}
-                      className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary font-mono"
+                      className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                     />
                     {formErrors.monto_financiado && <p className="text-destructive text-xs mt-1">{formErrors.monto_financiado}</p>}
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Tasa Interés Anual (%)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Tasa Interés Anual (%)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={financiarForm.tasa_interes}
                       onChange={(e) => setFinanciarForm(prev => ({ ...prev, tasa_interes: e.target.value }))}
-                      className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary font-mono"
+                      className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                     />
                     {formErrors.tasa_interes && <p className="text-destructive text-xs mt-1">{formErrors.tasa_interes}</p>}
                   </div>
@@ -597,33 +597,33 @@ export default function VentasAdminPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Plazo (Meses)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Plazo (Meses)</label>
                     <input
                       type="number"
                       value={financiarForm.plazo_meses}
                       onChange={(e) => setFinanciarForm(prev => ({ ...prev, plazo_meses: e.target.value }))}
-                      className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary font-mono"
+                      className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                     />
                     {formErrors.plazo_meses && <p className="text-destructive text-xs mt-1">{formErrors.plazo_meses}</p>}
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Cuota Estimada (Auto-calc)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Cuota Estimada (Auto-calc)</label>
                     <input
                       type="text"
                       disabled
                       value={formatPrice(Number(financiarForm.cuota_mensual) || 0)}
-                      className="w-full bg-neutral-900/60 border border-border/20 rounded-lg px-3.5 py-2.5 text-sm text-primary font-mono font-bold"
+                      className="w-full bg-muted/60 border border-border/20 rounded-lg px-3.5 py-2.5 text-sm text-primary font-mono font-bold"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Estado Inicial</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Estado Inicial</label>
                   <select
                     value={financiarForm.estado}
                     onChange={(e) => setFinanciarForm(prev => ({ ...prev, estado: e.target.value as any }))}
-                    className="w-full bg-neutral-900 border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-primary"
+                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="activo">Activo</option>
                     <option value="pagado">Pagado</option>
@@ -632,11 +632,11 @@ export default function VentasAdminPage() {
                   </select>
                 </div>
               </CardContent>
-              <div className="flex items-center justify-end gap-2 p-5 border-t border-border/30 bg-neutral-900/20">
+              <div className="flex items-center justify-end gap-2 p-5 border-t border-border/30 bg-muted/20">
                 <Button type="button" variant="outline" onClick={() => setIsFinanciarOpen(false)} className="rounded-lg text-xs py-4 px-5 font-bold uppercase tracking-wider">
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/95 text-white font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider">
+                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider">
                   {isSaving ? 'Registrando...' : 'Aceptar Financiamiento'}
                 </Button>
               </div>

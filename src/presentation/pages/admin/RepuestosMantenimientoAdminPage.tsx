@@ -294,11 +294,11 @@ export default function RepuestosMantenimientoAdminPage() {
             Taller
           </p>
 
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground md:text-4xl">
             Repuestos de mantenimiento
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Administra los repuestos utilizados en cada mantenimiento.
           </p>
         </div>
@@ -306,7 +306,7 @@ export default function RepuestosMantenimientoAdminPage() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-all hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Agregar repuesto
@@ -361,7 +361,7 @@ export default function RepuestosMantenimientoAdminPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] p-4 shadow-2xl md:p-5">
+      <section className="rounded-[2rem] border border-border bg-card p-4 shadow-2xl md:p-5">
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
           <div className="relative xl:col-span-2">
             <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
@@ -375,7 +375,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 setPage(1);
               }}
               placeholder="Buscar por nombre del repuesto..."
-              className="w-full rounded-full border border-neutral-800 bg-[#141417] py-3 pl-11 pr-11 text-sm font-semibold text-white placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-11 text-sm font-semibold text-foreground placeholder:text-neutral-600 focus:border-primary/80 focus:outline-none focus:ring-4 focus:ring-primary/10"
             />
 
             {search && (
@@ -385,7 +385,7 @@ export default function RepuestosMantenimientoAdminPage() {
                   setSearch('');
                   setPage(1);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="size-4" />
@@ -400,7 +400,7 @@ export default function RepuestosMantenimientoAdminPage() {
               setSelectedMantenimiento(event.target.value);
               setPage(1);
             }}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los mantenimientos</option>
 
@@ -421,7 +421,7 @@ export default function RepuestosMantenimientoAdminPage() {
               setSelectedRepuesto(event.target.value);
               setPage(1);
             }}
-            className="rounded-full border border-neutral-800 bg-[#141417] px-5 py-3 text-sm font-semibold text-white outline-none focus:border-primary"
+            className="rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
           >
             <option value="">Todos los repuestos</option>
 
@@ -445,14 +445,14 @@ export default function RepuestosMantenimientoAdminPage() {
               !selectedMantenimiento &&
               !selectedRepuesto
             }
-            className="rounded-full bg-neutral-800 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full bg-muted px-5 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Limpiar filtros
           </button>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-neutral-900 bg-[#0c0c0e] shadow-2xl">
+      <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
         {isLoading && repuestosMantenimiento.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-10 animate-spin text-primary" />
@@ -461,7 +461,7 @@ export default function RepuestosMantenimientoAdminPage() {
           <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
             <Wrench className="mb-4 size-12 text-neutral-700" />
 
-            <h2 className="text-lg font-black uppercase text-white">
+            <h2 className="text-lg font-black uppercase text-foreground">
               No existen registros
             </h2>
 
@@ -473,7 +473,7 @@ export default function RepuestosMantenimientoAdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1050px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-950 text-xs font-black uppercase tracking-wider text-muted-foreground">
                   <th className="px-6 py-4">Registro</th>
                   <th className="px-6 py-4">Mantenimiento</th>
                   <th className="px-6 py-4">Repuesto</th>
@@ -490,7 +490,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 {repuestosMantenimiento.map((item) => (
                   <tr
                     key={item.idRepuestoMantenimiento}
-                    className="transition-colors hover:bg-neutral-900/20"
+                    className="transition-colors hover:bg-muted/20"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -498,29 +498,29 @@ export default function RepuestosMantenimientoAdminPage() {
                           <Wrench className="size-4" />
                         </div>
 
-                        <p className="font-bold text-white">
+                        <p className="font-bold text-foreground">
                           #{item.idRepuestoMantenimiento}
                         </p>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {getMantenimientoLabel(item.mantenimiento)}
                     </td>
 
-                    <td className="px-6 py-4 font-bold text-white">
+                    <td className="px-6 py-4 font-bold text-foreground">
                       {getRepuestoLabel(item.repuesto)}
                     </td>
 
-                    <td className="px-6 py-4 text-right text-neutral-300">
+                    <td className="px-6 py-4 text-right text-muted-foreground">
                       {item.cantidad}
                     </td>
 
-                    <td className="px-6 py-4 text-right text-neutral-300">
+                    <td className="px-6 py-4 text-right text-muted-foreground">
                       {formatCurrency(item.precioUnitario)}
                     </td>
 
-                    <td className="px-6 py-4 text-right font-bold text-white">
+                    <td className="px-6 py-4 text-right font-bold text-foreground">
                       {formatCurrency(item.subtotal)}
                     </td>
 
@@ -530,7 +530,7 @@ export default function RepuestosMantenimientoAdminPage() {
                           type="button"
                           onClick={() => openEditModal(item)}
                           title="Editar"
-                          className="rounded-full bg-neutral-900 p-2 text-neutral-400 transition-all hover:bg-neutral-800 hover:text-white"
+                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                         >
                           <Pencil className="size-4" />
                         </button>
@@ -566,13 +566,13 @@ export default function RepuestosMantenimientoAdminPage() {
                 )
               }
               disabled={page <= 1 || isLoading}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
             </button>
 
-            <span className="min-w-24 text-center text-xs font-bold text-neutral-400">
+            <span className="min-w-24 text-center text-xs font-bold text-muted-foreground">
               Página {page} de {totalPages}
             </span>
 
@@ -584,7 +584,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 )
               }
               disabled={page >= totalPages || isLoading}
-              className="flex size-9 items-center justify-center rounded-full border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />
@@ -595,14 +595,14 @@ export default function RepuestosMantenimientoAdminPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-7 shadow-2xl md:p-8">
+          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-7 shadow-2xl md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-primary">
                   Taller
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase text-foreground">
                   {editingItem
                     ? 'Editar repuesto'
                     : 'Agregar repuesto'}
@@ -617,7 +617,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 type="button"
                 onClick={closeModal}
                 disabled={isSaving}
-                className="rounded-full bg-neutral-900 p-2 text-neutral-500 transition-colors hover:text-white disabled:opacity-50"
+                className="rounded-full bg-muted p-2 text-neutral-500 transition-colors hover:text-foreground disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
@@ -721,7 +721,7 @@ export default function RepuestosMantenimientoAdminPage() {
                   type="button"
                   onClick={closeModal}
                   disabled={isSaving}
-                  className="w-full rounded-full border border-neutral-800 py-4 text-xs font-black uppercase tracking-wider text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                  className="w-full rounded-full border border-border py-4 text-xs font-black uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -729,7 +729,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-xs font-black uppercase tracking-wider text-primary-foreground shadow-[0_4px_20px_rgba(255,26,26,0.25)] transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSaving && (
                     <Loader2 className="size-4 animate-spin" />
@@ -749,12 +749,12 @@ export default function RepuestosMantenimientoAdminPage() {
 
       {showDeleteModal && itemToDelete && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2.5rem] border border-neutral-900 bg-[#0c0c0e] p-8 shadow-2xl">
+          <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 shadow-2xl">
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
               <Trash2 className="size-6" />
             </div>
 
-            <h2 className="text-center text-xl font-black uppercase text-white">
+            <h2 className="text-center text-xl font-black uppercase text-foreground">
               Eliminar repuesto
             </h2>
 
@@ -764,13 +764,13 @@ export default function RepuestosMantenimientoAdminPage() {
               </div>
             )}
 
-            <p className="mt-4 text-center text-sm leading-relaxed text-neutral-400">
+            <p className="mt-4 text-center text-sm leading-relaxed text-muted-foreground">
               Se eliminará{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 {getRepuestoLabel(itemToDelete.repuesto)}
               </span>{' '}
               de{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-foreground">
                 {getMantenimientoLabel(
                   itemToDelete.mantenimiento,
                 )}
@@ -783,7 +783,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 type="button"
                 onClick={closeDeleteModal}
                 disabled={isSaving}
-                className="w-full rounded-full border border-neutral-800 py-3 text-xs font-black uppercase text-neutral-400 transition-colors hover:text-white disabled:opacity-50"
+                className="w-full rounded-full border border-border py-3 text-xs font-black uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -792,7 +792,7 @@ export default function RepuestosMantenimientoAdminPage() {
                 type="button"
                 onClick={handleDelete}
                 disabled={isSaving}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-destructive py-3 text-xs font-black uppercase text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isSaving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -819,14 +819,14 @@ function StatCard({
   icon,
 }: StatCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-neutral-900 bg-[#0c0c0e] p-5 shadow-xl">
+    <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-neutral-500">
             {title}
           </p>
 
-          <p className="mt-2 text-3xl font-black text-white">
+          <p className="mt-2 text-3xl font-black text-foreground">
             {value}
           </p>
         </div>
@@ -852,7 +852,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-black uppercase tracking-wider text-neutral-400">
+      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
         {label}
 
         {required && (
@@ -867,16 +867,16 @@ function FormField({
 
 function inputClass(): string {
   return [
-    'w-full rounded-full border border-neutral-800 bg-[#141417] px-5 py-3',
-    'text-sm font-semibold text-white outline-none transition',
+    'w-full rounded-full border border-border bg-background px-5 py-3',
+    'text-sm font-semibold text-foreground outline-none transition',
     'focus:border-primary/80 focus:ring-4 focus:ring-primary/10',
-    'disabled:cursor-not-allowed disabled:bg-neutral-900 disabled:text-neutral-600',
+    'disabled:cursor-not-allowed disabled:bg-muted disabled:text-neutral-600',
   ].join(' ');
 }
 
 function readOnlyInputClass(): string {
   return [
-    'w-full rounded-full border border-neutral-800 bg-neutral-900 px-5 py-3',
-    'text-sm font-bold text-neutral-300 outline-none',
+    'w-full rounded-full border border-border bg-muted px-5 py-3',
+    'text-sm font-bold text-muted-foreground outline-none',
   ].join(' ');
 }
