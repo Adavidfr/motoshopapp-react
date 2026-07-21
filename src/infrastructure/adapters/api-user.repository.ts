@@ -23,7 +23,7 @@ export class ApiUserRepository implements UserRepository {
     if (search) params.search = search;
     
     // Asumiendo ruta estándar en DRF/Djoser para usuarios
-    const response = await httpClient.get('/auth/users/', { params });
+    const response = await httpClient.get('/users/', { params });
     
     return {
       count: response.data.count || (response.data.results ? response.data.results.length : response.data.length),
@@ -39,7 +39,7 @@ export class ApiUserRepository implements UserRepository {
     if (data.isStaff !== undefined) payload.is_staff = data.isStaff;
     if (data.role !== undefined) payload.role = data.role;
     
-    const response = await httpClient.patch(`/auth/users/${id}/`, payload);
+    const response = await httpClient.patch(`/users/${id}/`, payload);
     return this.mapUser(response.data);
   }
 }
