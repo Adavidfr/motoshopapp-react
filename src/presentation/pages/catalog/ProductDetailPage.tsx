@@ -85,12 +85,12 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {/* Product Image Panel with Glow effect */}
-        <div className="bg-neutral-900/40 aspect-video w-full rounded-3xl overflow-hidden relative flex items-center justify-center border border-primary/10 shadow-[0_15px_30px_rgba(255,107,0,0.05)]">
+        <div className="bg-white dark:bg-neutral-900/40 aspect-video w-full rounded-3xl overflow-hidden relative flex items-center justify-center border border-neutral-200 dark:border-primary/10 shadow-[0_15px_30px_rgba(255,107,0,0.05)] transition-colors duration-300">
           {selectedMoto.imagen ? (
             <img
               src={selectedMoto.imagen}
               alt={selectedMoto.modelo}
-              className="object-cover w-full h-full"
+              className="object-contain w-full h-full mix-blend-multiply dark:mix-blend-normal"
             />
           ) : (
             <span className="text-8xl animate-bounce">🏍️</span>
@@ -104,30 +104,30 @@ export default function ProductDetailPage() {
               <span className="bg-primary/10 text-primary border border-primary/25 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-md">
                 Modelo {selectedMoto.anio}
               </span>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-3">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mt-3">
                 {selectedMoto.modelo}
               </h1>
             </div>
 
             <p className="text-3xl font-black text-primary">{formatPrice(selectedMoto.precio)}</p>
 
-            <Card className="border-border/30 bg-neutral-900/30 backdrop-blur-md rounded-2xl">
+            <Card className="border-border/30 bg-neutral-100 dark:bg-neutral-900/30 backdrop-blur-md rounded-2xl transition-colors duration-300">
               <CardContent className="p-5 space-y-3.5 text-sm">
                 <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-400 font-medium">Cilindraje</span>
-                  <span className="font-bold text-white">{selectedMoto.cilindraje} cc</span>
+                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Cilindraje</span>
+                  <span className="font-bold text-foreground">{selectedMoto.cilindraje} cc</span>
                 </div>
                 <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-400 font-medium">Color Exterior</span>
-                  <span className="font-bold text-white">{selectedMoto.color}</span>
+                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Color Exterior</span>
+                  <span className="font-bold text-foreground">{selectedMoto.color}</span>
                 </div>
                 <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-400 font-medium">Estado General</span>
+                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Estado General</span>
                   <span className="font-bold text-primary capitalize">{selectedMoto.estado}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400 font-medium">Disponibilidad en Local</span>
-                  <span className={`font-bold ${selectedMoto.stock > 0 ? 'text-green-400' : 'text-destructive'}`}>
+                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Disponibilidad en Local</span>
+                  <span className={`font-bold ${selectedMoto.stock > 0 ? 'text-green-500 dark:text-green-400' : 'text-destructive'}`}>
                     {selectedMoto.stock > 0 ? `${selectedMoto.stock} unidades` : 'Agotada'}
                   </span>
                 </div>
@@ -135,18 +135,18 @@ export default function ProductDetailPage() {
             </Card>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-neutral-900/30 rounded-xl border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-900/30 rounded-xl border border-border/20 transition-colors duration-300">
                 <Shield className="size-5 text-primary shrink-0" />
                 <div className="text-xs">
-                  <p className="font-bold text-white">Garantía Directa</p>
-                  <p className="text-neutral-400 mt-0.5">Cobertura de fábrica</p>
+                  <p className="font-bold text-foreground">Garantía Directa</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">Cobertura de fábrica</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-neutral-900/30 rounded-xl border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-900/30 rounded-xl border border-border/20 transition-colors duration-300">
                 <Sparkles className="size-5 text-primary shrink-0" />
                 <div className="text-xs">
-                  <p className="font-bold text-white">Certificación</p>
-                  <p className="text-neutral-400 mt-0.5">Inspeccionado al 100%</p>
+                  <p className="font-bold text-foreground">Certificación</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">Inspeccionado al 100%</p>
                 </div>
               </div>
             </div>
@@ -161,29 +161,29 @@ export default function ProductDetailPage() {
             )}
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-900/30 shrink-0">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-100 dark:bg-neutral-900/30 shrink-0 transition-colors duration-300">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-800"
+                  className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1 || selectedMoto.stock === 0}
                   type="button"
                 >
-                  <Minus className="size-4 text-neutral-400" />
+                  <Minus className="size-4 text-neutral-500 dark:text-neutral-400" />
                 </Button>
-                <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-white tabular-nums">
+                <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-foreground tabular-nums">
                   {quantity}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-800"
+                  className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
                   onClick={() => setQuantity(Math.min(selectedMoto.stock, quantity + 1))}
                   disabled={quantity >= selectedMoto.stock || selectedMoto.stock === 0}
                   type="button"
                 >
-                  <Plus className="size-4 text-neutral-400" />
+                  <Plus className="size-4 text-neutral-500 dark:text-neutral-400" />
                 </Button>
               </div>
 

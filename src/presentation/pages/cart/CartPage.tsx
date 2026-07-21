@@ -133,7 +133,7 @@ export default function CartPage() {
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Cantidad</span>
-                          <span className="text-xs font-black text-foreground bg-white/[0.05] border border-white/[0.08] rounded-lg px-2 py-0.5">{item.cantidad}</span>
+                          <span className="text-xs font-black text-foreground bg-black/5 dark:bg-white/[0.05] border border-black/10 dark:border-white/[0.08] rounded-lg px-2 py-0.5">{item.cantidad}</span>
                         </div>
                       </div>
                     </div>
@@ -154,7 +154,7 @@ export default function CartPage() {
               {/* Controls */}
               <div className="flex justify-between items-center pt-2">
                 <Link to="/">
-                  <button className="flex items-center gap-1.5 text-sm font-bold text-neutral-500 hover:text-white transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-white/[0.04]">
+                  <button className="flex items-center gap-1.5 text-sm font-bold text-neutral-500 hover:text-foreground dark:hover:text-white transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/[0.04]">
                     <ArrowLeft className="size-4" />
                     Seguir Comprando
                   </button>
