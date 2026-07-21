@@ -25,6 +25,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       set({ profile, isLoading: false });
     } catch (err: any) {
       set({
+        profile: null,
         error: err.response?.data?.detail || 'Error al obtener el perfil',
         isLoading: false,
       });

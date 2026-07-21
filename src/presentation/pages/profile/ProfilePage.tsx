@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProfileStore } from '../../store/profile.store';
+import { useAuthStore } from '../../store/auth.store';
 import { updateProfileSchema } from '../../../application/dtos/profile.dto';
 import type { UpdateProfileDto } from '../../../application/dtos/profile.dto';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function ProfilePage() {
+  const { user } = useAuthStore();
   const { profile, fetchProfile, updateProfile, isLoading, error } = useProfileStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -60,7 +62,9 @@ export default function ProfilePage() {
     );
   }
 
-  const initials = profile?.username?.substring(0, 2).toUpperCase() || 'AR';
+  const displayUsername = user?.username || profile?.username || 'Usuario';
+  const displayEmail = user?.email || profile?.email || '';
+  const initials = displayUsername.substring(0, 2).toUpperCase();
 
   return (
     <div className="min-h-[80vh] bg-background text-foreground py-10 px-4 sm:px-6 transition-colors duration-300">
@@ -99,10 +103,10 @@ export default function ProfilePage() {
 
               {/* Info */}
               <div className="space-y-1.5">
-                <h2 className="text-xl font-black text-foreground">{profile?.username}</h2>
+                <h2 className="text-xl font-black text-foreground">{displayUsername}</h2>
                 <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-500">
                   <Mail className="size-3.5" />
-                  {profile?.email}
+                  {displayEmail}
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Shield className="size-3.5 text-primary" />
