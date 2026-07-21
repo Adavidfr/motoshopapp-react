@@ -44,7 +44,7 @@ export default function MotosAdminPage() {
     const params: any = { page };
     if (searchTerm) params.search = searchTerm;
     fetchMotos(params);
-  }, [page, fetchMotos]);
+  }, [page, searchTerm, fetchMotos]);
 
   const handleOpenCreate = () => {
     setEditingId(null);
