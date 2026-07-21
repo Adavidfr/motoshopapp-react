@@ -21,13 +21,13 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon: Icon, color, trend }: StatCardProps) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl border bg-neutral-900/30 backdrop-blur-md p-5 flex items-center gap-4 ${color}`}>
+    <div className={`relative overflow-hidden rounded-2xl border border-border/50 bg-neutral-200/50 dark:bg-neutral-900/30 backdrop-blur-md p-5 flex items-center gap-4 ${color}`}>
       <div className="shrink-0 size-12 flex items-center justify-center rounded-xl bg-current/10 border border-current/20">
         <Icon className="size-5 text-current" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">{title}</p>
-        <p className="text-2xl font-black text-white mt-0.5">{value}</p>
+        <p className="text-2xl font-black text-foreground mt-0.5">{value}</p>
         {trend && <p className="text-[10px] text-neutral-500 mt-0.5">{trend}</p>}
       </div>
       {/* Decorative glow */}
@@ -50,7 +50,7 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
   return (
     <Link
       to={path}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-neutral-800/60 bg-neutral-900/20 p-5 hover:border-neutral-700 hover:bg-neutral-900/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+      className="group relative flex flex-col gap-3 rounded-2xl border border-neutral-300 dark:border-neutral-800/60 bg-neutral-100 dark:bg-neutral-900/20 p-5 hover:border-neutral-400 dark:hover:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-900/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
     >
       <div className="flex items-start justify-between">
         <div className={`flex size-10 items-center justify-center rounded-xl border ${accent} transition-all duration-200 group-hover:scale-110`}>
@@ -63,7 +63,7 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
         )}
       </div>
       <div>
-        <p className="text-sm font-black text-white uppercase tracking-wide group-hover:text-primary transition-colors">
+        <p className="text-sm font-black text-foreground uppercase tracking-wide group-hover:text-primary transition-colors">
           {title}
         </p>
         <p className="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">{description}</p>
@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-primary mb-1">
             {greeting}, {user?.username ?? 'Administrador'}
           </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground">
             Panel de Control
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
