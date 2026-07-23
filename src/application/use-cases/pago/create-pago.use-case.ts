@@ -1,6 +1,6 @@
 // src/application/use-cases/pago/create-pago.use-case.ts
 import type { PagoRepository } from '../../../domain/ports/pago.repository';
-import type { Pago } from '../../../domain/entities/pago.entity';
+import type { Pago, PagoCreatePayload } from '../../../domain/entities/pago.entity';
 
 export class CreatePagoUseCase {
   private readonly repository: PagoRepository;
@@ -9,7 +9,7 @@ export class CreatePagoUseCase {
     this.repository = repository;
   }
 
-  execute(payload: Omit<Pago, 'id_pago' | 'fecha_pago'>) {
+  execute(payload: PagoCreatePayload): Promise<Pago> {
     return this.repository.createPago(payload);
   }
 }

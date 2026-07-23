@@ -1,6 +1,13 @@
 // src/domain/ports/venta.repository.ts
-import type { Venta, VentaStats, PaginatedVentas } from '../entities/venta.entity';
-import type { Financiamiento } from '../entities/financiamiento.entity';
+import type {
+  Venta,
+  VentaStats,
+  PaginatedVentas,
+  VentaCreatePayload,
+  VentaUpdatePayload,
+  VentaResumen,
+} from '../entities/venta.entity';
+import type { Financiamiento, FinanciamientoCreatePayload } from '../entities/financiamiento.entity';
 
 export interface VentaFilters {
   page?: number;
@@ -12,9 +19,10 @@ export interface VentaFilters {
 export interface VentaRepository {
   listVentas(filters?: VentaFilters): Promise<PaginatedVentas>;
   getVenta(id: number): Promise<Venta>;
-  createVenta(payload: { id_pedido: number; total_venta: string; estado: string }): Promise<Venta>;
-  updateVenta(id: number, payload: Partial<Venta>): Promise<Venta>;
+  createVenta(payload: VentaCreatePayload): Promise<Venta>;
+  updateVenta(id: number, payload: VentaUpdatePayload): Promise<Venta>;
   deleteVenta(id: number): Promise<void>;
   getStats(): Promise<VentaStats>;
-  financiarVenta(id: number, payload: Omit<Financiamiento, 'id_financiamiento' | 'id_venta'>): Promise<Financiamiento>;
+  getResumen(id: number): Promise<VentaResumen>;
+  financiarVenta(id: number, payload: FinanciamientoCreatePayload): Promise<Financiamiento>;
 }

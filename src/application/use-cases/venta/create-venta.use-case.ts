@@ -1,14 +1,15 @@
 // src/application/use-cases/venta/create-venta.use-case.ts
 import type { VentaRepository } from '../../../domain/ports/venta.repository';
+import type { Venta, VentaCreatePayload } from '../../../domain/entities/venta.entity';
 
 export class CreateVentaUseCase {
-  private readonly repository: VentaRepository;
+  private ventaRepository: VentaRepository;
 
-  constructor(repository: VentaRepository) {
-    this.repository = repository;
+  constructor(ventaRepository: VentaRepository) {
+    this.ventaRepository = ventaRepository;
   }
 
-  execute(payload: { id_pedido: number; total_venta: string; estado: string }) {
-    return this.repository.createVenta(payload);
+  execute(payload: VentaCreatePayload): Promise<Venta> {
+    return this.ventaRepository.createVenta(payload);
   }
 }

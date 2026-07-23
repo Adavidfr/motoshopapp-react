@@ -1,147 +1,52 @@
 // src/presentation/pages/repuestos/RepuestosPage.tsx
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useRepuestoStore } from '../../store/repuesto.store';
-import { useAuthStore } from '../../store/auth.store';
-import { Plus, Edit, Trash2, Loader2, Upload, FileImage, Search } from 'lucide-react';
-import type { Repuesto } from '../../../domain/entities/repuesto.entity';
+import { Loader2, FileImage, Search } from 'lucide-react';
+import { formatPrice } from '../../utils/formatters';
 
 export default function RepuestosPage() {
-  const { repuestos, isLoading, error, fetchRepuestos, createRepuesto, updateRepuesto, deleteRepuesto } = useRepuestoStore();
-  const { user } = useAuthStore();
-  const isAdmin = user?.isStaff || user?.role === 'admin' || true; // Permitir por defecto para admin local
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-
-  // Form states
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [sku, setSku] = useState('');
-  const [costo, setCosto] = useState<number>(0);
-  const [precioVenta, setPrecioVenta] = useState<number>(0);
-  const [stock, setStock] = useState<number>(0);
-  const [estado, setEstado] = useState('Activo');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Search
+  const { repuestos, isLoading, error, fetchRepuestos } = useRepuestoStore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
-    fetchRepuestos();
+    fetchRepuestos({ limit: 100 });
   }, [fetchRepuestos]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchRepuestos({ search: searchTerm });
-  };
-
-  const handleOpenCreate = () => {
-    setEditingId(null);
-    setNombre('');
-    setDescripcion('');
-    setSku('');
-    setCosto(0);
-    setPrecioVenta(0);
-    setStock(0);
-    setEstado('Activo');
-    setImageFile(null);
-    setImagePreview(null);
-    setModalOpen(true);
-  };
-
-  const handleOpenEdit = (repuesto: Repuesto) => {
-    setEditingId(repuesto.idRepuesto);
-    setNombre(repuesto.nombre);
-    setDescripcion(repuesto.descripcion || '');
-    setSku(repuesto.sku);
-    setCosto(repuesto.costo);
-    setPrecioVenta(repuesto.precioVenta);
-    setStock(repuesto.stock);
-    setEstado(repuesto.estado);
-    setImageFile(null);
-    setImagePreview(repuesto.imagen);
-    setModalOpen(true);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nombre.trim() || !sku.trim()) return;
-
-    const fd = new FormData();
-    fd.append('nombre', nombre);
-    fd.append('descripcion', descripcion);
-    fd.append('sku', sku);
-    fd.append('costo', String(costo));
-    fd.append('precio_venta', String(precioVenta));
-    fd.append('stock', String(stock));
-    fd.append('estado', estado);
-
-    if (imageFile) {
-      fd.append('imagen', imageFile);
-    }
-
-    try {
-      if (editingId !== null) {
-        await updateRepuesto(editingId, fd);
-      } else {
-        await createRepuesto(fd);
-      }
-      setModalOpen(false);
-      fetchRepuestos(); // Refresh
-    } catch (err) {
-      // Manejado
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este repuesto?')) {
-      try {
-        await deleteRepuesto(id);
-      } catch (err) {
-        // Manejado
-      }
-    }
+    fetchRepuestos({ search: searchTerm || undefined, limit: 100 });
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight text-left">Galería de Repuestos</h1>
-          <p className="text-neutral-400 text-sm text-left">Explora y gestiona piezas de recambio oficiales y accesorios</p>
+          <h1 className="text-3xl font-black text-foreground uppercase tracking-tight text-left">
+            Catálogo de Repuestos
+          </h1>
+          <p className="text-muted-foreground text-sm text-left">
+            Explora piezas de recambio oficiales y accesorios para tu moto
+          </p>
         </div>
-        {isAdmin && (
-          <button
-            onClick={handleOpenCreate}
-            className="bg-primary hover:bg-primary/95 text-white flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] self-start"
-          >
-            <Plus className="size-4" /> Agregar Repuesto
-          </button>
-        )}
       </div>
 
-      {/* Filter and Search bar */}
-      <form onSubmit={handleSearch} className="flex gap-3 bg-[#0c0c0e] border border-neutral-900 rounded-full px-5 py-2.5 max-w-md items-center">
+      <form
+        onSubmit={handleSearch}
+        className="flex gap-3 bg-card border border-border rounded-full px-5 py-2.5 max-w-md items-center"
+      >
         <Search className="text-neutral-500 size-4 shrink-0" />
         <input
           type="text"
-          placeholder="Buscar por SKU o nombre..."
+          placeholder="Buscar por nombre, SKU o descripción..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-transparent border-none text-white text-xs placeholder-neutral-500 font-semibold focus:outline-none focus:ring-0 w-full"
+          className="bg-transparent border-none text-foreground text-xs placeholder-neutral-500 font-semibold focus:outline-none focus:ring-0 w-full"
         />
-        <button type="submit" className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors">
+        <button
+          type="submit"
+          className="bg-muted hover:bg-neutral-700 text-foreground rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors"
+        >
           Buscar
         </button>
       </form>
@@ -156,12 +61,19 @@ export default function RepuestosPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="animate-spin text-primary size-10" />
         </div>
+      ) : repuestos.length === 0 ? (
+        <div className="text-center py-16 bg-muted/10 border border-border rounded-2xl">
+          <p className="text-muted-foreground text-sm">No se encontraron repuestos.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {repuestos.map((rep) => (
-            <div key={rep.idRepuesto} className="bg-[#0c0c0e] border border-neutral-900/60 rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col group text-left">
-              {/* Image box */}
-              <div className="relative h-44 w-full bg-neutral-950 overflow-hidden">
+            <Link
+              key={rep.idRepuesto}
+              to={`/repuestos/${rep.idRepuesto}`}
+              className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col group text-left"
+            >
+              <div className="relative h-44 w-full bg-muted overflow-hidden">
                 {rep.imagen ? (
                   <img
                     src={rep.imagen}
@@ -174,184 +86,39 @@ export default function RepuestosPage() {
                     <span className="text-[10px] uppercase font-bold tracking-wider">Sin Imagen</span>
                   </div>
                 )}
-                {/* SKU Badge */}
-                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-border/50 text-[9px] font-black text-foreground uppercase tracking-wider">
+                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-border/50 text-[9px] font-black text-foreground uppercase tracking-wider font-mono">
                   SKU: {rep.sku}
                 </div>
+                {rep.stock <= 0 && (
+                  <div className="absolute top-4 right-4 bg-destructive/90 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider">
+                    Agotado
+                  </div>
+                )}
               </div>
 
-              {/* Product Info */}
               <div className="p-5 flex flex-col flex-1 space-y-4">
                 <div>
-                  <h3 className="text-base font-black text-white uppercase tracking-tight truncate">{rep.nombre}</h3>
-                  <p className="text-neutral-500 text-xs font-semibold line-clamp-2 mt-1 h-8 leading-relaxed">
+                  <h3 className="text-base font-black text-foreground uppercase tracking-tight truncate">
+                    {rep.nombre}
+                  </h3>
+                  <p className="text-muted-foreground text-xs font-semibold line-clamp-2 mt-1 h-8 leading-relaxed">
                     {rep.descripcion || 'Sin descripción adicional'}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-900/60">
+                <div className="flex items-center justify-between pt-2 border-t border-border">
                   <div>
-                    <span className="text-neutral-500 text-[10px] font-bold block uppercase">Precio</span>
-                    <span className="text-base font-black text-white">${rep.precioVenta.toLocaleString()}</span>
+                    <span className="text-muted-foreground text-[10px] font-bold block uppercase">Precio</span>
+                    <span className="text-base font-black text-primary">{formatPrice(rep.precioVenta)}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-neutral-500 text-[10px] font-bold block uppercase">Stock</span>
-                    <span className="text-sm font-black text-white">{rep.stock} u.</span>
+                    <span className="text-muted-foreground text-[10px] font-bold block uppercase">Stock</span>
+                    <span className="text-sm font-black text-foreground">{rep.stock} u.</span>
                   </div>
                 </div>
-
-                {isAdmin && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      onClick={() => handleOpenEdit(rep)}
-                      className="w-1/2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-white rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Edit className="size-3.5" /> Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(rep.idRepuesto)}
-                      className="w-1/2 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive rounded-full py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Trash2 className="size-3.5" /> Eliminar
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
+            </Link>
           ))}
-        </div>
-      )}
-
-      {/* Modal Form */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#0c0c0e] border border-neutral-900 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-8">
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6">
-              {editingId !== null ? 'Editar Repuesto' : 'Agregar Repuesto'}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-              
-              {/* Image Preview & Upload Button */}
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-800 rounded-3xl p-6 bg-neutral-950/40 relative group">
-                {imagePreview ? (
-                  <div className="relative w-full h-32 rounded-2xl overflow-hidden">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <button 
-                      type="button" 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-bold text-xs uppercase tracking-wider transition-opacity cursor-pointer"
-                    >
-                      <Upload className="size-4 mr-1.5 animate-bounce" /> Cambiar Imagen
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    type="button" 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 hover:text-white text-neutral-500 transition-colors py-4 cursor-pointer"
-                  >
-                    <Upload className="size-8 stroke-[1.5]" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Cargar Foto de Repuesto</span>
-                  </button>
-                )}
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  accept="image/*" 
-                  className="hidden" 
-                />
-              </div>
-
-              {/* Nombre */}
-              <div className="space-y-1">
-                <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">Nombre del Repuesto</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Pastillas de freno Brembo, Cadena RK 520"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                />
-              </div>
-
-              {/* SKU */}
-              <div className="space-y-1">
-                <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">SKU Único</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: REP-BREMBO-01"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                />
-              </div>
-
-              {/* Descripcion */}
-              <div className="space-y-1">
-                <label className="text-neutral-400 text-xs font-black uppercase tracking-wider">Descripción</label>
-                <textarea
-                  placeholder="Detalles técnicos del repuesto..."
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  className="w-full bg-[#141417] border border-neutral-800 text-white rounded-[1.5rem] py-3.5 px-5 text-xs font-semibold h-20 focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all resize-none"
-                />
-              </div>
-
-              {/* Costo, Venta & Stock Row */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Costo</label>
-                  <input
-                    type="number"
-                    required
-                    value={costo}
-                    onChange={(e) => setCosto(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">P. Venta</label>
-                  <input
-                    type="number"
-                    required
-                    value={precioVenta}
-                    onChange={(e) => setPrecioVenta(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-neutral-400 text-[10px] font-black uppercase tracking-wider">Stock</label>
-                  <input
-                    type="number"
-                    required
-                    value={stock}
-                    onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full bg-[#141417] border border-neutral-800 text-white rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/10 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="w-1/2 border border-neutral-800 text-neutral-400 hover:text-white font-black uppercase text-xs tracking-wider rounded-full py-4 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-1/2 bg-[#ff1a1a] hover:bg-[#e60000] text-white font-black uppercase text-xs tracking-wider rounded-full py-4 transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)]"
-                >
-                  {isLoading ? 'Guardando...' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>

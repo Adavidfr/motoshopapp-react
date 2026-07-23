@@ -1,5 +1,6 @@
 // src/application/use-cases/repuesto/list-repuestos.use-case.ts
 import type { RepuestoRepository, ListRepuestosParams } from '../../../domain/ports/repuesto.repository';
+import type { PaginatedResult } from '../../../domain/ports/moto.repository';
 import type { Repuesto } from '../../../domain/entities/repuesto.entity';
 
 export class ListRepuestosUseCase {
@@ -8,7 +9,7 @@ export class ListRepuestosUseCase {
     this.repuestoRepository = repuestoRepository;
   }
 
-  async execute(params?: ListRepuestosParams): Promise<Repuesto[]> {
+  async execute(params?: ListRepuestosParams): Promise<PaginatedResult<Repuesto>> {
     return this.repuestoRepository.listRepuestos(params);
   }
 }

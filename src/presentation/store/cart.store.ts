@@ -2,13 +2,14 @@
 import { create } from 'zustand';
 import type { CarritoCompras } from '../../domain/entities/cart.entity';
 import { getActiveCartUseCase, addItemToCartUseCase, removeItemFromCartUseCase, clearCartUseCase } from '../../infrastructure/factories/cart.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface CartState {
   cart: CarritoCompras | null;
   isLoading: boolean;
   error: string | null;
   fetchActiveCart: () => Promise<void>;
-  addToCart: (motoId: number | null, repuestoId: number | null, cantidad: number, precioUnitario: number) => Promise<void>;
+  addToCart: (motoId: number | null, repuestoId: number | null, cantidad: number) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   clearCartState: () => void;
@@ -24,15 +25,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const cart = await getActiveCartUseCase.execute();
       set({ cart, isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       set({
-        error: err.response?.data?.detail || 'Error al cargar el carrito activo',
+        error: parseApiError(err, 'Error al cargar el carrito activo'),
         isLoading: false,
       });
     }
   },
 
-  addToCart: async (motoId, repuestoId, cantidad, precioUnitario) => {
+  addToCart: async (motoId, repuestoId, cantidad) => {
     set({ isLoading: true, error: null });
     try {
       let currentCart = get().cart;
@@ -44,12 +45,11 @@ export const useCartStore = create<CartState>((set, get) => ({
         motoId,
         repuestoId,
         cantidad,
-        precioUnitario
       );
       set({ cart: updatedCart, isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       set({
-        error: err.response?.data?.detail || 'Error al agregar elemento al carrito',
+        error: parseApiError(err, 'Error al agregar elemento al carrito'),
         isLoading: false,
       });
       throw err;
@@ -62,13 +62,11 @@ export const useCartStore = create<CartState>((set, get) => ({
       const currentCart = get().cart;
       if (!currentCart) return;
       await removeItemFromCartUseCase.execute(currentCart.idCarrito, itemId);
-      
-      // Volvemos a obtener el carrito para tener los cálculos actualizados
       const updatedCart = await getActiveCartUseCase.execute();
       set({ cart: updatedCart, isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       set({
-        error: err.response?.data?.detail || 'Error al remover elemento del carrito',
+        error: parseApiError(err, 'Error al remover elemento del carrito'),
         isLoading: false,
       });
     }
@@ -81,9 +79,9 @@ export const useCartStore = create<CartState>((set, get) => ({
       if (!currentCart) return;
       const updatedCart = await clearCartUseCase.execute(currentCart.idCarrito);
       set({ cart: updatedCart, isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       set({
-        error: err.response?.data?.detail || 'Error al vaciar el carrito',
+        error: parseApiError(err, 'Error al vaciar el carrito'),
         isLoading: false,
       });
     }

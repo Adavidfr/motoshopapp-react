@@ -4,7 +4,14 @@ import { useMotoStore } from '../../store/moto.store';
 import { useBrandStore } from '../../store/brand.store';
 import { useCategoryStore } from '../../store/category.store';
 import { Plus, Edit, Trash2, Loader2, Upload, FileImage, Search } from 'lucide-react';
-import type { Moto } from '../../../domain/entities/moto.entity';
+import type { Moto, MotoCreatePayload, MotoUpdatePayload, MotoEstado } from '../../../domain/entities/moto.entity';
+import { normalizeMotoEstadoForApi } from '../../../domain/entities/moto.entity';
+import type { ListMotosParams } from '../../../domain/ports/moto.repository';
+import {
+  MOTO_ESTADOS,
+  formatMotoEstadoLabel,
+  normalizeMotoEstadoForForm,
+} from '../../utils/moto-availability';
 
 export default function MotosAdminPage() {
   const { motos, totalCount, isLoading, error, fetchMotos, createMoto, updateMoto, deleteMoto } = useMotoStore();
@@ -21,9 +28,9 @@ export default function MotosAdminPage() {
   const [color, setColor] = useState('');
   const [precio, setPrecio] = useState<number>(0);
   const [stock, setStock] = useState<number>(1);
-  const [status, setStatus] = useState('Disponible');
-  const [selectedBrand, setSelectedBrand] = useState<number | string>('');
-  const [selectedCategory, setSelectedCategory] = useState<number | string>('');
+  const [status, setStatus] = useState<MotoEstado>('disponible');
+  const [selectedBrand, setSelectedBrand] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<number>(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -41,10 +48,15 @@ export default function MotosAdminPage() {
 
   // Load motos on filters/page change
   useEffect(() => {
-    const params: any = { page };
+    const params: ListMotosParams = { page };
     if (searchTerm) params.search = searchTerm;
     fetchMotos(params);
   }, [page, searchTerm, fetchMotos]);
+
+  const buildListParams = (): ListMotosParams => ({
+    page,
+    ...(searchTerm ? { search: searchTerm } : {}),
+  });
 
   const handleOpenCreate = () => {
     setEditingId(null);
@@ -54,9 +66,9 @@ export default function MotosAdminPage() {
     setColor('');
     setPrecio(0);
     setStock(1);
-    setStatus('Disponible');
-    setSelectedBrand(brands[0]?.idMarca || '');
-    setSelectedCategory(categories[0]?.idCategoria || '');
+    setStatus('disponible');
+    setSelectedBrand(brands[0]?.idMarca ?? 0);
+    setSelectedCategory(categories[0]?.idCategoria ?? 0);
     setImageFile(null);
     setImagePreview(null);
     setModalOpen(true);
@@ -74,9 +86,9 @@ export default function MotosAdminPage() {
     setColor(moto.color);
     setPrecio(moto.precio);
     setStock(moto.stock);
-    setStatus(moto.estado);
-    setSelectedBrand(brandObj?.idMarca || '');
-    setSelectedCategory(catObj?.idCategoria || '');
+    setStatus(normalizeMotoEstadoForForm(moto.estado));
+    setSelectedBrand(brandObj?.idMarca ?? 0);
+    setSelectedCategory(catObj?.idCategoria ?? 0);
     setImageFile(null);
     setImagePreview(moto.imagen);
     setModalOpen(true);
@@ -94,29 +106,28 @@ export default function MotosAdminPage() {
     e.preventDefault();
     if (!modelo.trim() || !selectedBrand || !selectedCategory) return;
 
-    const fd = new FormData();
-    fd.append('modelo', modelo);
-    fd.append('anio', String(anio));
-    fd.append('cilindraje', String(cilindraje));
-    fd.append('color', color);
-    fd.append('precio', String(precio));
-    fd.append('stock', String(stock));
-    fd.append('estado', status);
-    fd.append('id_marca', String(selectedBrand));
-    fd.append('id_categoria', String(selectedCategory));
-    
-    if (imageFile) {
-      fd.append('imagen', imageFile);
-    }
+    const payload: MotoCreatePayload = {
+      modelo,
+      anio,
+      cilindraje,
+      color,
+      precio,
+      stock,
+      estado: normalizeMotoEstadoForApi(status),
+      marca: selectedBrand,
+      categoria: selectedCategory,
+      ...(imageFile ? { imagen: imageFile } : {}),
+    };
 
     try {
       if (editingId !== null) {
-        await updateMoto(editingId, fd);
+        const updatePayload: MotoUpdatePayload = payload;
+        await updateMoto(editingId, updatePayload);
       } else {
-        await createMoto(fd);
+        await createMoto(payload);
       }
       setModalOpen(false);
-      fetchMotos(); // Refresh catalog
+      await fetchMotos(buildListParams());
     } catch (err) {
       // Manejado en el store
     }
@@ -202,13 +213,13 @@ export default function MotosAdminPage() {
                 </div>
                 {/* Status Badge */}
                 <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                  moto.estado === 'Disponible' 
-                    ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
-                    : moto.estado === 'Reservada'
+                  moto.estado.toLowerCase() === 'disponible'
+                    ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                    : moto.estado.toLowerCase() === 'reservada'
                     ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400'
                     : 'bg-muted border border-border text-neutral-500'
                 }`}>
-                  {moto.estado}
+                  {formatMotoEstadoLabel(moto.estado)}
                 </div>
               </div>
 
@@ -334,7 +345,7 @@ export default function MotosAdminPage() {
                   <label className="text-muted-foreground text-xs font-black uppercase tracking-wider">Marca</label>
                   <select
                     value={selectedBrand}
-                    onChange={(e) => setSelectedBrand(e.target.value)}
+                    onChange={(e) => setSelectedBrand(Number(e.target.value))}
                     className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
                     {brands.filter(b => b.estado).map((b) => (
@@ -346,7 +357,7 @@ export default function MotosAdminPage() {
                   <label className="text-muted-foreground text-xs font-black uppercase tracking-wider">Categoría</label>
                   <select
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    onChange={(e) => setSelectedCategory(Number(e.target.value))}
                     className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-5 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
                     {categories.filter(c => c.estado).map((c) => (
@@ -417,12 +428,14 @@ export default function MotosAdminPage() {
                   <label className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">Estado</label>
                   <select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    onChange={(e) => setStatus(e.target.value as MotoEstado)}
                     className="w-full bg-background border border-border text-foreground rounded-full py-3.5 px-4 text-xs font-semibold focus:outline-none focus:border-primary/80 transition-all"
                   >
-                    <option value="Disponible">Disponible</option>
-                    <option value="Reservada">Reservada</option>
-                    <option value="Vendida">Vendida</option>
+                    {MOTO_ESTADOS.map((estado) => (
+                      <option key={estado} value={estado}>
+                        {formatMotoEstadoLabel(estado)}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

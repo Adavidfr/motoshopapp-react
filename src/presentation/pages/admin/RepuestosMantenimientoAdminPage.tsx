@@ -79,7 +79,7 @@ export default function RepuestosMantenimientoAdminPage() {
   useEffect(() => {
     void fetchStats();
     void fetchMantenimientos();
-    void fetchRepuestos();
+    void fetchRepuestos({ limit: 100 });
   }, [fetchStats, fetchMantenimientos, fetchRepuestos]);
 
   useEffect(() => {

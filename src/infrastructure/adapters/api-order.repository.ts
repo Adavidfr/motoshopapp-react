@@ -1,12 +1,44 @@
 // src/infrastructure/adapters/api-order.repository.ts
 import type { OrderRepository } from '../../domain/ports/order.repository';
-import type { Pedido } from '../../domain/entities/order.entity';
-import type { CarritoCompras, ItemCarrito } from '../../domain/entities/cart.entity';
+import type { Pedido, PedidoEstado, OrderListFilters } from '../../domain/entities/order.entity';
+import type { CarritoCompras, CarritoEstado, ItemCarrito } from '../../domain/entities/cart.entity';
 import type { PaginatedResult } from '../../domain/ports/moto.repository';
 import { httpClient } from '../http/axios-client';
 
+interface ApiCartItem {
+  id_item: number;
+  id_carrito: number;
+  id_moto: number | null;
+  id_repuesto: number | null;
+  cantidad: number;
+  precio_unitario: string;
+  subtotal: string;
+}
+
+interface ApiCart {
+  id_carrito: number;
+  username_cliente: string;
+  id_usuario_cliente: number;
+  estado: string;
+  fecha_creacion: string;
+  num_items: number;
+  total: string;
+  items?: ApiCartItem[];
+}
+
+interface ApiPedido {
+  id_pedido: number;
+  username_cliente: string;
+  id_usuario_cliente: number;
+  id_carrito: number;
+  carrito?: ApiCart;
+  estado: PedidoEstado;
+  total: string | number;
+  fecha_pedido: string;
+}
+
 export class ApiOrderRepository implements OrderRepository {
-  private mapItem(data: any): ItemCarrito {
+  private mapItem(data: ApiCartItem): ItemCarrito {
     return {
       idItem: data.id_item,
       idCarrito: data.id_carrito,
@@ -18,26 +50,26 @@ export class ApiOrderRepository implements OrderRepository {
     };
   }
 
-  private mapCart(data: any): CarritoCompras {
+  private mapCart(data: ApiCart): CarritoCompras {
     return {
       idCarrito: data.id_carrito,
       usernameCliente: data.username_cliente,
       idUsuarioCliente: data.id_usuario_cliente,
-      estado: data.estado,
+      estado: data.estado as CarritoEstado,
       fechaCreacion: data.fecha_creacion,
       numItems: Number(data.num_items),
       total: Number(data.total),
-      items: (data.items || []).map((i: any) => this.mapItem(i)),
+      items: (data.items || []).map((i) => this.mapItem(i)),
     };
   }
 
-  private mapOrder(data: any): Pedido {
+  private mapOrder(data: ApiPedido): Pedido {
     return {
       idPedido: data.id_pedido,
       usernameCliente: data.username_cliente,
       idUsuarioCliente: data.id_usuario_cliente,
       idCarrito: data.id_carrito,
-      carrito: data.carrito ? this.mapCart(data.carrito) : undefined as any,
+      carrito: data.carrito ? this.mapCart(data.carrito) : undefined,
       estado: data.estado,
       total: Number(data.total),
       fechaPedido: data.fecha_pedido,
@@ -45,46 +77,40 @@ export class ApiOrderRepository implements OrderRepository {
   }
 
   async createOrder(cartId: number): Promise<Pedido> {
-    // 1. Crear el pedido en el backend
-    await httpClient.post('/pedidos/', {
+    const response = await httpClient.post<ApiPedido>('/pedidos/', {
       id_carrito: cartId,
     });
-
-    // 2. Dado que el backend retorna una estructura parcial en POST, obtenemos el listado
-    // de pedidos del usuario actual (el más reciente estará primero por -fecha_pedido)
-    const listResponse = await httpClient.get('/pedidos/', {
-      params: { limit: 1 },
-    });
-
-    const results = listResponse.data.results || [];
-    if (results.length > 0) {
-      return this.mapOrder(results[0]);
-    }
-
-    throw new Error('El pedido fue creado pero no se pudo recuperar la información del mismo.');
+    return this.mapOrder(response.data);
   }
 
-  async listOrders(limit?: number, offset?: number, estado?: string): Promise<PaginatedResult<Pedido>> {
-    const params: any = { limit, offset };
-    if (estado) {
-      params.estado = estado;
-    }
-    const response = await httpClient.get('/pedidos/', { params });
+  async listOrders(filters: OrderListFilters = {}): Promise<PaginatedResult<Pedido>> {
+    const params: Record<string, string | number> = {};
+    if (filters.page !== undefined) params.page = filters.page;
+    if (filters.limit !== undefined) params.limit = filters.limit;
+    if (filters.estado) params.estado = filters.estado;
+
+    const response = await httpClient.get<{
+      count: number;
+      next: string | null;
+      previous: string | null;
+      results: ApiPedido[];
+    }>('/pedidos/', { params });
+
     return {
       count: response.data.count,
       next: response.data.next,
       previous: response.data.previous,
-      results: response.data.results.map((item: any) => this.mapOrder(item)),
+      results: response.data.results.map((item) => this.mapOrder(item)),
     };
   }
 
   async getOrder(id: number): Promise<Pedido> {
-    const response = await httpClient.get(`/pedidos/${id}/`);
+    const response = await httpClient.get<ApiPedido>(`/pedidos/${id}/`);
     return this.mapOrder(response.data);
   }
 
   async confirmOrder(id: number): Promise<Pedido> {
-    const response = await httpClient.post(`/pedidos/${id}/confirm/`);
+    const response = await httpClient.post<ApiPedido>(`/pedidos/${id}/confirm/`);
     return this.mapOrder(response.data);
   }
 }

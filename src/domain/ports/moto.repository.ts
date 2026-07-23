@@ -1,5 +1,5 @@
 // src/domain/ports/moto.repository.ts
-import type { Moto } from '../entities/moto.entity';
+import type { Moto, MotoCreatePayload, MotoUpdatePayload } from '../entities/moto.entity';
 
 export interface ListMotosParams {
   limit?: number;
@@ -21,7 +21,7 @@ export interface PaginatedResult<T> {
 export interface MotoRepository {
   listMotos(params?: ListMotosParams): Promise<PaginatedResult<Moto>>;
   getMoto(id: number): Promise<Moto>;
-  createMoto(formData: FormData): Promise<Moto>;
-  updateMoto(id: number, formData: FormData): Promise<Moto>;
+  createMoto(payload: MotoCreatePayload): Promise<Moto>;
+  updateMoto(id: number, payload: MotoUpdatePayload): Promise<Moto>;
   deleteMoto(id: number): Promise<void>;
 }

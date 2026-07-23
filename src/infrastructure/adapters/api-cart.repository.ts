@@ -1,10 +1,31 @@
 // src/infrastructure/adapters/api-cart.repository.ts
-import type { CartRepository } from '../../domain/ports/cart.repository';
-import type { CarritoCompras, ItemCarrito } from '../../domain/entities/cart.entity';
+import type { CartRepository, CartAddItemPayload } from '../../domain/ports/cart.repository';
+import type { CarritoCompras, CarritoEstado, ItemCarrito } from '../../domain/entities/cart.entity';
 import { httpClient } from '../http/axios-client';
 
+interface ApiCartItem {
+  id_item: number;
+  id_carrito: number;
+  id_moto: number | null;
+  id_repuesto: number | null;
+  cantidad: number;
+  precio_unitario: string;
+  subtotal: string;
+}
+
+interface ApiCart {
+  id_carrito: number;
+  username_cliente: string;
+  id_usuario_cliente: number;
+  estado: string;
+  fecha_creacion: string;
+  num_items: number;
+  total: string;
+  items?: ApiCartItem[];
+}
+
 export class ApiCartRepository implements CartRepository {
-  private mapItem(data: any): ItemCarrito {
+  private mapItem(data: ApiCartItem): ItemCarrito {
     return {
       idItem: data.id_item,
       idCarrito: data.id_carrito,
@@ -16,48 +37,39 @@ export class ApiCartRepository implements CartRepository {
     };
   }
 
-  private mapCart(data: any): CarritoCompras {
+  private mapCart(data: ApiCart): CarritoCompras {
     return {
       idCarrito: data.id_carrito,
       usernameCliente: data.username_cliente,
       idUsuarioCliente: data.id_usuario_cliente,
-      estado: data.estado,
+      estado: data.estado as CarritoEstado,
       fechaCreacion: data.fecha_creacion,
       numItems: Number(data.num_items),
       total: Number(data.total),
-      items: (data.items || []).map((i: any) => this.mapItem(i)),
+      items: (data.items || []).map((i) => this.mapItem(i)),
     };
   }
 
   async getActiveCart(): Promise<CarritoCompras> {
     try {
-      const response = await httpClient.get('/carritos/activo/');
+      const response = await httpClient.get<ApiCart>('/carritos/activo/');
       return this.mapCart(response.data);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        // Si no hay un carrito activo, lo creamos
-        const createResponse = await httpClient.post('/carritos/', {});
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status;
+      if (status === 404) {
+        const createResponse = await httpClient.post<ApiCart>('/carritos/', {});
         return this.mapCart(createResponse.data);
       }
       throw err;
     }
   }
 
-  async addItem(
-    cartId: number,
-    motoId: number | null,
-    repuestoId: number | null,
-    cantidad: number,
-    precioUnitario: number
-  ): Promise<CarritoCompras> {
-    const payload: any = {
-      cantidad,
-      precio_unitario: precioUnitario.toFixed(2),
-    };
-    if (motoId !== null) payload.id_moto = motoId;
-    if (repuestoId !== null) payload.id_repuesto = repuestoId;
+  async addItem(cartId: number, payload: CartAddItemPayload): Promise<CarritoCompras> {
+    const body: Record<string, number> = { cantidad: payload.cantidad };
+    if (payload.id_moto !== undefined) body.id_moto = payload.id_moto;
+    if (payload.id_repuesto !== undefined) body.id_repuesto = payload.id_repuesto;
 
-    const response = await httpClient.post(`/carritos/${cartId}/add-item/`, payload);
+    const response = await httpClient.post<ApiCart>(`/carritos/${cartId}/add-item/`, body);
     return this.mapCart(response.data);
   }
 
@@ -66,7 +78,7 @@ export class ApiCartRepository implements CartRepository {
   }
 
   async clearCart(cartId: number): Promise<CarritoCompras> {
-    const response = await httpClient.post(`/carritos/${cartId}/vaciar/`);
+    const response = await httpClient.post<ApiCart>(`/carritos/${cartId}/vaciar/`);
     return this.mapCart(response.data);
   }
 }

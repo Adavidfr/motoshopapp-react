@@ -30,6 +30,7 @@ import {
   Archive,
   Sun,
   Moon,
+  Cog,
 } from 'lucide-react';
 
 // ─── Navigation structure ───────────────────────────────────────────────────
@@ -51,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Bike,
     items: [
       { label: 'Motos', path: '/admin/motos', icon: Bike },
+      { label: 'Administrar Repuestos', path: '/admin/repuestos', icon: Cog },
       { label: 'Marcas', path: '/admin/brands', icon: Tag },
       { label: 'Categorías', path: '/admin/categories', icon: Bookmark },
       { label: 'Inventario', path: '/admin/inventory', icon: Archive },

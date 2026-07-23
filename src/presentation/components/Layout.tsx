@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { useAuthStore } from '../store/auth.store';
 import { useCartStore } from '../store/cart.store';
+import { canUseCart } from '../utils/can-use-cart';
 import { Button } from './ui/button';
 import { httpClient } from '../../infrastructure/http/axios-client';
 
@@ -55,11 +56,13 @@ export default function Layout({ children }: LayoutProps) {
     void initialize();
   }, [initialize]);
 
+  const clientCanUseCart = canUseCart(isAuthenticated, user);
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (clientCanUseCart) {
       void fetchActiveCart();
     }
-  }, [isAuthenticated, fetchActiveCart]);
+  }, [clientCanUseCart, fetchActiveCart]);
 
   const handleLogout = async () => {
     await logout();
@@ -71,6 +74,8 @@ export default function Layout({ children }: LayoutProps) {
 
   const isAdminActive = (path: string) =>
     location.pathname.startsWith(path);
+
+  const isRepuestosActive = location.pathname === '/repuestos' || location.pathname.startsWith('/repuestos/');
 
   const handleSubscribeNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +127,8 @@ export default function Layout({ children }: LayoutProps) {
               {[
                 { to: '/', label: 'Inicio', active: isActive('/') },
                 { to: '/catalog', label: 'Motos', active: isActive('/catalog') },
-                ...(isAuthenticated ? [{ to: '/orders', label: 'Mis Pedidos', active: isActive('/orders') }] : []),
+                { to: '/repuestos', label: 'Repuestos', active: isRepuestosActive },
+                ...(clientCanUseCart ? [{ to: '/orders', label: 'Mis Pedidos', active: isActive('/orders') }] : []),
                 ...(isAuthenticated && user?.isStaff ? [{ to: '/admin', label: 'Panel Admin', active: isAdminActive('/admin') }] : []),
               ].map((item) => (
                 <Link
@@ -191,18 +197,19 @@ export default function Layout({ children }: LayoutProps) {
 
             {isAuthenticated ? (
               <>
-                {/* Cart */}
-                <Link
-                  to="/cart"
-                  className="relative flex items-center justify-center size-9 rounded-lg text-neutral-500 hover:text-foreground hover:bg-neutral-200/50 dark:hover:bg-white/[0.06] transition-all duration-300"
-                >
-                  <ShoppingCart className="size-[18px]" />
-                  {cart && cart.numItems > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary text-[8px] font-black text-white px-1 shadow-[0_0_8px_rgba(255,26,26,0.5)] animate-pulse">
-                      {cart.numItems}
-                    </span>
-                  )}
-                </Link>
+                {clientCanUseCart && (
+                  <Link
+                    to="/cart"
+                    className="relative flex items-center justify-center size-9 rounded-lg text-neutral-500 hover:text-foreground hover:bg-neutral-200/50 dark:hover:bg-white/[0.06] transition-all duration-300"
+                  >
+                    <ShoppingCart className="size-[18px]" />
+                    {cart && cart.numItems > 0 && (
+                      <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary text-[8px] font-black text-white px-1 shadow-[0_0_8px_rgba(255,26,26,0.5)] animate-pulse">
+                        {cart.numItems}
+                      </span>
+                    )}
+                  </Link>
+                )}
 
                 {/* User Profile */}
                 <Link

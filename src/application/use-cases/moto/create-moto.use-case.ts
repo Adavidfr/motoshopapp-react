@@ -1,6 +1,6 @@
 // src/application/use-cases/moto/create-moto.use-case.ts
 import type { MotoRepository } from '../../../domain/ports/moto.repository';
-import type { Moto } from '../../../domain/entities/moto.entity';
+import type { Moto, MotoCreatePayload } from '../../../domain/entities/moto.entity';
 
 export class CreateMotoUseCase {
   private motoRepository: MotoRepository;
@@ -8,7 +8,7 @@ export class CreateMotoUseCase {
     this.motoRepository = motoRepository;
   }
 
-  async execute(formData: FormData): Promise<Moto> {
-    return this.motoRepository.createMoto(formData);
+  async execute(payload: MotoCreatePayload): Promise<Moto> {
+    return this.motoRepository.createMoto(payload);
   }
 }

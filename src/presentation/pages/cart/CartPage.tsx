@@ -1,56 +1,53 @@
 // src/presentation/pages/cart/CartPage.tsx
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cart.store';
 import { useOrderStore } from '../../store/order.store';
-import { useMotoStore } from '../../store/moto.store';
+import { useAuthStore } from '../../store/auth.store';
+import { canUseCart } from '../../utils/can-use-cart';
+import { useLineItemProducts } from '../../hooks/use-line-item-products';
+import { CartLineItem } from '../../components/cart/CartLineItem';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
-import { Trash2, ShoppingBag, ArrowRight, ArrowLeft, ShoppingCart, AlertCircle, CreditCard } from 'lucide-react';
+import { parseApiError } from '../../../infrastructure/http/api-error';
+import { ShoppingBag, ArrowRight, ArrowLeft, ShoppingCart, AlertCircle, CreditCard, Info } from 'lucide-react';
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthStore();
+  const clientCanUseCart = canUseCart(isAuthenticated, user);
   const { cart, fetchActiveCart, removeFromCart, clearCart, isLoading, error: cartError } = useCartStore();
   const { createOrder, isLoading: isOrderCreating } = useOrderStore();
-  const { motos, fetchMotos } = useMotoStore();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const lineItemProducts = useLineItemProducts(cart?.items ?? []);
 
   useEffect(() => {
-    fetchActiveCart();
-  }, [fetchActiveCart]);
-
-  useEffect(() => {
-    if (motos.length === 0) {
-      fetchMotos({ limit: 100 });
+    if (clientCanUseCart) {
+      fetchActiveCart();
     }
-  }, [motos.length, fetchMotos]);
+  }, [clientCanUseCart, fetchActiveCart]);
+
+  const isCartEditable = clientCanUseCart && cart?.estado === 'activo';
+  const canCheckout = Boolean(clientCanUseCart && cart && cart.items.length > 0 && isCartEditable);
 
   const handleCheckout = async () => {
-    if (!cart || cart.items.length === 0) return;
-    setCheckoutError(null);
+    if (!clientCanUseCart || !cart || cart.items.length === 0 || !isCartEditable) return;    setCheckoutError(null);
     try {
       const order = await createOrder(cart.idCarrito);
       await fetchActiveCart();
       navigate(`/orders/${order.idPedido}`);
-    } catch (err: any) {
-      const data = err.response?.data;
-      let errorMsg = 'No se pudo procesar tu pedido. Verifica la disponibilidad.';
-      if (data && typeof data === 'object') {
-        if (data.detail) errorMsg = String(data.detail);
-        else if (data.error) errorMsg = String(data.error);
-        else {
-          const keys = Object.keys(data);
-          if (keys.length > 0) {
-            const firstVal = data[keys[0]];
-            errorMsg = Array.isArray(firstVal) ? String(firstVal[0]) : String(firstVal);
-          }
-        }
-      } else if (typeof data === 'string') {
-        errorMsg = data;
-      }
-      setCheckoutError(errorMsg);
+    } catch (err: unknown) {
+      setCheckoutError(parseApiError(err, 'No se pudo procesar tu pedido. Verifica la disponibilidad.'));
     }
   };
+
+  if (isAuthenticated && user?.isStaff === true) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (isLoading && !cart) {
     return (
@@ -70,6 +67,7 @@ export default function CartPage() {
   }
 
   const hasItems = cart && cart.items.length > 0;
+  const showProcessedWarning = cart && cart.estado !== 'activo' && hasItems;
 
   return (
     <div className="min-h-[80vh] bg-background text-foreground py-10 px-4 sm:px-6 transition-colors duration-300">
@@ -93,6 +91,13 @@ export default function CartPage() {
           <div className="flex items-center gap-3 p-4 text-sm bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl font-medium">
             <AlertCircle className="size-5 shrink-0" />
             {checkoutError || cartError}
+          </div>
+        )}
+
+        {showProcessedWarning && (
+          <div className="flex items-center gap-3 p-4 text-sm bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded-2xl font-medium">
+            <AlertCircle className="size-5 shrink-0" />
+            Este carrito ya fue procesado. No puedes modificarlo ni generar otro pedido con él.
           </div>
         )}
 
@@ -121,51 +126,37 @@ export default function CartPage() {
             {/* Items */}
             <div className="lg:col-span-2 space-y-4">
               {cart.items.map((item, idx) => {
-                const moto = item.idMoto ? motos.find(m => m.idMoto === item.idMoto) : null;
+                let moto = null;
+                let repuesto = null;
+                let isLoadingProduct = false;
+                let isProductUnavailable = false;
+
+                if (item.idMoto !== null) {
+                  moto = lineItemProducts.getMoto(item.idMoto);
+                  isProductUnavailable = lineItemProducts.isMotoUnavailable(item.idMoto);
+                  isLoadingProduct = !moto && !isProductUnavailable;
+                } else if (item.idRepuesto !== null) {
+                  repuesto = lineItemProducts.getRepuesto(item.idRepuesto);
+                  isProductUnavailable = lineItemProducts.isRepuestoUnavailable(item.idRepuesto);
+                  isLoadingProduct = !repuesto && !isProductUnavailable;
+                }
+
                 return (
                   <div
                     key={item.idItem}
                     className="bg-card/60 border border-border/50 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-border transition-all duration-300 group"
                     style={{ animationDelay: `${idx * 80}ms` }}
                   >
-                    <div className="p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div className="flex gap-4 items-center">
-                        {/* Icon / Image */}
-                        <div className="size-16 rounded-2xl bg-primary/[0.08] border border-primary/[0.12] flex items-center justify-center text-2xl shrink-0 overflow-hidden">
-                          {moto && moto.imagen ? (
-                            <img src={moto.imagen} alt={moto.modelo} className="w-full h-full object-cover" />
-                          ) : (
-                            item.idMoto ? '🏍️' : '⚙️'
-                          )}
-                        </div>
-                        <div className="space-y-0.5">
-                          <h3 className="font-bold text-base text-foreground">
-                            {moto 
-                              ? `${moto.marca} ${moto.modelo}` 
-                              : (item.idMoto ? `Motocicleta #${item.idMoto}` : `Repuesto #${item.idRepuesto}`)
-                            }
-                          </h3>
-                          <p className="text-sm text-muted-foreground font-medium">
-                          Precio unitario: <span className="text-foreground">{formatPrice(item.precioUnitario)}</span>
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Cantidad</span>
-                          <span className="text-xs font-black text-foreground bg-black/5 dark:bg-white/[0.05] border border-black/10 dark:border-white/[0.08] rounded-lg px-2 py-0.5">{item.cantidad}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-border/40">
-                      <span className="text-xl font-black text-primary">{formatPrice(item.subtotal)}</span>
-                      <button
-                        onClick={() => removeFromCart(item.idItem)}
-                        className="size-9 rounded-xl border border-border/50 flex items-center justify-center text-neutral-500 hover:text-destructive hover:border-destructive/30 hover:bg-destructive/[0.06] transition-all duration-300 cursor-pointer"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </div>
+                    <CartLineItem
+                      item={item}
+                      moto={moto}
+                      repuesto={repuesto}
+                      isLoadingProduct={isLoadingProduct}
+                      isProductUnavailable={isProductUnavailable}
+                      onRemove={() => removeFromCart(item.idItem)}
+                      removeDisabled={!isCartEditable || isOrderCreating || !clientCanUseCart}
+                    />
                   </div>
-                </div>
                 );
               })}
 
@@ -177,12 +168,15 @@ export default function CartPage() {
                     Seguir Comprando
                   </button>
                 </Link>
-                <button
-                  onClick={() => clearCart()}
-                  className="text-xs font-bold uppercase tracking-widest text-neutral-600 hover:text-destructive transition-colors cursor-pointer px-4 py-2 rounded-xl border border-transparent hover:border-destructive/20 hover:bg-destructive/[0.04]"
-                >
-                  Vaciar Carrito
-                </button>
+                {clientCanUseCart && (
+                  <button
+                    onClick={() => clearCart()}
+                    disabled={!isCartEditable || isOrderCreating}
+                    className="text-xs font-bold uppercase tracking-widest text-neutral-600 hover:text-destructive transition-colors cursor-pointer px-4 py-2 rounded-xl border border-transparent hover:border-destructive/20 hover:bg-destructive/[0.04] disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Vaciar Carrito
+                  </button>
+                )}
               </div>
             </div>
 
@@ -218,23 +212,30 @@ export default function CartPage() {
                 </div>
 
                 {/* Checkout CTA */}
-                <button
-                  className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_30px_rgba(255,26,26,0.4)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed cursor-pointer"
-                  disabled={isOrderCreating}
-                  onClick={handleCheckout}
-                >
-                  {isOrderCreating ? (
-                    <>
-                      <svg className="size-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="28" strokeLinecap="round" /></svg>
-                      Generando Pedido...
-                    </>
-                  ) : (
-                    <>
-                      Realizar Pedido
-                      <ArrowRight className="size-4" />
-                    </>
-                  )}
-                </button>
+                {clientCanUseCart ? (
+                  <button
+                    className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl transition-all duration-300 shadow-[0_4px_20px_rgba(255,26,26,0.25)] hover:shadow-[0_6px_30px_rgba(255,26,26,0.4)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed cursor-pointer"
+                    disabled={!canCheckout || isOrderCreating}
+                    onClick={handleCheckout}
+                  >
+                    {isOrderCreating ? (
+                      <>
+                        <svg className="size-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="28" strokeLinecap="round" /></svg>
+                        Generando Pedido...
+                      </>
+                    ) : (
+                      <>
+                        Realizar Pedido
+                        <ArrowRight className="size-4" />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="p-3 text-xs bg-muted/50 border border-border/40 text-muted-foreground rounded-xl flex items-start gap-2 font-medium">
+                    <Info className="size-4 shrink-0 mt-0.5 text-primary" />
+                    El carrito de compras está disponible únicamente para clientes.
+                  </div>
+                )}
 
                 <p className="text-center text-[10px] font-medium text-neutral-600">
                   Pago seguro con SSL · Garantía incluida

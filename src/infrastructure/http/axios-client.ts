@@ -18,6 +18,9 @@ httpClient.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -25,9 +28,13 @@ httpClient.interceptors.request.use(
 
 // Interceptor de Response: refresco automático de token (401)
 let isRefreshing = false;
-let failedQueue: any[] = [];
+type QueueItem = {
+  resolve: (token: string | null) => void;
+  reject: (error: unknown) => void;
+};
+let failedQueue: QueueItem[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -80,7 +87,10 @@ httpClient.interceptors.response.use(
           refresh: refreshToken,
         });
 
-        const newAccessToken = response.data.access;
+        const newAccessToken = response.data.access as string;
+        if (response.data.refresh) {
+          LocalTokenStorage.setRefreshToken(response.data.refresh);
+        }
         LocalTokenStorage.setAccessToken(newAccessToken);
 
         httpClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;

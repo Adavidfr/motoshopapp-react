@@ -22,7 +22,7 @@ export default function InventoryPage() {
   useEffect(() => {
     fetchMovements();
     fetchMotos();
-    fetchRepuestos();
+    fetchRepuestos({ limit: 100 });
   }, [fetchMovements, fetchMotos, fetchRepuestos]);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function InventoryPage() {
       setModalOpen(false);
       // Refresh catalog values
       fetchMotos();
-      fetchRepuestos();
+      fetchRepuestos({ limit: 100 });
     } catch (err) {
       // Manejado en el store
     }

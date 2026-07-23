@@ -1,5 +1,10 @@
 // src/domain/ports/documento-venta.repository.ts
-import type { DocumentoVenta, PaginatedDocumentosVenta } from '../entities/documento-venta.entity';
+import type {
+  DocumentoVenta,
+  DocumentoVentaCreatePayload,
+  DocumentoVentaDownload,
+  PaginatedDocumentosVenta,
+} from '../entities/documento-venta.entity';
 
 export interface DocumentoVentaFilters {
   page?: number;
@@ -12,7 +17,7 @@ export interface DocumentoVentaFilters {
 export interface DocumentoVentaRepository {
   listDocumentos(filters?: DocumentoVentaFilters): Promise<PaginatedDocumentosVenta>;
   getDocumento(id: number): Promise<DocumentoVenta>;
-  createDocumento(payload: Omit<DocumentoVenta, 'id_documento' | 'fecha_subida'>): Promise<DocumentoVenta>;
-  updateDocumento(id: number, payload: Partial<DocumentoVenta>): Promise<DocumentoVenta>;
+  createDocumento(payload: DocumentoVentaCreatePayload): Promise<DocumentoVenta>;
   deleteDocumento(id: number): Promise<void>;
+  downloadDocumentoArchivo(id: number): Promise<DocumentoVentaDownload>;
 }

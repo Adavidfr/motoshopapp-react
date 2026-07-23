@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Skeleton } from '../../components/ui/skeleton';
 import { StatusBadge } from '../../components/StatusBadge';
 import { formatPrice } from '../../utils/formatters';
+import type { FinanciamientoEstado } from '../../../domain/entities/financiamiento.entity';
+import { transicionesFinanciamientoPermitidas } from '../../../domain/entities/financiamiento.entity';
 import {
   ClipboardList,
   Search,
@@ -16,9 +18,9 @@ import {
   Calendar,
   AlertCircle,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Info,
 } from 'lucide-react';
-import type { FinanciamientoEstado } from '../../../domain/entities/financiamiento.entity';
 
 export default function FinanciamientosAdminPage() {
   const {
@@ -27,6 +29,7 @@ export default function FinanciamientosAdminPage() {
     count,
     filters,
     isLoading,
+    isSaving,
     error,
     successMessage,
     fetchFinanciamientos,
@@ -44,10 +47,7 @@ export default function FinanciamientosAdminPage() {
   const totalPages = Math.max(1, Math.ceil(count / pageSize));
 
   const loadData = useCallback(async () => {
-    await Promise.all([
-      fetchFinanciamientos(),
-      fetchStats(),
-    ]);
+    await Promise.all([fetchFinanciamientos(), fetchStats()]);
   }, [fetchFinanciamientos, fetchStats]);
 
   useEffect(() => {
@@ -71,34 +71,39 @@ export default function FinanciamientosAdminPage() {
   };
 
   const handleDelete = async (id: number) => {
+    if (isSaving) return;
     if (confirm('¿Está seguro de que desea eliminar este financiamiento?')) {
       await deleteFinanciamiento(id);
-      loadData();
     }
   };
 
-  const handleStatusChange = async (id: number, currentEstado: string) => {
-    // Rotar estado para simplificar en la interfaz admin
-    let nextEstado: FinanciamientoEstado = 'activo';
-    if (currentEstado === 'activo') nextEstado = 'pagado';
-    else if (currentEstado === 'pagado') nextEstado = 'vencido';
-    else if (currentEstado === 'vencido') nextEstado = 'cancelado';
-    else if (currentEstado === 'cancelado') nextEstado = 'activo';
-
+  const handleStatusChange = async (id: number, currentEstado: FinanciamientoEstado, nextEstado: FinanciamientoEstado) => {
+    if (isSaving || nextEstado === currentEstado) return;
     if (confirm(`¿Cambiar el estado del financiamiento a ${nextEstado}?`)) {
       await updateFinanciamientoStatus(id, nextEstado);
-      loadData();
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">Módulo de Financiamientos</h1>
-        <p className="text-muted-foreground text-sm">Gestiona y supervisa los convenios de financiamiento y créditos otorgados</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">
+          Módulo de Financiamientos
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Supervisión de convenios de crédito vinculados a ventas
+        </p>
       </div>
 
-      {/* Messages */}
+      <div className="p-3 text-sm bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-lg flex items-start gap-2 font-medium">
+        <Info className="size-4 shrink-0 mt-0.5" />
+        <span>
+          Los financiamientos se crean desde <strong>Gestión de Ventas</strong> (acción Financiar).
+          El monto financiado debe ser igual al total de la venta menos la entrada; la cuota y el saldo
+          pendiente los calcula el servidor.
+        </span>
+      </div>
+
       {error && (
         <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
           <AlertCircle className="size-4 shrink-0" />
@@ -111,7 +116,6 @@ export default function FinanciamientosAdminPage() {
         </div>
       )}
 
-      {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
@@ -156,7 +160,6 @@ export default function FinanciamientosAdminPage() {
         </div>
       )}
 
-      {/* Filter and Search Bar */}
       <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -188,7 +191,6 @@ export default function FinanciamientosAdminPage() {
         </Button>
       </form>
 
-      {/* Table Section */}
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
@@ -199,7 +201,7 @@ export default function FinanciamientosAdminPage() {
         <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <ClipboardList className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
           <h3 className="text-lg font-bold text-foreground">No se encontraron financiamientos</h3>
-          <p className="text-muted-foreground text-sm mt-1">Intente ajustar los filtros de búsqueda</p>
+          <p className="text-muted-foreground text-sm mt-1">Registre un financiamiento desde una venta pendiente</p>
         </div>
       ) : (
         <Card className="border-border/30 bg-muted/10 backdrop-blur-md overflow-hidden">
@@ -207,69 +209,98 @@ export default function FinanciamientosAdminPage() {
             <Table>
               <TableHeader className="bg-background">
                 <TableRow>
-                  <TableHead className="w-[80px]">ID</TableHead>
+                  <TableHead className="w-[70px]">ID</TableHead>
                   <TableHead>Venta</TableHead>
-                  <TableHead>Entidad Financiera</TableHead>
+                  <TableHead>Entidad</TableHead>
+                  <TableHead className="text-right">Entrada</TableHead>
                   <TableHead className="text-right">Monto Financiado</TableHead>
-                  <TableHead className="text-center">Tasa Interés</TableHead>
+                  <TableHead className="text-right">Saldo Pend.</TableHead>
+                  <TableHead className="text-center">Tasa</TableHead>
                   <TableHead className="text-center">Plazo</TableHead>
-                  <TableHead className="text-right">Cuota Mensual</TableHead>
+                  <TableHead className="text-right">Cuota</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="w-[120px] text-center">Acciones</TableHead>
+                  <TableHead className="w-[140px] text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {financiamientos.map((fin) => (
-                  <TableRow key={fin.id_financiamiento} className="hover:bg-muted/20 border-b border-border/20">
-                    <TableCell className="font-mono font-bold text-muted-foreground">#{fin.id_financiamiento}</TableCell>
-                    <TableCell className="font-mono">#{fin.id_venta}</TableCell>
-                    <TableCell className="font-bold text-foreground">{fin.entidad_financiera}</TableCell>
-                    <TableCell className="text-right font-semibold text-neutral-200">
-                      {formatPrice(fin.monto_financiado)}
-                    </TableCell>
-                    <TableCell className="text-center text-muted-foreground">
-                      <span className="inline-flex items-center gap-0.5">
-                        {fin.tasa_interes}% <Percent className="size-3 text-neutral-500" />
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center font-medium text-foreground">{fin.plazo_meses} meses</TableCell>
-                    <TableCell className="text-right font-black text-primary">
-                      {formatPrice(fin.cuota_mensual)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={fin.estado} />
-                    </TableCell>
-                    <TableCell className="flex items-center justify-center gap-1.5 py-3">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleStatusChange(fin.id_financiamiento, fin.estado)}
-                        title="Rotar Estado de Financiamiento"
-                        className="text-primary hover:bg-primary/10"
-                      >
-                        <CreditCard className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleDelete(fin.id_financiamiento)}
-                        title="Eliminar Financiamiento"
-                        className="text-red-400 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {financiamientos.map((fin) => {
+                  const transiciones = transicionesFinanciamientoPermitidas(fin.estado);
+                  return (
+                    <TableRow key={fin.id_financiamiento} className="hover:bg-muted/20 border-b border-border/20">
+                      <TableCell className="font-mono font-bold text-muted-foreground">
+                        #{fin.id_financiamiento}
+                      </TableCell>
+                      <TableCell className="font-mono">#{fin.id_venta}</TableCell>
+                      <TableCell className="font-bold text-foreground">{fin.entidad_financiera}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatPrice(fin.entrada)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatPrice(fin.monto_financiado)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-primary">
+                        {formatPrice(fin.saldo_pendiente)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        <span className="inline-flex items-center gap-0.5">
+                          {fin.tasa_interes}% <Percent className="size-3 text-neutral-500" />
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center font-medium">{fin.plazo_meses} meses</TableCell>
+                      <TableCell className="text-right font-black text-primary">
+                        {formatPrice(fin.cuota_mensual)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={fin.estado} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-1.5 py-2">
+                          {transiciones.length > 0 ? (
+                            <select
+                              disabled={isSaving}
+                              defaultValue=""
+                              onChange={(e) => {
+                                const next = e.target.value as FinanciamientoEstado;
+                                if (next) {
+                                  handleStatusChange(fin.id_financiamiento, fin.estado, next);
+                                  e.target.value = '';
+                                }
+                              }}
+                              className="text-xs bg-background border border-border/30 rounded-lg px-2 py-1.5 max-w-[100px]"
+                              title="Cambiar estado"
+                            >
+                              <option value="">Estado…</option>
+                              {transiciones.map((t) => (
+                                <option key={t} value={t}>{t}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground uppercase">Final</span>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={isSaving}
+                            onClick={() => handleDelete(fin.id_financiamiento)}
+                            title="Eliminar Financiamiento"
+                            className="text-red-400 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
 
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
               <span className="text-xs text-muted-foreground font-semibold">
-                Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span>
+                Página <span className="text-foreground">{page}</span> de{' '}
+                <span className="text-foreground">{totalPages}</span>
               </span>
               <div className="flex gap-2">
                 <Button

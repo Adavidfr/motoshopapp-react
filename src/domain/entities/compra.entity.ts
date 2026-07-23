@@ -3,6 +3,17 @@ export type CompraEstado =
   | 'Recibida'
   | 'Cancelada';
 
+/** Transiciones válidas según COMPRA_TRANSICIONES en Django */
+export const COMPRA_TRANSICIONES: Record<CompraEstado, CompraEstado[]> = {
+  Pendiente: ['Recibida', 'Cancelada'],
+  Recibida: [],
+  Cancelada: [],
+};
+
+export function transicionesCompraPermitidas(estado: CompraEstado): CompraEstado[] {
+  return COMPRA_TRANSICIONES[estado] ?? [];
+}
+
 export interface Compra {
   id_compra: number;
   proveedor: number;
@@ -13,17 +24,7 @@ export interface Compra {
   subtotal: string;
   fecha_compra: string;
   estado: CompraEstado;
-}
-
-export interface CompraStatsDetail {
-  id_compra: number;
-  proveedor: string | null;
-  moto: string | null;
-  repuesto: string | null;
-  cantidad: number;
-  subtotal: string;
-  estado: CompraEstado;
-  fecha_compra: string;
+  stock_aplicado: boolean;
 }
 
 export interface CompraStats {
@@ -31,7 +32,6 @@ export interface CompraStats {
   pendientes: number;
   recibidas: number;
   canceladas: number;
-  detail: CompraStatsDetail[];
 }
 
 export interface PaginatedCompras {

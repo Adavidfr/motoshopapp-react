@@ -2,34 +2,96 @@
 import { create } from 'zustand';
 import type { Repuesto } from '../../domain/entities/repuesto.entity';
 import type { ListRepuestosParams } from '../../domain/ports/repuesto.repository';
-import { listRepuestosUseCase, createRepuestoUseCase, updateRepuestoUseCase, deleteRepuestoUseCase } from '../../infrastructure/factories/repuesto.factory';
+import { listRepuestosUseCase, getRepuestoUseCase, createRepuestoUseCase, updateRepuestoUseCase, deleteRepuestoUseCase } from '../../infrastructure/factories/repuesto.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface RepuestoState {
   repuestos: Repuesto[];
+  totalCount: number;
+  selectedRepuesto: Repuesto | null;
   isLoading: boolean;
   error: string | null;
+  loadingRepuestoIds: number[];
+  unavailableRepuestoIds: number[];
   fetchRepuestos: (params?: ListRepuestosParams) => Promise<void>;
+  fetchRepuestoById: (id: number) => Promise<void>;
+  ensureRepuestosByIds: (ids: number[]) => Promise<void>;
   createRepuesto: (formData: FormData) => Promise<void>;
   updateRepuesto: (id: number, formData: FormData) => Promise<void>;
   deleteRepuesto: (id: number) => Promise<void>;
+  clearSelectedRepuesto: () => void;
 }
 
 export const useRepuestoStore = create<RepuestoState>((set, get) => ({
   repuestos: [],
+  totalCount: 0,
+  selectedRepuesto: null,
   isLoading: false,
   error: null,
+  loadingRepuestoIds: [],
+  unavailableRepuestoIds: [],
 
   fetchRepuestos: async (params) => {
     set({ isLoading: true, error: null });
     try {
       const result = await listRepuestosUseCase.execute(params);
-      set({ repuestos: result, isLoading: false });
-    } catch (err: any) {
+      set({ repuestos: result.results, totalCount: result.count, isLoading: false });
+    } catch (err: unknown) {
       set({
-        error: err.response?.data?.detail || 'Error al cargar los repuestos',
+        error: parseApiError(err, 'Error al cargar los repuestos'),
         isLoading: false,
       });
     }
+  },
+
+  fetchRepuestoById: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const repuesto = await getRepuestoUseCase.execute(id);
+      set({ selectedRepuesto: repuesto, isLoading: false });
+    } catch (err: unknown) {
+      set({
+        error: parseApiError(err, 'Error al cargar el repuesto'),
+        isLoading: false,
+      });
+    }
+  },
+
+  ensureRepuestosByIds: async (ids) => {
+    const uniqueIds = [...new Set(ids.filter((id) => id > 0))];
+    const state = get();
+    const toFetch = uniqueIds.filter(
+      (id) =>
+        !state.repuestos.some((r) => r.idRepuesto === id) &&
+        !state.unavailableRepuestoIds.includes(id) &&
+        !state.loadingRepuestoIds.includes(id),
+    );
+    if (toFetch.length === 0) {
+      return;
+    }
+
+    set({ loadingRepuestoIds: [...get().loadingRepuestoIds, ...toFetch] });
+
+    await Promise.all(
+      toFetch.map(async (id) => {
+        try {
+          const repuesto = await getRepuestoUseCase.execute(id);
+          set((current) => ({
+            repuestos: current.repuestos.some((r) => r.idRepuesto === id)
+              ? current.repuestos
+              : [...current.repuestos, repuesto],
+            loadingRepuestoIds: current.loadingRepuestoIds.filter((loadingId) => loadingId !== id),
+          }));
+        } catch {
+          set((current) => ({
+            unavailableRepuestoIds: current.unavailableRepuestoIds.includes(id)
+              ? current.unavailableRepuestoIds
+              : [...current.unavailableRepuestoIds, id],
+            loadingRepuestoIds: current.loadingRepuestoIds.filter((loadingId) => loadingId !== id),
+          }));
+        }
+      }),
+    );
   },
 
   createRepuesto: async (formData) => {
@@ -73,4 +135,6 @@ export const useRepuestoStore = create<RepuestoState>((set, get) => ({
       throw err;
     }
   },
+
+  clearSelectedRepuesto: () => set({ selectedRepuesto: null }),
 }));

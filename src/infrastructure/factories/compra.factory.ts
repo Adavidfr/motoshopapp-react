@@ -6,6 +6,7 @@ import { GetCompraStatsUseCase } from '../../application/use-cases/compra/get-co
 import { CreateCompraUseCase } from '../../application/use-cases/compra/create-compra.use-case';
 import { UpdateCompraUseCase } from '../../application/use-cases/compra/update-compra.use-case';
 import { DeleteCompraUseCase } from '../../application/use-cases/compra/delete-compra.use-case';
+import { RecibirCompraUseCase } from '../../application/use-cases/compra/recibir-compra.use-case';
 
 const compraRepository =
   new AxiosCompraRepository();
@@ -27,3 +28,6 @@ export const updateCompraUseCase =
 
 export const deleteCompraUseCase =
   new DeleteCompraUseCase(compraRepository);
+
+export const recibirCompraUseCase =
+  new RecibirCompraUseCase(compraRepository);

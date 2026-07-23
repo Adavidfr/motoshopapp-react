@@ -14,6 +14,10 @@ export const LocalTokenStorage = {
     localStorage.setItem(ACCESS_TOKEN_KEY, access);
   },
 
+  setRefreshToken(refresh: string): void {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+  },
+
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
   },

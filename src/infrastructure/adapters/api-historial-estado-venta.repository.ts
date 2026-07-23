@@ -3,51 +3,49 @@ import type { HistorialEstadoVentaRepository, HistorialFilters } from '../../dom
 import type { HistorialEstadoVenta, PaginatedHistorialEstadoVenta } from '../../domain/entities/historial-estado-venta.entity';
 import { httpClient } from '../http/axios-client';
 
+interface ApiHistorial {
+  id_historial: number;
+  id_venta: number;
+  estado_anterior: string;
+  estado_nuevo: string;
+  fecha_cambio: string;
+  observacion?: string;
+  id_usuario?: number;
+}
+
 export class ApiHistorialEstadoVentaRepository implements HistorialEstadoVentaRepository {
-  private map(data: any): HistorialEstadoVenta {
+  private map(data: ApiHistorial): HistorialEstadoVenta {
     return {
-      id_historial:    data.id_historial,
-      id_venta:        data.id_venta,
+      id_historial: data.id_historial,
+      id_venta: data.id_venta,
       estado_anterior: data.estado_anterior,
-      estado_nuevo:    data.estado_nuevo,
-      fecha_cambio:    data.fecha_cambio,
-      observacion:     data.observacion ?? '',
+      estado_nuevo: data.estado_nuevo,
+      fecha_cambio: data.fecha_cambio,
+      observacion: data.observacion ?? '',
+      id_usuario: data.id_usuario ?? null,
     };
   }
 
   async listHistorial(filters?: HistorialFilters): Promise<PaginatedHistorialEstadoVenta> {
-    const params: any = {};
+    const params: Record<string, string | number> = {};
     if (filters) {
-      if (filters.page)     params.page      = filters.page;
+      if (filters.page) params.page = filters.page;
       if (filters.pageSize) params.page_size = filters.pageSize;
-      if (filters.id_venta) params.id_venta  = filters.id_venta;
-      if (filters.search)   params.search    = filters.search;
+      if (filters.id_venta) params.id_venta = filters.id_venta;
+      if (filters.estado_nuevo) params.estado_nuevo = filters.estado_nuevo;
+      if (filters.search) params.search = filters.search;
     }
-    const res = await httpClient.get('/historial-estado-venta/', { params });
+    const res = await httpClient.get<{ count: number; next: string | null; previous: string | null; results: ApiHistorial[] }>('/historial-estado-venta/', { params });
     return {
       count: res.data.count,
       next: res.data.next,
       previous: res.data.previous,
-      results: (res.data.results || []).map((i: any) => this.map(i)),
+      results: (res.data.results || []).map((i) => this.map(i)),
     };
   }
 
   async getHistorial(id: number): Promise<HistorialEstadoVenta> {
-    const res = await httpClient.get(`/historial-estado-venta/${id}/`);
+    const res = await httpClient.get<ApiHistorial>(`/historial-estado-venta/${id}/`);
     return this.map(res.data);
-  }
-
-  async createHistorial(payload: Omit<HistorialEstadoVenta, 'id_historial' | 'fecha_cambio'>): Promise<HistorialEstadoVenta> {
-    const res = await httpClient.post('/historial-estado-venta/', payload);
-    return this.map(res.data);
-  }
-
-  async updateHistorial(id: number, payload: Partial<HistorialEstadoVenta>): Promise<HistorialEstadoVenta> {
-    const res = await httpClient.patch(`/historial-estado-venta/${id}/`, payload);
-    return this.map(res.data);
-  }
-
-  async deleteHistorial(id: number): Promise<void> {
-    await httpClient.delete(`/historial-estado-venta/${id}/`);
   }
 }

@@ -8,8 +8,18 @@ export interface Pedido {
   usernameCliente: string;
   idUsuarioCliente: number;
   idCarrito: number;
-  carrito: CarritoCompras;
+  carrito?: CarritoCompras;
   estado: PedidoEstado;
   total: number;
   fechaPedido: string;
+}
+
+export interface PedidoCreatePayload {
+  id_carrito: number;
+}
+
+export interface OrderListFilters {
+  page?: number;
+  limit?: number;
+  estado?: PedidoEstado | string;
 }

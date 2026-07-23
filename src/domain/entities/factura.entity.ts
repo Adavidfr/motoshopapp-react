@@ -10,6 +10,10 @@ export interface Factura {
   total: number;
 }
 
+export interface FacturaCreatePayload {
+  id_venta: number;
+}
+
 export interface PaginatedFacturas {
   count: number;
   next: string | null;

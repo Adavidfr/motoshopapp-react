@@ -1,13 +1,16 @@
 // src/presentation/pages/admin/VentasAdminPage.tsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useVentaStore } from '../../store/venta.store';
 import { useOrderStore } from '../../store/order.store';
+import type { VentaEstado } from '../../../domain/entities/venta.entity';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Skeleton } from '../../components/ui/skeleton';
 import { StatusBadge } from '../../components/StatusBadge';
 import { formatPrice, formatDate } from '../../utils/formatters';
+import { OrderItemsBreakdown } from '../../components/cart/OrderItemsBreakdown';
+import { getOrderCompositionFromItems } from '../../utils/order-composition';
 import {
   ClipboardList,
   Search,
@@ -18,21 +21,15 @@ import {
   CreditCard,
   DollarSign,
   Briefcase,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
-
-interface VentaFormState {
-  id_pedido: string;
-  total_venta: string;
-  estado: 'pendiente' | 'completada' | 'anulada';
-}
 
 interface FinanciarFormState {
   entidad_financiera: string;
+  entrada: string;
   monto_financiado: string;
   tasa_interes: string;
   plazo_meses: string;
-  cuota_mensual: string;
   estado: 'activo' | 'pagado' | 'vencido' | 'cancelado';
 }
 
@@ -54,28 +51,23 @@ export default function VentasAdminPage() {
     financiarVenta,
     setFilters,
     clearMessages,
+    pedidoTieneVenta,
   } = useVentaStore();
 
-  const { orders, fetchOrders } = useOrderStore();
+  const { orders, fetchOrders, fetchOrderById, selectedOrder } = useOrderStore();
 
   const [search, setSearch] = useState(filters.search ?? '');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFinanciarOpen, setIsFinanciarOpen] = useState(false);
   const [selectedVentaId, setSelectedVentaId] = useState<number | null>(null);
-
-  // Form States
-  const [ventaForm, setVentaForm] = useState<VentaFormState>({
-    id_pedido: '',
-    total_venta: '',
-    estado: 'completada',
-  });
+  const [selectedPedidoId, setSelectedPedidoId] = useState('');
 
   const [financiarForm, setFinanciarForm] = useState<FinanciarFormState>({
     entidad_financiera: '',
+    entrada: '0',
     monto_financiado: '',
     tasa_interes: '12.00',
     plazo_meses: '24',
-    cuota_mensual: '',
     estado: 'activo',
   });
 
@@ -85,11 +77,66 @@ export default function VentasAdminPage() {
   const pageSize = filters.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(count / pageSize));
 
+  const pedidosDisponibles = useMemo(
+    () => orders.filter(
+      (o) => o.estado === 'confirmed' && !pedidoTieneVenta(o.idPedido),
+    ),
+    [orders, ventas, pedidoTieneVenta],
+  );
+
+  const selectedPedido = useMemo(
+    () => orders.find((o) => o.idPedido === Number(selectedPedidoId)),
+    [orders, selectedPedidoId],
+  );
+
+  const selectedPedidoDetail = useMemo(() => {
+    if (!selectedPedidoId) {
+      return null;
+    }
+    const id = Number(selectedPedidoId);
+    if (selectedOrder?.idPedido === id && selectedOrder.carrito?.items?.length) {
+      return selectedOrder;
+    }
+    if (selectedPedido?.carrito?.items?.length) {
+      return selectedPedido;
+    }
+    return selectedOrder?.idPedido === id ? selectedOrder : selectedPedido ?? null;
+  }, [selectedPedidoId, selectedPedido, selectedOrder]);
+
+  useEffect(() => {
+    if (!selectedPedidoId) {
+      return;
+    }
+    const id = Number(selectedPedidoId);
+    const fromList = orders.find((o) => o.idPedido === id);
+    if (fromList?.carrito?.items && fromList.carrito.items.length > 0) {
+      return;
+    }
+    void fetchOrderById(id);
+  }, [selectedPedidoId, orders, fetchOrderById]);
+
+  const selectedVenta = useMemo(
+    () => ventas.find((v) => v.id_venta === selectedVentaId),
+    [ventas, selectedVentaId],
+  );
+
+  const cuotaEstimada = useMemo(() => {
+    const monto = Number(financiarForm.monto_financiado);
+    const tasa = Number(financiarForm.tasa_interes);
+    const plazo = Number(financiarForm.plazo_meses);
+
+    if (monto <= 0 || plazo <= 0) return null;
+
+    const tasaMensual = (tasa / 100) / 12;
+    if (tasaMensual === 0) return monto / plazo;
+    return (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+  }, [financiarForm.monto_financiado, financiarForm.tasa_interes, financiarForm.plazo_meses]);
+
   const loadData = useCallback(async () => {
     await Promise.all([
       fetchVentas(),
       fetchStats(),
-      fetchOrders(100, 0, 'confirmed'), // Carga pedidos confirmados
+      fetchOrders({ limit: 100, estado: 'confirmed' }),
     ]);
   }, [fetchVentas, fetchStats, fetchOrders]);
 
@@ -99,43 +146,6 @@ export default function VentasAdminPage() {
       clearMessages();
     };
   }, [loadData, clearMessages]);
-
-  // Auto-fill price when selecting an order
-  const handleOrderChange = (orderId: string) => {
-    const order = orders.find(o => o.idPedido === Number(orderId));
-    setVentaForm(prev => ({
-      ...prev,
-      id_pedido: orderId,
-      total_venta: order ? String(order.total) : '',
-    }));
-  };
-
-  // Auto-calculate cuota mensual for financing
-  useEffect(() => {
-    const monto = Number(financiarForm.monto_financiado);
-    const tasa = Number(financiarForm.tasa_interes);
-    const plazo = Number(financiarForm.plazo_meses);
-
-    if (monto > 0 && tasa >= 0 && plazo > 0) {
-      // Cuota nivelada con interés compuesto mensual simplificado
-      const tasaMensual = (tasa / 100) / 12;
-      let cuota = 0;
-      if (tasaMensual === 0) {
-        cuota = monto / plazo;
-      } else {
-        cuota = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
-      }
-      setFinanciarForm(prev => ({
-        ...prev,
-        cuota_mensual: cuota.toFixed(2),
-      }));
-    } else {
-      setFinanciarForm(prev => ({
-        ...prev,
-        cuota_mensual: '',
-      }));
-    }
-  }, [financiarForm.monto_financiado, financiarForm.tasa_interes, financiarForm.plazo_meses]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,93 +162,115 @@ export default function VentasAdminPage() {
 
   const submitCreateVenta = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
+
     setFormErrors({});
 
-    if (!ventaForm.id_pedido) {
-      setFormErrors(prev => ({ ...prev, id_pedido: 'Debe seleccionar un pedido.' }));
-      return;
-    }
-    if (!ventaForm.total_venta || Number(ventaForm.total_venta) <= 0) {
-      setFormErrors(prev => ({ ...prev, total_venta: 'El total de venta debe ser mayor a 0.' }));
+    const idPedido = Number(selectedPedidoId);
+    if (!selectedPedidoId || Number.isNaN(idPedido)) {
+      setFormErrors((prev) => ({ ...prev, id_pedido: 'Debe seleccionar un pedido confirmado.' }));
       return;
     }
 
-    const success = await createVenta({
-      id_pedido: Number(ventaForm.id_pedido),
-      total_venta: Number(ventaForm.total_venta).toFixed(2),
-      estado: ventaForm.estado,
-    });
+    if (pedidoTieneVenta(idPedido)) {
+      setFormErrors((prev) => ({ ...prev, id_pedido: 'Ya existe una venta registrada para este pedido.' }));
+      return;
+    }
+
+    const pedido = orders.find((o) => o.idPedido === idPedido);
+    if (!pedido || pedido.estado !== 'confirmed') {
+      setFormErrors((prev) => ({ ...prev, id_pedido: 'Solo se pueden registrar ventas desde pedidos confirmados.' }));
+      return;
+    }
+
+    const success = await createVenta({ id_pedido: idPedido });
 
     if (success) {
       setIsCreateOpen(false);
-      setVentaForm({ id_pedido: '', total_venta: '', estado: 'completada' });
-      loadData();
+      setSelectedPedidoId('');
     }
   };
 
   const submitFinanciamiento = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving || !selectedVentaId || !selectedVenta) return;
+
     setFormErrors({});
 
-    if (!selectedVentaId) return;
-
+    const entrada = Number(financiarForm.entrada);
     const monto = Number(financiarForm.monto_financiado);
     const tasa = Number(financiarForm.tasa_interes);
     const plazo = Number(financiarForm.plazo_meses);
-    const cuota = Number(financiarForm.cuota_mensual);
+    const totalVenta = selectedVenta.total_venta;
+    const montoEsperado = totalVenta - entrada;
 
     if (!financiarForm.entidad_financiera.trim()) {
-      setFormErrors(prev => ({ ...prev, entidad_financiera: 'Especifique la entidad financiera.' }));
+      setFormErrors((prev) => ({ ...prev, entidad_financiera: 'Especifique la entidad financiera.' }));
+      return;
+    }
+    if (entrada < 0) {
+      setFormErrors((prev) => ({ ...prev, entrada: 'La entrada no puede ser negativa.' }));
+      return;
+    }
+    if (entrada >= totalVenta) {
+      setFormErrors((prev) => ({ ...prev, entrada: 'La entrada debe ser menor al total de la venta.' }));
       return;
     }
     if (monto <= 0) {
-      setFormErrors(prev => ({ ...prev, monto_financiado: 'El monto debe ser mayor a 0.' }));
+      setFormErrors((prev) => ({ ...prev, monto_financiado: 'El monto financiado debe ser mayor a 0.' }));
       return;
     }
-    if (tasa <= 0 || tasa > 100) {
-      setFormErrors(prev => ({ ...prev, tasa_interes: 'La tasa debe estar entre 0 y 100.' }));
+    if (Math.abs(monto - montoEsperado) > 0.01) {
+      setFormErrors((prev) => ({
+        ...prev,
+        monto_financiado: `Debe ser ${formatPrice(montoEsperado)} (total − entrada).`,
+      }));
+      return;
+    }
+    if (tasa < 0 || tasa > 100) {
+      setFormErrors((prev) => ({ ...prev, tasa_interes: 'La tasa debe estar entre 0 y 100.' }));
       return;
     }
     if (plazo <= 0) {
-      setFormErrors(prev => ({ ...prev, plazo_meses: 'El plazo debe ser mayor a 0.' }));
+      setFormErrors((prev) => ({ ...prev, plazo_meses: 'El plazo debe ser mayor a 0.' }));
       return;
     }
 
     const success = await financiarVenta(selectedVentaId, {
-      entidad_financiera: financiarForm.entidad_financiera,
+      entidad_financiera: financiarForm.entidad_financiera.trim(),
       monto_financiado: monto,
+      entrada,
       tasa_interes: tasa,
       plazo_meses: plazo,
-      cuota_mensual: cuota,
       estado: financiarForm.estado,
     });
 
     if (success) {
       setIsFinanciarOpen(false);
+      setSelectedVentaId(null);
       setFinanciarForm({
         entidad_financiera: '',
+        entrada: '0',
         monto_financiado: '',
         tasa_interes: '12.00',
         plazo_meses: '24',
-        cuota_mensual: '',
         estado: 'activo',
       });
-      loadData();
     }
   };
 
   const handleAnnulVenta = async (id: number) => {
-    if (confirm('¿Está seguro de que desea anular esta venta?')) {
+    if (isSaving) return;
+    if (confirm('¿Está seguro de que desea eliminar esta venta?')) {
       await deleteVenta(id);
-      loadData();
     }
   };
 
-  const handleStatusChange = async (id: number, currentEstado: string) => {
-    const nextEstado = currentEstado === 'pendiente' ? 'completada' : 'anulada';
+  const handleStatusChange = async (id: number, currentEstado: VentaEstado) => {
+    if (isSaving) return;
+    const nextEstado: VentaEstado = currentEstado === 'pendiente' ? 'completada' : 'anulada';
     if (confirm(`¿Cambiar el estado de la venta a ${nextEstado}?`)) {
-      await updateVentaStatus(id, nextEstado as any);
-      loadData();
+      await updateVentaStatus(id, nextEstado);
     }
   };
 
@@ -247,11 +279,14 @@ export default function VentasAdminPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground uppercase">Gestión de Ventas</h1>
-          <p className="text-muted-foreground text-sm">Registra y administra las ventas de motocicletas a partir de pedidos</p>
+          <p className="text-muted-foreground text-sm">
+            Registra ventas a partir de pedidos confirmados que pueden incluir motocicletas, repuestos o ambos.
+          </p>
         </div>
         <Button
           onClick={() => {
             clearMessages();
+            setSelectedPedidoId('');
             setIsCreateOpen(true);
           }}
           className="gap-2 bg-primary hover:bg-primary/95 font-bold rounded-lg text-xs uppercase tracking-wider py-5"
@@ -261,7 +296,6 @@ export default function VentasAdminPage() {
         </Button>
       </div>
 
-      {/* Messages */}
       {error && (
         <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
           <AlertCircle className="size-4 shrink-0" />
@@ -274,7 +308,6 @@ export default function VentasAdminPage() {
         </div>
       )}
 
-      {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-border/30 bg-muted/30 backdrop-blur-md">
@@ -324,7 +357,6 @@ export default function VentasAdminPage() {
         </div>
       )}
 
-      {/* Filter and Search Bar */}
       <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3 bg-muted/30 border border-border/30 p-4 rounded-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -355,7 +387,6 @@ export default function VentasAdminPage() {
         </Button>
       </form>
 
-      {/* Table Section */}
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
@@ -403,6 +434,7 @@ export default function VentasAdminPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
+                          disabled={isSaving}
                           onClick={() => handleStatusChange(venta.id_venta, venta.estado)}
                           title="Marcar como Completada"
                           className="text-green-400 hover:bg-green-500/10"
@@ -410,14 +442,16 @@ export default function VentasAdminPage() {
                           <Edit className="size-4" />
                         </Button>
                       )}
-                      {venta.estado !== 'anulada' && (
+                      {venta.estado !== 'anulada' && venta.num_financiamientos === 0 && (
                         <Button
                           variant="ghost"
                           size="icon-sm"
+                          disabled={isSaving}
                           onClick={() => {
                             setSelectedVentaId(venta.id_venta);
-                            setFinanciarForm(prev => ({
+                            setFinanciarForm((prev) => ({
                               ...prev,
+                              entrada: '0',
                               monto_financiado: String(venta.total_venta),
                             }));
                             setIsFinanciarOpen(true);
@@ -432,8 +466,9 @@ export default function VentasAdminPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
+                          disabled={isSaving}
                           onClick={() => handleAnnulVenta(venta.id_venta)}
-                          title="Anular Venta"
+                          title="Eliminar Venta"
                           className="text-red-400 hover:bg-red-500/10"
                         >
                           <Trash2 className="size-4" />
@@ -446,7 +481,6 @@ export default function VentasAdminPage() {
             </Table>
           </div>
 
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border/30 px-6 py-4 bg-background/40">
               <span className="text-xs text-muted-foreground font-semibold">
@@ -477,10 +511,9 @@ export default function VentasAdminPage() {
         </Card>
       )}
 
-      {/* MODAL: Registrar Venta */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <Card className="w-full max-w-lg bg-background border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-border/30">
               <h3 className="text-lg font-bold text-foreground uppercase tracking-wide">Registrar Nueva Venta</h3>
               <Button variant="ghost" size="icon-sm" onClick={() => setIsCreateOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -492,50 +525,59 @@ export default function VentasAdminPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Seleccionar Pedido Confirmado</label>
                   <select
-                    value={ventaForm.id_pedido}
-                    onChange={(e) => handleOrderChange(e.target.value)}
+                    value={selectedPedidoId}
+                    onChange={(e) => setSelectedPedidoId(e.target.value)}
                     className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="">-- Elija un Pedido --</option>
-                    {orders.filter(o => o.estado === 'confirmed').map(o => (
-                      <option key={o.idPedido} value={o.idPedido}>
-                        Pedido #{o.idPedido} — Cliente: {o.usernameCliente} ({formatPrice(o.total)})
-                      </option>
-                    ))}
+                    {pedidosDisponibles.map((o) => {
+                      const composition = getOrderCompositionFromItems(o.carrito?.items ?? []);
+                      return (
+                        <option key={o.idPedido} value={o.idPedido}>
+                          Pedido #{o.idPedido} — {o.usernameCliente} — {composition.label} ({formatPrice(o.total)})
+                        </option>
+                      );
+                    })}
                   </select>
+                  {pedidosDisponibles.length === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      No hay pedidos confirmados disponibles sin venta registrada.
+                    </p>
+                  )}
                   {formErrors.id_pedido && <p className="text-destructive text-xs mt-1">{formErrors.id_pedido}</p>}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Total Venta ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={ventaForm.total_venta}
-                    onChange={(e) => setVentaForm(prev => ({ ...prev, total_venta: e.target.value }))}
-                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
-                  />
-                  {formErrors.total_venta && <p className="text-destructive text-xs mt-1">{formErrors.total_venta}</p>}
-                </div>
+                {selectedPedidoDetail && (
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-border/30 bg-muted/30 p-4 space-y-2">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                        Resumen del pedido #{selectedPedidoDetail.idPedido}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        El total de la venta se asignará automáticamente al crear el registro. Estado inicial: pendiente.
+                      </p>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Estado Inicial</label>
-                  <select
-                    value={ventaForm.estado}
-                    onChange={(e) => setVentaForm(prev => ({ ...prev, estado: e.target.value as any }))}
-                    className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  >
-                    <option value="pendiente">Pendiente</option>
-                    <option value="completada">Completada</option>
-                  </select>
-                </div>
+                    <OrderItemsBreakdown
+                      items={selectedPedidoDetail.carrito?.items ?? []}
+                      total={selectedPedidoDetail.total}
+                      usernameCliente={selectedPedidoDetail.usernameCliente}
+                      fecha={selectedPedidoDetail.fechaPedido}
+                      estado={selectedPedidoDetail.estado}
+                      showMeta
+                    />
+                  </div>
+                )}
               </CardContent>
               <div className="flex items-center justify-end gap-2 p-5 border-t border-border/30 bg-muted/20">
                 <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} className="rounded-lg text-xs py-4 px-5 font-bold uppercase tracking-wider">
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider">
+                <Button
+                  type="submit"
+                  disabled={isSaving || !selectedPedidoId || pedidosDisponibles.length === 0}
+                  className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold rounded-lg text-xs py-4 px-5 uppercase tracking-wider"
+                >
                   {isSaving ? 'Registrando...' : 'Confirmar Venta'}
                 </Button>
               </div>
@@ -544,7 +586,6 @@ export default function VentasAdminPage() {
         </div>
       )}
 
-      {/* MODAL: Financiar Venta */}
       {isFinanciarOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <Card className="w-full max-w-lg bg-background border border-border/40 rounded-2xl shadow-xl animate-in zoom-in-95 duration-200">
@@ -562,13 +603,42 @@ export default function VentasAdminPage() {
                     type="text"
                     placeholder="Ej. Banco Pichincha, Cooperativa JEP"
                     value={financiarForm.entidad_financiera}
-                    onChange={(e) => setFinanciarForm(prev => ({ ...prev, entidad_financiera: e.target.value }))}
+                    onChange={(e) => setFinanciarForm((prev) => ({ ...prev, entidad_financiera: e.target.value }))}
                     className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                   {formErrors.entidad_financiera && <p className="text-destructive text-xs mt-1">{formErrors.entidad_financiera}</p>}
                 </div>
 
+                {selectedVenta && (
+                  <div className="rounded-lg border border-border/30 bg-muted/30 p-3 text-sm">
+                    <span className="text-muted-foreground">Total venta: </span>
+                    <span className="font-bold text-primary">{formatPrice(selectedVenta.total_venta)}</span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Entrada / Pago inicial ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={financiarForm.entrada}
+                      onChange={(e) => {
+                        const entradaVal = e.target.value;
+                        const total = selectedVenta?.total_venta ?? 0;
+                        const entradaNum = Number(entradaVal) || 0;
+                        setFinanciarForm((prev) => ({
+                          ...prev,
+                          entrada: entradaVal,
+                          monto_financiado: total > 0 ? String(Math.max(0, total - entradaNum)) : prev.monto_financiado,
+                        }));
+                      }}
+                      className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
+                    />
+                    {formErrors.entrada && <p className="text-destructive text-xs mt-1">{formErrors.entrada}</p>}
+                  </div>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Monto Financiado ($)</label>
                     <input
@@ -576,19 +646,22 @@ export default function VentasAdminPage() {
                       step="0.01"
                       placeholder="0.00"
                       value={financiarForm.monto_financiado}
-                      onChange={(e) => setFinanciarForm(prev => ({ ...prev, monto_financiado: e.target.value }))}
-                      className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
+                      readOnly
+                      className="w-full bg-muted/60 border border-border/20 rounded-lg px-3.5 py-2.5 text-sm text-foreground font-mono"
                     />
+                    <p className="text-[10px] text-muted-foreground">Calculado: total venta − entrada</p>
                     {formErrors.monto_financiado && <p className="text-destructive text-xs mt-1">{formErrors.monto_financiado}</p>}
                   </div>
+                </div>
 
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Tasa Interés Anual (%)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={financiarForm.tasa_interes}
-                      onChange={(e) => setFinanciarForm(prev => ({ ...prev, tasa_interes: e.target.value }))}
+                      onChange={(e) => setFinanciarForm((prev) => ({ ...prev, tasa_interes: e.target.value }))}
                       className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                     />
                     {formErrors.tasa_interes && <p className="text-destructive text-xs mt-1">{formErrors.tasa_interes}</p>}
@@ -601,20 +674,21 @@ export default function VentasAdminPage() {
                     <input
                       type="number"
                       value={financiarForm.plazo_meses}
-                      onChange={(e) => setFinanciarForm(prev => ({ ...prev, plazo_meses: e.target.value }))}
+                      onChange={(e) => setFinanciarForm((prev) => ({ ...prev, plazo_meses: e.target.value }))}
                       className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
                     />
                     {formErrors.plazo_meses && <p className="text-destructive text-xs mt-1">{formErrors.plazo_meses}</p>}
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Cuota Estimada (Auto-calc)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Cuota estimada (referencial)</label>
                     <input
                       type="text"
                       disabled
-                      value={formatPrice(Number(financiarForm.cuota_mensual) || 0)}
+                      value={cuotaEstimada !== null ? formatPrice(cuotaEstimada) : '—'}
                       className="w-full bg-muted/60 border border-border/20 rounded-lg px-3.5 py-2.5 text-sm text-primary font-mono font-bold"
                     />
+                    <p className="text-[10px] text-muted-foreground">Calculada por el servidor al registrar.</p>
                   </div>
                 </div>
 
@@ -622,7 +696,7 @@ export default function VentasAdminPage() {
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Estado Inicial</label>
                   <select
                     value={financiarForm.estado}
-                    onChange={(e) => setFinanciarForm(prev => ({ ...prev, estado: e.target.value as any }))}
+                    onChange={(e) => setFinanciarForm((prev) => ({ ...prev, estado: e.target.value as FinanciarFormState['estado'] }))}
                     className="w-full bg-muted border border-border/30 rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="activo">Activo</option>

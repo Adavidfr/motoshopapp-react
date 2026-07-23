@@ -1,15 +1,14 @@
 // src/presentation/store/pago.store.ts
 import { create } from 'zustand';
-import type { Pago, PagoStats, PagoEstado } from '../../domain/entities/pago.entity';
+import type { Pago, PagoStats, PagoCreatePayload } from '../../domain/entities/pago.entity';
 import type { PagoFilters } from '../../domain/ports/pago.repository';
 import {
   createPagoUseCase,
   getPagosUseCase,
   getPagoUseCase,
-  updatePagoUseCase,
-  deletePagoUseCase,
   getPagoStatsUseCase,
 } from '../../infrastructure/factories/pago.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface PagoState {
   pagos: Pago[];
@@ -27,32 +26,11 @@ interface PagoState {
   fetchPagos: (filters?: PagoFilters) => Promise<void>;
   fetchPagoById: (id: number) => Promise<void>;
   fetchStats: () => Promise<void>;
-  createPago: (payload: Omit<Pago, 'id_pago' | 'fecha_pago'>) => Promise<boolean>;
-  updatePagoStatus: (id: number, estado: PagoEstado) => Promise<boolean>;
-  updatePago: (id: number, payload: Partial<Pago>) => Promise<boolean>;
-  deletePago: (id: number) => Promise<boolean>;
+  createPago: (payload: PagoCreatePayload) => Promise<boolean>;
   setFilters: (filters: Partial<PagoFilters>) => void;
   clearSelectedPago: () => void;
   clearMessages: () => void;
 }
-
-const getErrorMessage = (error: unknown): string => {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const axiosError = error as any;
-    const data = axiosError.response?.data;
-    if (typeof data === 'string') return data;
-    if (data && typeof data === 'object') {
-      if (data.error) return String(data.error);
-      if (data.detail) return String(data.detail);
-      const keys = Object.keys(data);
-      if (keys.length > 0) {
-        const val = data[keys[0]];
-        return Array.isArray(val) ? String(val[0]) : String(val);
-      }
-    }
-  }
-  return error instanceof Error ? error.message : 'Ocurrió un error inesperado';
-};
 
 export const usePagoStore = create<PagoState>((set, get) => ({
   pagos: [],
@@ -81,7 +59,7 @@ export const usePagoStore = create<PagoState>((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      set({ error: getErrorMessage(err), isLoading: false });
+      set({ error: parseApiError(err), isLoading: false });
     }
   },
 
@@ -91,7 +69,7 @@ export const usePagoStore = create<PagoState>((set, get) => ({
       const pago = await getPagoUseCase.execute(id);
       set({ selectedPago: pago, isLoading: false });
     } catch (err) {
-      set({ error: getErrorMessage(err), isLoading: false });
+      set({ error: parseApiError(err), isLoading: false });
     }
   },
 
@@ -105,69 +83,22 @@ export const usePagoStore = create<PagoState>((set, get) => ({
   },
 
   createPago: async (payload) => {
-    set({ isSaving: true, error: null, successMessage: null });
-    try {
-      await createPagoUseCase.execute(payload);
-      set({ successMessage: 'Pago registrado con éxito', isSaving: false });
-      get().fetchPagos();
-      get().fetchStats();
-      return true;
-    } catch (err) {
-      set({ error: getErrorMessage(err), isSaving: false });
-      return false;
-    }
-  },
+    if (get().isSaving) return false;
 
-  updatePagoStatus: async (id, estado) => {
     set({ isSaving: true, error: null, successMessage: null });
     try {
-      const updated = await updatePagoUseCase.execute(id, { estado });
+      const pago = await createPagoUseCase.execute(payload);
       set((state) => ({
-        pagos: state.pagos.map((p) => (p.id_pago === id ? updated : p)),
-        selectedPago: state.selectedPago?.id_pago === id ? updated : state.selectedPago,
-        successMessage: 'Estado del pago actualizado',
+        pagos: [pago, ...state.pagos.filter((p) => p.id_pago !== pago.id_pago)],
+        count: state.count + (state.pagos.some((p) => p.id_pago === pago.id_pago) ? 0 : 1),
+        selectedPago: pago,
+        successMessage: 'Pago registrado con éxito',
         isSaving: false,
       }));
       get().fetchStats();
       return true;
     } catch (err) {
-      set({ error: getErrorMessage(err), isSaving: false });
-      return false;
-    }
-  },
-
-  updatePago: async (id, payload) => {
-    set({ isSaving: true, error: null, successMessage: null });
-    try {
-      const updated = await updatePagoUseCase.execute(id, payload);
-      set((state) => ({
-        pagos: state.pagos.map((p) => (p.id_pago === id ? updated : p)),
-        selectedPago: state.selectedPago?.id_pago === id ? updated : state.selectedPago,
-        successMessage: 'Pago actualizado con éxito',
-        isSaving: false,
-      }));
-      get().fetchStats();
-      return true;
-    } catch (err) {
-      set({ error: getErrorMessage(err), isSaving: false });
-      return false;
-    }
-  },
-
-  deletePago: async (id) => {
-    set({ isSaving: true, error: null, successMessage: null });
-    try {
-      await deletePagoUseCase.execute(id);
-      set((state) => ({
-        pagos: state.pagos.filter((p) => p.id_pago !== id),
-        selectedPago: state.selectedPago?.id_pago === id ? null : state.selectedPago,
-        successMessage: 'Pago eliminado con éxito',
-        isSaving: false,
-      }));
-      get().fetchStats();
-      return true;
-    } catch (err) {
-      set({ error: getErrorMessage(err), isSaving: false });
+      set({ error: parseApiError(err), isSaving: false });
       return false;
     }
   },

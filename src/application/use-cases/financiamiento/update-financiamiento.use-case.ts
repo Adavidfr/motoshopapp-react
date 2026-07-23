@@ -1,6 +1,6 @@
 // src/application/use-cases/financiamiento/update-financiamiento.use-case.ts
 import type { FinanciamientoRepository } from '../../../domain/ports/financiamiento.repository';
-import type { Financiamiento } from '../../../domain/entities/financiamiento.entity';
+import type { Financiamiento, FinanciamientoUpdatePayload } from '../../../domain/entities/financiamiento.entity';
 
 export class UpdateFinanciamientoUseCase {
   private readonly repository: FinanciamientoRepository;
@@ -9,7 +9,7 @@ export class UpdateFinanciamientoUseCase {
     this.repository = repository;
   }
 
-  execute(id: number, payload: Partial<Financiamiento>) {
+  execute(id: number, payload: FinanciamientoUpdatePayload): Promise<Financiamiento> {
     return this.repository.updateFinanciamiento(id, payload);
   }
 }

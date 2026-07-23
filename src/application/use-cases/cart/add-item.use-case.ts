@@ -13,8 +13,10 @@ export class AddItemToCartUseCase {
     motoId: number | null,
     repuestoId: number | null,
     cantidad: number,
-    precioUnitario: number
   ): Promise<CarritoCompras> {
-    return this.cartRepository.addItem(cartId, motoId, repuestoId, cantidad, precioUnitario);
+    const payload: { cantidad: number; id_moto?: number; id_repuesto?: number } = { cantidad };
+    if (motoId !== null) payload.id_moto = motoId;
+    if (repuestoId !== null) payload.id_repuesto = repuestoId;
+    return this.cartRepository.addItem(cartId, payload);
   }
 }

@@ -2,22 +2,30 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderStore } from '../../store/order.store';
-import { useVentaStore } from '../../store/venta.store';
-import { useMotoStore } from '../../store/moto.store';
+import { useLineItemProducts } from '../../hooks/use-line-item-products';
+import { CartLineItem } from '../../components/cart/CartLineItem';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice, formatDate } from '../../utils/formatters';
-import { ArrowLeft, CheckCircle, CreditCard } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { selectedOrder, fetchOrderById, confirmOrder, isLoading, error, clearSelectedOrder } = useOrderStore();
-  const { createVenta } = useVentaStore();
-  const { motos, fetchMotos } = useMotoStore();
+  const {
+    selectedOrder,
+    fetchOrderById,
+    confirmOrder,
+    isLoading,
+    isConfirming,
+    error,
+    clearSelectedOrder,
+    clearError,
+  } = useOrderStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const orderItems = selectedOrder?.carrito?.items ?? [];
+  const lineItemProducts = useLineItemProducts(orderItems);
 
   useEffect(() => {
     if (id) {
@@ -25,32 +33,21 @@ export default function OrderDetailPage() {
     }
     return () => {
       clearSelectedOrder();
+      clearError();
     };
-  }, [id, fetchOrderById, clearSelectedOrder]);
+  }, [id, fetchOrderById, clearSelectedOrder, clearError]);
 
-  useEffect(() => {
-    if (motos.length === 0) {
-      fetchMotos({ limit: 100 });
-    }
-  }, [motos.length, fetchMotos]);
+  const canConfirm = selectedOrder?.estado === 'pending';
 
   const handleConfirm = async () => {
-    if (selectedOrder && paymentMethod) {
-      try {
-        await confirmOrder(selectedOrder.idPedido);
-        
-        // Integración con Ventas: Sincronizar el pedido pagado con el módulo de Ventas
-        await createVenta({
-          id_pedido: selectedOrder.idPedido,
-          total_venta: selectedOrder.total.toString(),
-          estado: 'completada'
-        });
+    if (!selectedOrder || !canConfirm || isConfirming) return;
 
-        setSuccessMsg('¡Pedido y Pago procesados exitosamente!');
-        setTimeout(() => setSuccessMsg(null), 3000);
-      } catch {
-        // Error manejado en el store
-      }
+    try {
+      await confirmOrder(selectedOrder.idPedido);
+      setSuccessMsg('¡Pedido confirmado! El equipo procesará tu solicitud.');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch {
+      // Error manejado en el store
     }
   };
 
@@ -63,10 +60,24 @@ export default function OrderDetailPage() {
     );
   }
 
-  if (error || !selectedOrder) {
+  if (error && !selectedOrder) {
     return (
       <div className="max-w-3xl mx-auto text-center py-12 space-y-4">
-        <p className="text-destructive font-semibold">{error || 'Pedido no encontrado'}</p>
+        <p className="text-destructive font-semibold">{error}</p>
+        <Link to="/orders">
+          <Button variant="outline" className="gap-2">
+            <ArrowLeft className="size-4" />
+            Volver a Mis Pedidos
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (!selectedOrder) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-12 space-y-4">
+        <p className="text-destructive font-semibold">Pedido no encontrado</p>
         <Link to="/orders">
           <Button variant="outline" className="gap-2">
             <ArrowLeft className="size-4" />
@@ -95,6 +106,13 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
+          <AlertCircle className="size-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
       {successMsg && (
         <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
           <CheckCircle className="size-4" />
@@ -103,42 +121,42 @@ export default function OrderDetailPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Items List */}
         <div className="md:col-span-2 space-y-4">
-          <h2 className="text-lg font-bold">Motos Solicitadas</h2>
+          <h2 className="text-lg font-bold">Productos del Pedido</h2>
           {(selectedOrder.carrito?.items || []).map((item) => {
-            const moto = item.idMoto ? motos.find(m => m.idMoto === item.idMoto) : null;
+            let moto = null;
+            let repuesto = null;
+            let isLoadingProduct = false;
+            let isProductUnavailable = false;
+
+            if (item.idMoto !== null) {
+              moto = lineItemProducts.getMoto(item.idMoto);
+              isProductUnavailable = lineItemProducts.isMotoUnavailable(item.idMoto);
+              isLoadingProduct = !moto && !isProductUnavailable;
+            } else if (item.idRepuesto !== null) {
+              repuesto = lineItemProducts.getRepuesto(item.idRepuesto);
+              isProductUnavailable = lineItemProducts.isRepuestoUnavailable(item.idRepuesto);
+              isLoadingProduct = !repuesto && !isProductUnavailable;
+            }
+
             return (
               <Card key={item.idItem} className="border-border/40">
-                <CardContent className="p-4 flex justify-between items-center gap-4">
-                  <div className="flex gap-3 items-center">
-                    <div className="size-10 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0 overflow-hidden">
-                      {moto && moto.imagen ? (
-                        <img src={moto.imagen} alt={moto.modelo} className="w-full h-full object-cover" />
-                      ) : (
-                        item.idMoto ? '🏍️' : '⚙️'
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm">
-                        {moto 
-                          ? `${moto.marca} ${moto.modelo}` 
-                          : (item.idMoto ? `Moto ID: #${item.idMoto}` : `Repuesto ID: #${item.idRepuesto}`)
-                        }
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {item.cantidad} x {formatPrice(item.precioUnitario)}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-primary">{formatPrice(item.subtotal)}</span>
+                <CardContent className="p-0">
+                  <CartLineItem
+                    item={item}
+                    moto={moto}
+                    repuesto={repuesto}
+                    isLoadingProduct={isLoadingProduct}
+                    isProductUnavailable={isProductUnavailable}
+                    readOnly
+                    compact
+                  />
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Pricing Summary */}
         <div className="space-y-4">
           <Card className="border-border/40 bg-muted/10 shadow-xs">
             <CardHeader>
@@ -156,30 +174,26 @@ export default function OrderDetailPage() {
                 <span className="text-primary text-lg">{formatPrice(selectedOrder.total)}</span>
               </div>
             </CardContent>
-            {selectedOrder.estado === 'pending' && (
+            {canConfirm && (
               <CardFooter className="flex-col gap-4 pt-4 border-t border-border/40">
-                <div className="w-full space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Método de Pago</label>
-                  <select
-                    className="w-full h-10 px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  >
-                    <option value="" disabled>Selecciona un método de pago...</option>
-                    <option value="tarjeta">Tarjeta de Crédito / Débito</option>
-                    <option value="transferencia">Transferencia Bancaria</option>
-                    <option value="efectivo">Efectivo (Pago en tienda)</option>
-                  </select>
-                </div>
-                
-                <Button 
-                  className="w-full gap-2 font-semibold shadow-xs" 
+                <p className="text-sm text-muted-foreground w-full">
+                  Confirma tu pedido para que el equipo lo procese. El pago se registrará posteriormente.
+                </p>
+                <Button
+                  className="w-full gap-2 font-semibold shadow-xs"
                   onClick={handleConfirm}
-                  disabled={!paymentMethod}
+                  disabled={isConfirming}
                 >
                   <CreditCard className="size-4" />
-                  {paymentMethod ? 'Pagar y Confirmar' : 'Selecciona método de pago'}
+                  {isConfirming ? 'Confirmando...' : 'Confirmar Pedido'}
                 </Button>
+              </CardFooter>
+            )}
+            {selectedOrder.estado === 'confirmed' && (
+              <CardFooter className="pt-4 border-t border-border/40">
+                <p className="text-sm text-muted-foreground">
+                  Pedido confirmado. Espera actualizaciones de envío.
+                </p>
               </CardFooter>
             )}
           </Card>

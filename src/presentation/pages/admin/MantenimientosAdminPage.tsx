@@ -592,12 +592,7 @@ export default function MantenimientosAdminPage() {
       return `Moto #${motoId}`;
     }
 
-    const marca =
-      typeof moto.marca === 'object' &&
-      moto.marca !== null &&
-      'nombre' in moto.marca
-        ? String(moto.marca.nombre)
-        : '';
+    const marca = moto.marca;
 
     return [marca, moto.modelo]
       .filter(Boolean)

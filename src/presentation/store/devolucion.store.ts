@@ -1,15 +1,16 @@
 // src/presentation/store/devolucion.store.ts
 import { create } from 'zustand';
-import type { Devolucion, DevolucionStats } from '../../domain/entities/devolucion.entity';
+import type { Devolucion, DevolucionStats, DevolucionCreatePayload } from '../../domain/entities/devolucion.entity';
 import type { DevolucionFilters } from '../../domain/ports/devolucion.repository';
 import {
   getDevolucionesUseCase,
   getDevolucionUseCase,
   createDevolucionUseCase,
-  updateDevolucionUseCase,
-  deleteDevolucionUseCase,
   getDevolucionStatsUseCase,
+  aprobarDevolucionUseCase,
+  rechazarDevolucionUseCase,
 } from '../../infrastructure/factories/devolucion.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface DevolucionState {
   devoluciones: Devolucion[];
@@ -27,28 +28,16 @@ interface DevolucionState {
   fetchDevoluciones: (filters?: DevolucionFilters) => Promise<void>;
   fetchDevolucionById: (id: number) => Promise<void>;
   fetchStats: () => Promise<void>;
-  createDevolucion: (payload: Omit<Devolucion, 'id_devolucion' | 'fecha_solicitud' | 'fecha_resolucion'>) => Promise<boolean>;
-  updateDevolucion: (id: number, payload: Partial<Devolucion>) => Promise<boolean>;
-  deleteDevolucion: (id: number) => Promise<boolean>;
+  createDevolucion: (payload: DevolucionCreatePayload) => Promise<boolean>;
+  aprobarDevolucion: (id: number) => Promise<boolean>;
+  rechazarDevolucion: (id: number) => Promise<boolean>;
+  ventaTieneDevolucionAbierta: (idVenta: number) => boolean;
   setFilters: (filters: Partial<DevolucionFilters>) => void;
   clearSelectedDevolucion: () => void;
   clearMessages: () => void;
 }
 
-const getErr = (error: unknown): string => {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const e = error as any;
-    const d = e.response?.data;
-    if (typeof d === 'string') return d;
-    if (d && typeof d === 'object') {
-      if (d.error) return String(d.error);
-      if (d.detail) return String(d.detail);
-      const k = Object.keys(d);
-      if (k.length > 0) { const v = d[k[0]]; return Array.isArray(v) ? String(v[0]) : String(v); }
-    }
-  }
-  return error instanceof Error ? error.message : 'Ocurrió un error inesperado';
-};
+const ESTADOS_ABIERTOS = new Set(['solicitada', 'aprobada']);
 
 export const useDevolucionStore = create<DevolucionState>((set, get) => ({
   devoluciones: [],
@@ -63,13 +52,27 @@ export const useDevolucionStore = create<DevolucionState>((set, get) => ({
   error: null,
   successMessage: null,
 
+  ventaTieneDevolucionAbierta: (idVenta) =>
+    get().devoluciones.some(
+      (d) => d.id_venta === idVenta && ESTADOS_ABIERTOS.has(d.estado),
+    ),
+
   fetchDevoluciones: async (filters) => {
     set({ isLoading: true, error: null });
     const f = { ...get().filters, ...filters };
     try {
       const r = await getDevolucionesUseCase.execute(f);
-      set({ devoluciones: r.results, count: r.count, next: r.next, previous: r.previous, filters: f, isLoading: false });
-    } catch (err) { set({ error: getErr(err), isLoading: false }); }
+      set({
+        devoluciones: r.results,
+        count: r.count,
+        next: r.next,
+        previous: r.previous,
+        filters: f,
+        isLoading: false,
+      });
+    } catch (err) {
+      set({ error: parseApiError(err), isLoading: false });
+    }
   },
 
   fetchDevolucionById: async (id) => {
@@ -77,55 +80,96 @@ export const useDevolucionStore = create<DevolucionState>((set, get) => ({
     try {
       const d = await getDevolucionUseCase.execute(id);
       set({ selectedDevolucion: d, isLoading: false });
-    } catch (err) { set({ error: getErr(err), isLoading: false }); }
+    } catch (err) {
+      set({ error: parseApiError(err), isLoading: false });
+    }
   },
 
   fetchStats: async () => {
     try {
       const s = await getDevolucionStatsUseCase.execute();
       set({ stats: s });
-    } catch (err) { console.error('Error fetching stats:', err); }
+    } catch (err) {
+      console.error('Error fetching devolucion stats:', err);
+    }
   },
 
   createDevolucion: async (payload) => {
+    if (get().isSaving) return false;
+
+    if (get().ventaTieneDevolucionAbierta(payload.id_venta)) {
+      set({ error: 'Ya existe una devolución pendiente para esta venta.' });
+      return false;
+    }
+
     set({ isSaving: true, error: null, successMessage: null });
     try {
-      await createDevolucionUseCase.execute(payload);
-      set({ successMessage: 'Devolución registrada con éxito', isSaving: false });
-      get().fetchDevoluciones();
+      const devolucion = await createDevolucionUseCase.execute(payload);
+      set((state) => ({
+        devoluciones: [devolucion, ...state.devoluciones.filter((d) => d.id_devolucion !== devolucion.id_devolucion)],
+        count: state.count + (state.devoluciones.some((d) => d.id_devolucion === devolucion.id_devolucion) ? 0 : 1),
+        selectedDevolucion: devolucion,
+        successMessage: 'Solicitud de devolución registrada',
+        isSaving: false,
+      }));
       get().fetchStats();
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
-  updateDevolucion: async (id, payload) => {
+  aprobarDevolucion: async (id) => {
+    if (get().isSaving) return false;
+
+    const current = get().devoluciones.find((d) => d.id_devolucion === id);
+    if (current && current.estado !== 'solicitada') {
+      set({ error: 'Solo se pueden aprobar devoluciones en estado solicitada.' });
+      return false;
+    }
+
     set({ isSaving: true, error: null, successMessage: null });
     try {
-      const updated = await updateDevolucionUseCase.execute(id, payload);
+      const updated = await aprobarDevolucionUseCase.execute(id);
       set((s) => ({
         devoluciones: s.devoluciones.map((d) => (d.id_devolucion === id ? updated : d)),
         selectedDevolucion: s.selectedDevolucion?.id_devolucion === id ? updated : s.selectedDevolucion,
-        successMessage: 'Devolución actualizada con éxito',
+        successMessage: 'Devolución aprobada — stock reintegrado y reembolso aplicado si corresponde',
         isSaving: false,
       }));
       get().fetchStats();
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
-  deleteDevolucion: async (id) => {
+  rechazarDevolucion: async (id) => {
+    if (get().isSaving) return false;
+
+    const current = get().devoluciones.find((d) => d.id_devolucion === id);
+    if (current && current.estado !== 'solicitada') {
+      set({ error: 'Solo se pueden rechazar devoluciones en estado solicitada.' });
+      return false;
+    }
+
     set({ isSaving: true, error: null, successMessage: null });
     try {
-      await deleteDevolucionUseCase.execute(id);
+      const updated = await rechazarDevolucionUseCase.execute(id);
       set((s) => ({
-        devoluciones: s.devoluciones.filter((d) => d.id_devolucion !== id),
-        selectedDevolucion: s.selectedDevolucion?.id_devolucion === id ? null : s.selectedDevolucion,
-        successMessage: 'Devolución eliminada con éxito',
+        devoluciones: s.devoluciones.map((d) => (d.id_devolucion === id ? updated : d)),
+        selectedDevolucion: s.selectedDevolucion?.id_devolucion === id ? updated : s.selectedDevolucion,
+        successMessage: 'Devolución rechazada',
         isSaving: false,
       }));
       get().fetchStats();
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
   setFilters: (filters) => set((s) => ({ filters: { ...s.filters, ...filters } })),

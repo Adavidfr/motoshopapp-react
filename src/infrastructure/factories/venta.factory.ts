@@ -7,6 +7,7 @@ import { UpdateVentaUseCase } from '../../application/use-cases/venta/update-ven
 import { DeleteVentaUseCase } from '../../application/use-cases/venta/delete-venta.use-case';
 import { GetVentaStatsUseCase } from '../../application/use-cases/venta/get-venta-stats.use-case';
 import { FinanciarVentaUseCase } from '../../application/use-cases/venta/financiar-venta.use-case';
+import { GetVentaResumenUseCase } from '../../application/use-cases/venta/get-venta-resumen.use-case';
 
 const ventaRepository = new ApiVentaRepository();
 
@@ -17,3 +18,4 @@ export const updateVentaUseCase = new UpdateVentaUseCase(ventaRepository);
 export const deleteVentaUseCase = new DeleteVentaUseCase(ventaRepository);
 export const getVentaStatsUseCase = new GetVentaStatsUseCase(ventaRepository);
 export const financiarVentaUseCase = new FinanciarVentaUseCase(ventaRepository);
+export const getVentaResumenUseCase = new GetVentaResumenUseCase(ventaRepository);

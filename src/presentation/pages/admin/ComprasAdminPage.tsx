@@ -28,6 +28,8 @@ import type {
   CompraEstado,
 } from '../../../domain/entities/compra.entity';
 
+import { transicionesCompraPermitidas } from '../../../domain/entities/compra.entity';
+
 import type {
   CompraDto,
   CompraFilters,
@@ -155,6 +157,7 @@ export default function ComprasAdminPage() {
     fetchStats,
     createCompra,
     updateCompra,
+    recibirCompra,
     deleteCompra,
     clearMessages,
   } = useCompraStore();
@@ -244,7 +247,7 @@ export default function ComprasAdminPage() {
         ordering: 'nombre',
       }),
       fetchMotos(),
-      fetchRepuestos(),
+      fetchRepuestos({ limit: 100 }),
     ]);
   }, [
     fetchCompras,
@@ -518,6 +521,12 @@ export default function ComprasAdminPage() {
     }
   };
 
+  const handleRecibir = async (compra: Compra) => {
+    if (isSaving || compra.estado !== 'Pendiente') return;
+    if (!confirm(`¿Recibir la compra #${compra.id_compra}? Se incrementará el inventario.`)) return;
+    await recibirCompra(compra.id_compra);
+  };
+
   const handleDelete = async () => {
     if (!deletingCompra) {
       return;
@@ -611,6 +620,12 @@ export default function ComprasAdminPage() {
 
     return `${start}-${end} de ${count}`;
   }, [count, page, pageSize]);
+
+  const estadoFormOptions = useMemo((): CompraEstado[] => {
+    if (!editingCompra) return ['Pendiente'];
+    const opts = [editingCompra.estado, ...transicionesCompraPermitidas(editingCompra.estado)];
+    return [...new Set(opts)];
+  }, [editingCompra]);
 
   const clearFilters = () => {
     setSearch('');
@@ -894,10 +909,23 @@ export default function ComprasAdminPage() {
 
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        {compra.estado === 'Pendiente' && (
+                          <button
+                            type="button"
+                            disabled={isSaving}
+                            onClick={() => void handleRecibir(compra)}
+                            className="rounded-full bg-green-500/10 p-2 text-green-400 transition-all hover:bg-green-500/20 disabled:opacity-50"
+                            title="Recibir compra"
+                          >
+                            <PackageCheck className="size-4" />
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => openEditModal(compra)}
-                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+                          disabled={isSaving}
+                          className="rounded-full bg-muted p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground disabled:opacity-50"
                           title="Editar compra"
                         >
                           <Edit className="size-4" />
@@ -906,7 +934,8 @@ export default function ComprasAdminPage() {
                         <button
                           type="button"
                           onClick={() => setDeletingCompra(compra)}
-                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20"
+                          disabled={isSaving}
+                          className="rounded-full bg-destructive/10 p-2 text-destructive transition-all hover:bg-destructive/20 disabled:opacity-50"
                           title="Eliminar compra"
                         >
                           <Trash2 className="size-4" />
@@ -1167,14 +1196,20 @@ export default function ComprasAdminPage() {
                       estado: event.target.value as CompraEstado,
                     }))
                   }
+                  disabled={!editingCompra}
                   className={inputClass(Boolean(formErrors.estado))}
                 >
-                  {estadoOptions.map((estado) => (
+                  {estadoFormOptions.map((estado) => (
                     <option key={estado} value={estado}>
                       {estado}
                     </option>
                   ))}
                 </select>
+                {!editingCompra && (
+                  <p className="px-2 text-[11px] text-muted-foreground">
+                    Las compras nuevas se registran como Pendiente. Use Recibir para aplicar inventario.
+                  </p>
+                )}
               </FormField>
 
               <div className="flex flex-col gap-3 pt-3 sm:flex-row">

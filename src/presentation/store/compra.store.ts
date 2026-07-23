@@ -1,15 +1,7 @@
 import { create } from 'zustand';
 
-import type {
-  Compra,
-  CompraStats,
-} from '../../domain/entities/compra.entity';
-
-import type {
-  CompraDto,
-  CompraFilters,
-} from '../../application/dtos/compra.dto';
-
+import type { Compra, CompraStats } from '../../domain/entities/compra.entity';
+import type { CompraDto, CompraFilters } from '../../application/dtos/compra.dto';
 import {
   createCompraUseCase,
   deleteCompraUseCase,
@@ -17,331 +9,187 @@ import {
   getCompraUseCase,
   getComprasUseCase,
   updateCompraUseCase,
+  recibirCompraUseCase,
 } from '../../infrastructure/factories/compra.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface CompraState {
   compras: Compra[];
   selectedCompra: Compra | null;
   stats: CompraStats | null;
-
   count: number;
   next: string | null;
   previous: string | null;
-
   filters: CompraFilters;
-
   isLoading: boolean;
   isSaving: boolean;
-
   error: string | null;
   successMessage: string | null;
 
-  fetchCompras: (
-    filters?: CompraFilters,
-  ) => Promise<void>;
-
-  fetchCompraById: (
-    id: number,
-  ) => Promise<void>;
-
+  fetchCompras: (filters?: CompraFilters) => Promise<void>;
+  fetchCompraById: (id: number) => Promise<void>;
   fetchStats: () => Promise<void>;
-
-  createCompra: (
-    dto: CompraDto,
-  ) => Promise<boolean>;
-
-  updateCompra: (
-    id: number,
-    dto: Partial<CompraDto>,
-  ) => Promise<boolean>;
-
-  deleteCompra: (
-    id: number,
-  ) => Promise<boolean>;
-
-  setFilters: (
-    filters: Partial<CompraFilters>,
-  ) => void;
-
+  createCompra: (dto: CompraDto) => Promise<boolean>;
+  updateCompra: (id: number, dto: Partial<CompraDto>) => Promise<boolean>;
+  recibirCompra: (id: number) => Promise<boolean>;
+  deleteCompra: (id: number) => Promise<boolean>;
+  setFilters: (filters: Partial<CompraFilters>) => void;
   clearSelectedCompra: () => void;
   clearMessages: () => void;
 }
 
-const getErrorMessage = (error: unknown): string => {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'response' in error
-  ) {
-    const axiosError = error as {
-      response?: {
-        data?:
-          | Record<string, unknown>
-          | string;
-      };
-    };
+export const useCompraStore = create<CompraState>((set, get) => ({
+  compras: [],
+  selectedCompra: null,
+  stats: null,
+  count: 0,
+  next: null,
+  previous: null,
+  filters: {
+    page: 1,
+    pageSize: 10,
+    ordering: '-fecha_compra',
+  },
+  isLoading: false,
+  isSaving: false,
+  error: null,
+  successMessage: null,
 
-    const data = axiosError.response?.data;
+  fetchCompras: async (newFilters = {}) => {
+    const filters = { ...get().filters, ...newFilters };
+    set({ isLoading: true, error: null, filters });
 
-    if (typeof data === 'string') {
-      return data;
+    try {
+      const response = await getComprasUseCase.execute(filters);
+      set({
+        compras: response.results,
+        count: response.count,
+        next: response.next,
+        previous: response.previous,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({ isLoading: false, error: parseApiError(error) });
     }
+  },
 
-    if (data && typeof data === 'object') {
-      const nonFieldErrors =
-        data.non_field_errors;
+  fetchCompraById: async (id) => {
+    set({ isLoading: true, error: null });
 
-      if (Array.isArray(nonFieldErrors)) {
-        return String(nonFieldErrors[0]);
-      }
-
-      if (typeof nonFieldErrors === 'string') {
-        return nonFieldErrors;
-      }
-
-      const detail = data.detail;
-
-      if (typeof detail === 'string') {
-        return detail;
-      }
-
-      const firstValue =
-        Object.values(data)[0];
-
-      if (Array.isArray(firstValue)) {
-        return String(firstValue[0]);
-      }
-
-      if (typeof firstValue === 'string') {
-        return firstValue;
-      }
+    try {
+      const compra = await getCompraUseCase.execute(id);
+      set({ selectedCompra: compra, isLoading: false });
+    } catch (error) {
+      set({ isLoading: false, error: parseApiError(error) });
     }
-  }
+  },
 
-  if (error instanceof Error) {
-    return error.message;
-  }
+  fetchStats: async () => {
+    try {
+      const stats = await getCompraStatsUseCase.execute();
+      set({ stats });
+    } catch (error) {
+      console.error('Error fetching compra stats:', error);
+    }
+  },
 
-  return 'Ocurrió un error inesperado.';
-};
+  createCompra: async (dto) => {
+    if (get().isSaving) return false;
 
-export const useCompraStore =
-  create<CompraState>((set, get) => ({
-    compras: [],
-    selectedCompra: null,
-    stats: null,
+    set({ isSaving: true, error: null, successMessage: null });
 
-    count: 0,
-    next: null,
-    previous: null,
-
-    filters: {
-      page: 1,
-      pageSize: 10,
-      ordering: '-fecha_compra',
-    },
-
-    isLoading: false,
-    isSaving: false,
-
-    error: null,
-    successMessage: null,
-
-    fetchCompras: async (newFilters = {}) => {
-      const filters = {
-        ...get().filters,
-        ...newFilters,
-      };
-
-      set({
-        isLoading: true,
-        error: null,
-        filters,
-      });
-
-      try {
-        const response =
-          await getComprasUseCase.execute(filters);
-
-        set({
-          compras: response.results,
-          count: response.count,
-          next: response.next,
-          previous: response.previous,
-          isLoading: false,
-        });
-      } catch (error) {
-        set({
-          isLoading: false,
-          error: getErrorMessage(error),
-        });
-      }
-    },
-
-    fetchCompraById: async (id) => {
-      set({
-        isLoading: true,
-        error: null,
-      });
-
-      try {
-        const compra =
-          await getCompraUseCase.execute(id);
-
-        set({
-          selectedCompra: compra,
-          isLoading: false,
-        });
-      } catch (error) {
-        set({
-          isLoading: false,
-          error: getErrorMessage(error),
-        });
-      }
-    },
-
-    fetchStats: async () => {
-      try {
-        const stats =
-          await getCompraStatsUseCase.execute();
-
-        set({ stats });
-      } catch (error) {
-        set({
-          error: getErrorMessage(error),
-        });
-      }
-    },
-
-    createCompra: async (dto) => {
-      set({
-        isSaving: true,
-        error: null,
-        successMessage: null,
-      });
-
-      try {
-        await createCompraUseCase.execute(dto);
-
-        set({
-          isSaving: false,
-          successMessage:
-            'Compra registrada correctamente.',
-        });
-
-        await Promise.all([
-          get().fetchCompras(),
-          get().fetchStats(),
-        ]);
-
-        return true;
-      } catch (error) {
-        set({
-          isSaving: false,
-          error: getErrorMessage(error),
-        });
-
-        return false;
-      }
-    },
-
-    updateCompra: async (id, dto) => {
-      set({
-        isSaving: true,
-        error: null,
-        successMessage: null,
-      });
-
-      try {
-        const updatedCompra =
-          await updateCompraUseCase.execute(
-            id,
-            dto,
-          );
-
-        set((state) => ({
-          compras: state.compras.map(
-            (compra) =>
-              compra.id_compra === id
-                ? updatedCompra
-                : compra,
-          ),
-          selectedCompra:
-            state.selectedCompra?.id_compra === id
-              ? updatedCompra
-              : state.selectedCompra,
-          isSaving: false,
-          successMessage:
-            'Compra actualizada correctamente.',
-        }));
-
-        await Promise.all([
-          get().fetchCompras(),
-          get().fetchStats(),
-        ]);
-
-        return true;
-      } catch (error) {
-        set({
-          isSaving: false,
-          error: getErrorMessage(error),
-        });
-
-        return false;
-      }
-    },
-
-    deleteCompra: async (id) => {
-      set({
-        isSaving: true,
-        error: null,
-        successMessage: null,
-      });
-
-      try {
-        await deleteCompraUseCase.execute(id);
-
-        set({
-          isSaving: false,
-          successMessage:
-            'Compra eliminada correctamente.',
-        });
-
-        await Promise.all([
-          get().fetchCompras(),
-          get().fetchStats(),
-        ]);
-
-        return true;
-      } catch (error) {
-        set({
-          isSaving: false,
-          error: getErrorMessage(error),
-        });
-
-        return false;
-      }
-    },
-
-    setFilters: (newFilters) => {
+    try {
+      const created = await createCompraUseCase.execute(dto);
       set((state) => ({
-        filters: {
-          ...state.filters,
-          ...newFilters,
-        },
+        compras: [created, ...state.compras.filter((c) => c.id_compra !== created.id_compra)],
+        count: state.count + (state.compras.some((c) => c.id_compra === created.id_compra) ? 0 : 1),
+        isSaving: false,
+        successMessage: 'Compra registrada correctamente.',
       }));
-    },
+      get().fetchStats();
+      return true;
+    } catch (error) {
+      set({ isSaving: false, error: parseApiError(error) });
+      return false;
+    }
+  },
 
-    clearSelectedCompra: () => {
-      set({
-        selectedCompra: null,
-      });
-    },
+  updateCompra: async (id, dto) => {
+    if (get().isSaving) return false;
 
-    clearMessages: () => {
-      set({
-        error: null,
-        successMessage: null,
-      });
-    },
-  }));
+    set({ isSaving: true, error: null, successMessage: null });
+
+    try {
+      const updated = await updateCompraUseCase.execute(id, dto);
+      set((state) => ({
+        compras: state.compras.map((c) => (c.id_compra === id ? updated : c)),
+        selectedCompra: state.selectedCompra?.id_compra === id ? updated : state.selectedCompra,
+        isSaving: false,
+        successMessage: 'Compra actualizada correctamente.',
+      }));
+      get().fetchStats();
+      return true;
+    } catch (error) {
+      set({ isSaving: false, error: parseApiError(error) });
+      return false;
+    }
+  },
+
+  recibirCompra: async (id) => {
+    if (get().isSaving) return false;
+
+    const current = get().compras.find((c) => c.id_compra === id);
+    if (current && current.estado !== 'Pendiente') {
+      set({ error: 'Solo se pueden recibir compras en estado Pendiente.' });
+      return false;
+    }
+
+    set({ isSaving: true, error: null, successMessage: null });
+
+    try {
+      const updated = await recibirCompraUseCase.execute(id);
+      set((state) => ({
+        compras: state.compras.map((c) => (c.id_compra === id ? updated : c)),
+        selectedCompra: state.selectedCompra?.id_compra === id ? updated : state.selectedCompra,
+        isSaving: false,
+        successMessage: 'Compra recibida e inventario actualizado.',
+      }));
+      get().fetchStats();
+      return true;
+    } catch (error) {
+      set({ isSaving: false, error: parseApiError(error) });
+      return false;
+    }
+  },
+
+  deleteCompra: async (id) => {
+    if (get().isSaving) return false;
+
+    set({ isSaving: true, error: null, successMessage: null });
+
+    try {
+      await deleteCompraUseCase.execute(id);
+      set((state) => ({
+        compras: state.compras.filter((c) => c.id_compra !== id),
+        count: Math.max(0, state.count - 1),
+        selectedCompra: state.selectedCompra?.id_compra === id ? null : state.selectedCompra,
+        isSaving: false,
+        successMessage: 'Compra eliminada correctamente.',
+      }));
+      get().fetchStats();
+      return true;
+    } catch (error) {
+      set({ isSaving: false, error: parseApiError(error) });
+      return false;
+    }
+  },
+
+  setFilters: (newFilters) => {
+    set((state) => ({
+      filters: { ...state.filters, ...newFilters },
+    }));
+  },
+
+  clearSelectedCompra: () => set({ selectedCompra: null }),
+  clearMessages: () => set({ error: null, successMessage: null }),
+}));

@@ -23,6 +23,7 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import BrandsAdminPage from '../pages/admin/BrandsAdminPage';
 import CategoriesAdminPage from '../pages/admin/CategoriesAdminPage';
 import MotosAdminPage from '../pages/admin/MotosAdminPage';
+import RepuestosAdminPage from '../pages/admin/RepuestosAdminPage';
 
 // Páginas administrativas — ventas
 import VentasAdminPage from '../pages/admin/VentasAdminPage';
@@ -51,6 +52,7 @@ import UsersAdminPage from '../pages/admin/UsersAdminPage';
 
 // Repuestos e inventario
 import RepuestosPage from '../pages/repuestos/RepuestosPage';
+import RepuestoDetailPage from '../pages/repuestos/RepuestoDetailPage';
 import InventoryPage from '../pages/inventario/InventoryPage';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
@@ -61,6 +63,14 @@ interface RouteGuardProps {
 function PrivateRoute({ element }: RouteGuardProps) {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? element : <Navigate to="/login" replace />;
+}
+
+/** Rutas comerciales del cliente: excluye staff (is_staff). */
+function ClientRoute({ element }: RouteGuardProps) {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.isStaff === true) return <Navigate to="/admin" replace />;
+  return element;
 }
 
 function AdminRoute({ element }: RouteGuardProps) {
@@ -122,6 +132,14 @@ export default function AppRouter() {
           }
         />
         <Route
+          path="/repuestos/:id"
+          element={
+            <Layout>
+              <RepuestoDetailPage />
+            </Layout>
+          }
+        />
+        <Route
           path="/login"
           element={
             <Layout>
@@ -143,7 +161,7 @@ export default function AppRouter() {
           path="/cart"
           element={
             <Layout>
-              <PrivateRoute element={<CartPage />} />
+              <ClientRoute element={<CartPage />} />
             </Layout>
           }
         />
@@ -151,7 +169,7 @@ export default function AppRouter() {
           path="/orders"
           element={
             <Layout>
-              <PrivateRoute element={<OrdersPage />} />
+              <ClientRoute element={<OrdersPage />} />
             </Layout>
           }
         />
@@ -159,7 +177,7 @@ export default function AppRouter() {
           path="/orders/:id"
           element={
             <Layout>
-              <PrivateRoute element={<OrderDetailPage />} />
+              <ClientRoute element={<OrderDetailPage />} />
             </Layout>
           }
         />
@@ -177,6 +195,7 @@ export default function AppRouter() {
 
         {/* Catálogo */}
         <Route path="/admin/motos" element={<AdminPage element={<MotosAdminPage />} />} />
+        <Route path="/admin/repuestos" element={<AdminPage element={<RepuestosAdminPage />} />} />
         <Route path="/admin/brands" element={<AdminPage element={<BrandsAdminPage />} />} />
         <Route path="/admin/categories" element={<AdminPage element={<CategoriesAdminPage />} />} />
         <Route path="/admin/inventory" element={<AdminPage element={<InventoryPage />} />} />

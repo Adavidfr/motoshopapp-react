@@ -32,4 +32,6 @@ export interface CompraRepository {
   delete(
     id: number,
   ): Promise<void>;
+
+  recibir(id: number): Promise<Compra>;
 }

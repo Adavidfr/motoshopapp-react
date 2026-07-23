@@ -14,6 +14,7 @@ import { Label } from '../../components/ui/label';
 import {
   CheckCircle2, AlertCircle, Save, Calendar, Phone, CreditCard, MapPin, User, Mail, Shield, Camera
 } from 'lucide-react';
+import { API_CONFIG } from '../../../infrastructure/config/api.config';
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
@@ -111,14 +112,14 @@ export default function ProfilePage() {
                 <div className="size-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
                   {previewImage ? (
                     <img 
-                      src={previewImage.startsWith('http') || previewImage.startsWith('data:') ? previewImage : `http://localhost:8000${previewImage}`} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover" 
+                      src={previewImage.startsWith('http') || previewImage.startsWith('data:') ? previewImage : `${API_CONFIG.MEDIA_BASE_URL}${previewImage}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         if (!previewImage.startsWith('http') && !previewImage.startsWith('data:')) {
-                          e.currentTarget.src = `http://localhost:8000${previewImage}`; 
+                          e.currentTarget.src = `${API_CONFIG.MEDIA_BASE_URL}${previewImage}`;
                         }
-                      }} 
+                      }}
                     />
                   ) : (
                     <span className="text-2xl font-black text-primary">{initials}</span>

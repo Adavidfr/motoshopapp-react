@@ -7,6 +7,7 @@ export interface HistorialEstadoVenta {
   estado_nuevo: string;
   fecha_cambio: string;
   observacion: string;
+  id_usuario: number | null;
 }
 
 export interface PaginatedHistorialEstadoVenta {

@@ -4,44 +4,64 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useMotoStore } from '../../store/moto.store';
 import { useCartStore } from '../../store/cart.store';
 import { useAuthStore } from '../../store/auth.store';
+import { canUseCart } from '../../utils/can-use-cart';
+import { parseApiError } from '../../../infrastructure/http/api-error';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
-import { ShoppingCart, ArrowLeft, Shield, Sparkles, CheckCircle, Minus, Plus } from 'lucide-react';
+import {
+  getMotoAvailabilityInfo,
+  formatMotoEstadoLabel,
+} from '../../utils/moto-availability';
+import { ShoppingCart, ArrowLeft, Shield, Sparkles, CheckCircle, Minus, Plus, AlertCircle, Info } from 'lucide-react';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { selectedMoto, fetchMotoById, isLoading, error, clearSelectedMoto } = useMotoStore();
   const { addToCart, isLoading: isCartLoading } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+
+  const clientCanUseCart = canUseCart(isAuthenticated, user);
+  const isStaffUser = isAuthenticated && user?.isStaff === true;
 
   useEffect(() => {
     if (id) {
       fetchMotoById(Number(id));
       setQuantity(1);
+      setActionError(null);
+      setSuccessMsg(null);
     }
     return () => {
       clearSelectedMoto();
     };
   }, [id, fetchMotoById, clearSelectedMoto]);
 
+  const availability = selectedMoto
+    ? getMotoAvailabilityInfo(selectedMoto)
+    : null;
+  const isAvailable = availability?.isAvailable ?? false;
+
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-    if (selectedMoto) {
-      try {
-        await addToCart(selectedMoto.idMoto, null, quantity, selectedMoto.precio);
-        setSuccessMsg(`¡${quantity} × ${selectedMoto.modelo} agregada(s) al carrito con éxito!`);
-        setTimeout(() => setSuccessMsg(null), 3000);
-      } catch {
-        // Error manejado en el store
-      }
+    if (!clientCanUseCart || !selectedMoto) {
+      return;
+    }
+
+    setActionError(null);
+    try {
+      await addToCart(selectedMoto.idMoto, null, quantity);
+      setSuccessMsg(`¡${quantity} × ${selectedMoto.modelo} agregada(s) al carrito con éxito!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: unknown) {
+      setActionError(parseApiError(err, 'No se pudo agregar la moto al carrito.'));
     }
   };
 
@@ -76,6 +96,8 @@ export default function ProductDetailPage() {
     );
   }
 
+  const showPurchaseControls = isAvailable && (!isAuthenticated || clientCanUseCart);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Link to="/" className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-primary transition-colors font-medium">
@@ -84,7 +106,6 @@ export default function ProductDetailPage() {
       </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        {/* Product Image Panel with Glow effect */}
         <div className="bg-white dark:bg-neutral-900/40 aspect-video w-full rounded-3xl overflow-hidden relative flex items-center justify-center border border-neutral-200 dark:border-primary/10 shadow-[0_15px_30px_rgba(255,107,0,0.05)] transition-colors duration-300">
           {selectedMoto.imagen ? (
             <img
@@ -97,7 +118,6 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        {/* Details Panel */}
         <div className="space-y-6 flex flex-col justify-between">
           <div className="space-y-6">
             <div>
@@ -123,14 +143,25 @@ export default function ProductDetailPage() {
                 </div>
                 <div className="flex justify-between border-b border-border/20 pb-2">
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">Estado General</span>
-                  <span className="font-bold text-primary capitalize">{selectedMoto.estado}</span>
+                  <span className="font-bold text-primary">
+                    {formatMotoEstadoLabel(selectedMoto.estado)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">Disponibilidad en Local</span>
-                  <span className={`font-bold ${selectedMoto.stock > 0 ? 'text-green-500 dark:text-green-400' : 'text-destructive'}`}>
-                    {selectedMoto.stock > 0 ? `${selectedMoto.stock} unidades` : 'Agotada'}
+                  <span
+                    className={`font-bold text-right max-w-[60%] ${
+                      isAvailable ? 'text-green-500 dark:text-green-400' : 'text-destructive'
+                    }`}
+                  >
+                    {availability?.localLabel ?? 'No disponible'}
                   </span>
                 </div>
+                {availability?.unavailableHint && (
+                  <p className="text-xs text-muted-foreground pt-1 border-t border-border/20">
+                    {availability.unavailableHint}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -160,43 +191,68 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-100 dark:bg-neutral-900/30 shrink-0 transition-colors duration-300">
+            {actionError && (
+              <div className="p-3.5 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-xl flex items-center gap-2 font-semibold">
+                <AlertCircle className="size-4.5 shrink-0" />
+                {actionError}
+              </div>
+            )}
+
+            {isStaffUser && isAvailable && (
+              <div className="p-3.5 text-sm bg-muted/50 border border-border/40 text-muted-foreground rounded-xl flex items-start gap-2 font-medium">
+                <Info className="size-4.5 shrink-0 mt-0.5 text-primary" />
+                El carrito de compras está disponible únicamente para clientes.
+              </div>
+            )}
+
+            {showPurchaseControls ? (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-100 dark:bg-neutral-900/30 shrink-0 transition-colors duration-300">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    type="button"
+                  >
+                    <Minus className="size-4 text-neutral-500 dark:text-neutral-400" />
+                  </Button>
+                  <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-foreground tabular-nums">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                    onClick={() => setQuantity(Math.min(selectedMoto.stock, quantity + 1))}
+                    disabled={quantity >= selectedMoto.stock}
+                    type="button"
+                  >
+                    <Plus className="size-4 text-neutral-500 dark:text-neutral-400" />
+                  </Button>
+                </div>
+
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1 || selectedMoto.stock === 0}
-                  type="button"
+                  size="lg"
+                  className="flex-1 gap-2 text-xs font-bold uppercase tracking-widest bg-primary hover:bg-primary/95 text-white py-6 h-12 rounded-lg"
+                  disabled={isCartLoading}
+                  onClick={handleAddToCart}
                 >
-                  <Minus className="size-4 text-neutral-500 dark:text-neutral-400" />
-                </Button>
-                <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-foreground tabular-nums">
-                  {quantity}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
-                  onClick={() => setQuantity(Math.min(selectedMoto.stock, quantity + 1))}
-                  disabled={quantity >= selectedMoto.stock || selectedMoto.stock === 0}
-                  type="button"
-                >
-                  <Plus className="size-4 text-neutral-500 dark:text-neutral-400" />
+                  <ShoppingCart className="size-4" />
+                  Agregar al Carrito
                 </Button>
               </div>
-
+            ) : !isStaffUser && !isAvailable ? (
               <Button
                 size="lg"
-                className="flex-1 gap-2 text-xs font-bold uppercase tracking-widest bg-primary hover:bg-primary/95 text-white py-6 h-12 rounded-lg"
-                disabled={selectedMoto.stock === 0 || isCartLoading}
-                onClick={handleAddToCart}
+                className="w-full gap-2 text-xs font-bold uppercase tracking-widest py-6 h-12 rounded-lg"
+                disabled
               >
                 <ShoppingCart className="size-4" />
-                {selectedMoto.stock === 0 ? 'Agotado' : 'Agregar al Carrito'}
+                {availability?.buttonLabel ?? 'No disponible'}
               </Button>
-            </div>
+            ) : null}
           </div>
         </div>
       </div>

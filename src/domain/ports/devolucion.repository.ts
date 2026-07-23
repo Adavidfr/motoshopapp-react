@@ -1,5 +1,10 @@
 // src/domain/ports/devolucion.repository.ts
-import type { Devolucion, DevolucionStats, PaginatedDevoluciones } from '../entities/devolucion.entity';
+import type {
+  Devolucion,
+  DevolucionCreatePayload,
+  DevolucionStats,
+  PaginatedDevoluciones,
+} from '../entities/devolucion.entity';
 
 export interface DevolucionFilters {
   page?: number;
@@ -12,8 +17,8 @@ export interface DevolucionFilters {
 export interface DevolucionRepository {
   listDevoluciones(filters?: DevolucionFilters): Promise<PaginatedDevoluciones>;
   getDevolucion(id: number): Promise<Devolucion>;
-  createDevolucion(payload: Omit<Devolucion, 'id_devolucion' | 'fecha_solicitud' | 'fecha_resolucion'>): Promise<Devolucion>;
-  updateDevolucion(id: number, payload: Partial<Devolucion>): Promise<Devolucion>;
-  deleteDevolucion(id: number): Promise<void>;
+  createDevolucion(payload: DevolucionCreatePayload): Promise<Devolucion>;
+  aprobarDevolucion(id: number): Promise<Devolucion>;
+  rechazarDevolucion(id: number): Promise<Devolucion>;
   getStats(): Promise<DevolucionStats>;
 }
