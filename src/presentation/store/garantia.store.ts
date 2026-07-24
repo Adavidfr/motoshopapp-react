@@ -91,14 +91,19 @@ export const useGarantiaStore = create<GarantiaState>((set, get) => ({
     set({ isSaving: true, error: null, successMessage: null });
     try {
       const updated = await updateGarantiaUseCase.execute(id, { estado });
+      const label = estado === 'vencida' ? 'vencida' : estado === 'anulada' ? 'anulada' : estado;
       set((s) => ({
         garantias: s.garantias.map((g) => (g.id_garantia === id ? updated : g)),
         selectedGarantia: s.selectedGarantia?.id_garantia === id ? updated : s.selectedGarantia,
-        successMessage: 'Estado de garantía actualizado',
+        successMessage: `Garantía marcada como ${label}`,
         isSaving: false,
       }));
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      // Conserva el mensaje 400 del backend (p. ej. transición inválida).
+      set({ error: getErr(err), successMessage: null, isSaving: false });
+      return false;
+    }
   },
 
   updateGarantia: async (id, payload) => {

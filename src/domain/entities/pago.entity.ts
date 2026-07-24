@@ -9,6 +9,12 @@ export interface PagoProcesadoPor {
   username: string;
 }
 
+/** Resumen read-only de la factura vinculada al pago (0..1). */
+export interface PagoFacturaResumen {
+  id_factura: number;
+  numero_factura: string;
+}
+
 export interface Pago {
   id_pago: number;
   id_venta: number;
@@ -22,6 +28,7 @@ export interface Pago {
   comprobante?: string | null;
   procesado_por: number | null;
   procesado_por_info: PagoProcesadoPor | null;
+  factura: PagoFacturaResumen | null;
 }
 
 /** Campos aceptados por PagoCreateSerializer (monto se serializa en el adapter). */

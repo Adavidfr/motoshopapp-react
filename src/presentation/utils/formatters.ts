@@ -22,3 +22,34 @@ export function formatDate(iso: string): string {
         day: 'numeric',
     }).format(new Date(iso))
 }
+
+/**
+ * Fecha y hora legibles para auditoría.
+ * Ejemplo: "23 jul 2026, 20:15"
+ */
+export function formatDateTime(iso: string): string {
+    return new Intl.DateTimeFormat('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(iso))
+}
+
+/** Fecha y hora en líneas separadas (historial / auditoría). */
+export function formatDateTimeParts(iso: string): { date: string; time: string } {
+    const d = new Date(iso);
+    return {
+        date: new Intl.DateTimeFormat('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        }).format(d),
+        time: new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }).format(d),
+    };
+}

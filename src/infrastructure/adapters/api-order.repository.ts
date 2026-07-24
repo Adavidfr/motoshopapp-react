@@ -113,4 +113,11 @@ export class ApiOrderRepository implements OrderRepository {
     const response = await httpClient.post<ApiPedido>(`/pedidos/${id}/confirm/`);
     return this.mapOrder(response.data);
   }
+
+  async updateOrderStatus(id: number, estado: PedidoEstado): Promise<Pedido> {
+    const response = await httpClient.post<ApiPedido>(`/pedidos/${id}/update-status/`, {
+      estado,
+    });
+    return this.mapOrder(response.data);
+  }
 }

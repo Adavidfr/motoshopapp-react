@@ -1,6 +1,6 @@
 // src/presentation/store/pago.store.ts
 import { create } from 'zustand';
-import type { Pago, PagoStats, PagoCreatePayload } from '../../domain/entities/pago.entity';
+import type { Pago, PagoStats, PagoCreatePayload, PagoFacturaResumen } from '../../domain/entities/pago.entity';
 import type { PagoFilters } from '../../domain/ports/pago.repository';
 import {
   createPagoUseCase,
@@ -27,6 +27,7 @@ interface PagoState {
   fetchPagoById: (id: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   createPago: (payload: PagoCreatePayload) => Promise<boolean>;
+  patchPagoFactura: (idPago: number, factura: PagoFacturaResumen) => void;
   setFilters: (filters: Partial<PagoFilters>) => void;
   clearSelectedPago: () => void;
   clearMessages: () => void;
@@ -101,6 +102,17 @@ export const usePagoStore = create<PagoState>((set, get) => ({
       set({ error: parseApiError(err), isSaving: false });
       return false;
     }
+  },
+
+  patchPagoFactura: (idPago, factura) => {
+    set((state) => ({
+      pagos: state.pagos.map((p) =>
+        p.id_pago === idPago ? { ...p, factura } : p,
+      ),
+      selectedPago: state.selectedPago?.id_pago === idPago
+        ? { ...state.selectedPago, factura }
+        : state.selectedPago,
+    }));
   },
 
   setFilters: (filters) => {

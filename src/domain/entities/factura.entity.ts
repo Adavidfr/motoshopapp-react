@@ -2,6 +2,7 @@
 
 export interface Factura {
   id_factura: number;
+  id_pago: number;
   id_venta: number;
   numero_factura: string;
   fecha_emision: string;
@@ -11,7 +12,7 @@ export interface Factura {
 }
 
 export interface FacturaCreatePayload {
-  id_venta: number;
+  id_pago: number;
 }
 
 export interface PaginatedFacturas {

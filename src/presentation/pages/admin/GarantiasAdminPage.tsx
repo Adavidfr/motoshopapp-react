@@ -10,8 +10,8 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Garantia, GarantiaEstado } from '../../../domain/entities/garantia.entity';
 import {
-  AlertCircle, ArrowLeftRight, Calendar, CheckCircle2,
-  Pencil, Plus, Search, ShieldCheck, Trash2, X,
+  AlertCircle, Ban, Calendar, CheckCircle2,
+  Clock, Pencil, Plus, Search, ShieldCheck, Trash2, X,
 } from 'lucide-react';
 
 interface GForm {
@@ -28,7 +28,16 @@ const EMPTY: GForm = {
   id_venta: '', id_moto: '', meses_garantia: '', fecha_inicio: '', fecha_fin: '', descripcion: '', estado: 'activa',
 };
 
-const ESTADO_CYCLE: GarantiaEstado[] = ['activa', 'vencida', 'anulada'];
+/** Alineado con GARANTIA_TRANSICIONES del backend: activa → vencida | anulada. */
+const GARANTIA_TRANSICIONES: Record<GarantiaEstado, readonly GarantiaEstado[]> = {
+  activa: ['vencida', 'anulada'],
+  vencida: [],
+  anulada: [],
+};
+
+function canChangeGarantiaEstado(estado: GarantiaEstado): boolean {
+  return GARANTIA_TRANSICIONES[estado].length > 0;
+}
 
 export default function GarantiasAdminPage() {
   const {
@@ -79,10 +88,17 @@ export default function GarantiasAdminPage() {
     if (confirm('¿Eliminar esta garantía?')) { const ok = await deleteGarantia(id); if (ok) load(); }
   };
 
-  const handleStatusCycle = async (id: number, current: string) => {
-    const idx = ESTADO_CYCLE.indexOf(current as GarantiaEstado);
-    const next = ESTADO_CYCLE[(idx + 1) % ESTADO_CYCLE.length];
-    if (confirm(`¿Cambiar estado a "${next}"?`)) await updateGarantiaStatus(id, next);
+  const handleMarcarVencida = async (id: number) => {
+    if (isSaving) return;
+    const ok = await updateGarantiaStatus(id, 'vencida');
+    if (ok) load();
+  };
+
+  const handleAnular = async (id: number) => {
+    if (isSaving) return;
+    if (!confirm('¿Anular esta garantía? Esta acción no se puede revertir.')) return;
+    const ok = await updateGarantiaStatus(id, 'anulada');
+    if (ok) load();
   };
 
   const openEdit = async (id: number) => {
@@ -228,7 +244,7 @@ export default function GarantiasAdminPage() {
                   <TableHead>Fin</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Descripción</TableHead>
-                  <TableHead className="w-[100px] text-center">Acciones</TableHead>
+                  <TableHead className="min-w-[220px] text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -243,10 +259,37 @@ export default function GarantiasAdminPage() {
                     <TableCell><StatusBadge status={g.estado} /></TableCell>
                     <TableCell className="text-muted-foreground text-xs max-w-[160px] truncate">{g.descripcion || '—'}</TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-center gap-1">
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleStatusCycle(g.id_garantia, g.estado)} title="Cambiar Estado" className="text-primary hover:bg-primary/10"><ArrowLeftRight className="size-4" /></Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => openEdit(g.id_garantia)} className="text-blue-400 hover:bg-blue-500/10"><Pencil className="size-4" /></Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(g.id_garantia)} className="text-red-400 hover:bg-red-500/10"><Trash2 className="size-4" /></Button>
+                      <div className="flex flex-wrap items-center justify-center gap-1.5">
+                        {g.estado === 'activa' && (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={isSaving}
+                              onClick={() => void handleMarcarVencida(g.id_garantia)}
+                              className="h-8 gap-1 text-[10px] font-bold uppercase tracking-wider"
+                              title="Marcar como vencida"
+                            >
+                              <Clock className="size-3.5" />
+                              Marcar vencida
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={isSaving}
+                              onClick={() => void handleAnular(g.id_garantia)}
+                              className="h-8 gap-1 text-[10px] font-bold uppercase tracking-wider text-red-400 border-red-400/30 hover:bg-red-500/10"
+                              title="Anular garantía"
+                            >
+                              <Ban className="size-3.5" />
+                              Anular
+                            </Button>
+                          </>
+                        )}
+                        <Button variant="ghost" size="icon-sm" onClick={() => void openEdit(g.id_garantia)} className="text-blue-400 hover:bg-blue-500/10"><Pencil className="size-4" /></Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => void handleDelete(g.id_garantia)} className="text-red-400 hover:bg-red-500/10"><Trash2 className="size-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -332,12 +375,27 @@ export default function GarantiasAdminPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Estado</label>
-                <select value={form.estado} onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as GarantiaEstado }))}
-                  className="w-full bg-background border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors">
-                  <option value="activa">Activa</option>
-                  <option value="vencida">Vencida</option>
-                  <option value="anulada">Anulada</option>
-                </select>
+                {editingId !== null && selectedGarantia && !canChangeGarantiaEstado(selectedGarantia.estado) ? (
+                  <div className="flex items-center gap-2 py-2">
+                    <StatusBadge status={selectedGarantia.estado} />
+                    <span className="text-xs text-muted-foreground">Estado terminal: no se puede cambiar.</span>
+                  </div>
+                ) : (
+                  <select
+                    value={form.estado}
+                    onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as GarantiaEstado }))}
+                    className="w-full bg-background border border-border/30 rounded-lg px-3 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="activa">Activa</option>
+                    <option value="vencida">Vencida</option>
+                    <option value="anulada">Anulada</option>
+                  </select>
+                )}
+                {editingId !== null && selectedGarantia?.estado === 'activa' && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Desde activa solo puedes pasar a vencida o anulada (estados terminales).
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">

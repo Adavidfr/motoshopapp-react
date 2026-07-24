@@ -5,6 +5,7 @@ import { httpClient } from '../http/axios-client';
 
 interface ApiFactura {
   id_factura: number;
+  id_pago: number;
   id_venta: number;
   numero_factura: string;
   fecha_emision: string;
@@ -21,6 +22,7 @@ export class ApiFacturaRepository implements FacturaRepository {
   private map(data: ApiFactura): Factura {
     return {
       id_factura: data.id_factura,
+      id_pago: data.id_pago,
       id_venta: data.id_venta,
       numero_factura: data.numero_factura,
       fecha_emision: data.fecha_emision,
@@ -36,6 +38,7 @@ export class ApiFacturaRepository implements FacturaRepository {
       if (filters.page) params.page = filters.page;
       if (filters.pageSize) params.page_size = filters.pageSize;
       if (filters.id_venta) params.id_venta = filters.id_venta;
+      if (filters.id_pago) params.id_pago = filters.id_pago;
       if (filters.search) params.search = filters.search;
       if (filters.numero_factura) params.numero_factura = filters.numero_factura;
     }
@@ -55,8 +58,18 @@ export class ApiFacturaRepository implements FacturaRepository {
 
   async createFactura(payload: FacturaCreatePayload): Promise<Factura> {
     const res = await httpClient.post<ApiFactura>('/facturas/', {
-      id_venta: payload.id_venta,
+      id_pago: payload.id_pago,
     });
     return this.map(res.data);
+  }
+
+  async downloadFacturaPdf(id: number, options?: { inline?: boolean }): Promise<Blob> {
+    const params: Record<string, string> = {};
+    if (options?.inline) params.inline = '1';
+    const res = await httpClient.get(`/facturas/${id}/pdf/`, {
+      params,
+      responseType: 'blob',
+    });
+    return res.data;
   }
 }

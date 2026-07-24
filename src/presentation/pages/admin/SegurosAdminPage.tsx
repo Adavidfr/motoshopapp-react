@@ -9,7 +9,11 @@ import {
 import { Skeleton } from '../../components/ui/skeleton';
 import { StatusBadge } from '../../components/StatusBadge';
 import { formatPrice } from '../../utils/formatters';
-import type { Seguro, SeguroEstado } from '../../../domain/entities/seguro.entity';
+import type {
+  SeguroCreatePayload,
+  SeguroEstado,
+  SeguroUpdatePayload,
+} from '../../../domain/entities/seguro.entity';
 import {
   AlertCircle, ArrowLeftRight, CheckCircle2, DollarSign,
   Pencil, Plus, Search, Shield, ShieldAlert, Trash2, X,
@@ -18,7 +22,6 @@ import {
 interface SForm {
   id_venta: string;
   aseguradora: string;
-  numero_poliza: string;
   tipo_cobertura: string;
   fecha_inicio: string;
   fecha_fin: string;
@@ -27,7 +30,7 @@ interface SForm {
 }
 
 const EMPTY: SForm = {
-  id_venta: '', aseguradora: '', numero_poliza: '', tipo_cobertura: '',
+  id_venta: '', aseguradora: '', tipo_cobertura: '',
   fecha_inicio: '', fecha_fin: '', costo_anual: '', estado: 'activo',
 };
 
@@ -59,7 +62,6 @@ export default function SegurosAdminPage() {
       setForm({
         id_venta: String(selectedSeguro.id_venta),
         aseguradora: selectedSeguro.aseguradora,
-        numero_poliza: selectedSeguro.numero_poliza,
         tipo_cobertura: selectedSeguro.tipo_cobertura,
         fecha_inicio: selectedSeguro.fecha_inicio,
         fecha_fin: selectedSeguro.fecha_fin,
@@ -100,20 +102,25 @@ export default function SegurosAdminPage() {
     setForm(EMPTY); setErrs({}); setShowForm(true);
   };
 
-  const closeForm = () => {
-    setShowForm(false); setEditingId(null); clearSelectedSeguro();
-    setForm(EMPTY); setErrs({}); clearMessages();
+  const closeForm = (clearFlash = false) => {
+    setShowForm(false);
+    setEditingId(null);
+    clearSelectedSeguro();
+    setForm(EMPTY);
+    setErrs({});
+    if (clearFlash) clearMessages();
   };
 
   const validate = (): boolean => {
     const e: Partial<SForm> = {};
-    if (!form.id_venta || isNaN(Number(form.id_venta))) e.id_venta = 'ID de venta requerido';
+    if (!form.id_venta || Number.isNaN(Number(form.id_venta))) e.id_venta = 'ID de venta requerido';
     if (!form.aseguradora.trim()) e.aseguradora = 'Aseguradora requerida';
-    if (!form.numero_poliza.trim()) e.numero_poliza = 'N° de póliza requerido';
     if (!form.tipo_cobertura.trim()) e.tipo_cobertura = 'Tipo de cobertura requerido';
     if (!form.fecha_inicio) e.fecha_inicio = 'Fecha de inicio requerida';
     if (!form.fecha_fin) e.fecha_fin = 'Fecha de fin requerida';
-    if (!form.costo_anual || Number(form.costo_anual) <= 0) e.costo_anual = 'Costo anual inválido';
+    if (form.costo_anual === '' || Number.isNaN(Number(form.costo_anual)) || Number(form.costo_anual) < 0) {
+      e.costo_anual = 'Costo anual inválido';
+    }
     setErrs(e);
     return Object.keys(e).length === 0;
   };
@@ -121,18 +128,39 @@ export default function SegurosAdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    const payload: Omit<Seguro, 'id_seguro'> = {
+
+    if (editingId !== null) {
+      const payload: SeguroUpdatePayload = {
+        id_venta: Number(form.id_venta),
+        aseguradora: form.aseguradora.trim(),
+        tipo_cobertura: form.tipo_cobertura.trim(),
+        fecha_inicio: form.fecha_inicio,
+        fecha_fin: form.fecha_fin,
+        costo_anual: Number(form.costo_anual),
+        estado: form.estado,
+      };
+      const ok = await updateSeguro(editingId, payload);
+      if (ok) {
+        closeForm(false);
+        load();
+      }
+      return;
+    }
+
+    const payload: SeguroCreatePayload = {
       id_venta: Number(form.id_venta),
       aseguradora: form.aseguradora.trim(),
-      numero_poliza: form.numero_poliza.trim(),
       tipo_cobertura: form.tipo_cobertura.trim(),
       fecha_inicio: form.fecha_inicio,
       fecha_fin: form.fecha_fin,
       costo_anual: Number(form.costo_anual),
       estado: form.estado,
     };
-    const ok = editingId !== null ? await updateSeguro(editingId, payload) : await createSeguro(payload);
-    if (ok) { closeForm(); load(); }
+    const ok = await createSeguro(payload);
+    if (ok) {
+      closeForm(false);
+      load();
+    }
   };
 
   const totalActivos = seguros.filter((s) => s.estado === 'activo').length;
@@ -156,8 +184,8 @@ export default function SegurosAdminPage() {
         </div>
       )}
       {successMessage && (
-        <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
-          <CheckCircle2 className="size-4 shrink-0" />{successMessage}
+        <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-start gap-2 font-medium whitespace-pre-line">
+          <CheckCircle2 className="size-4 shrink-0 mt-0.5" />{successMessage}
         </div>
       )}
 
@@ -277,7 +305,7 @@ export default function SegurosAdminPage() {
       {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeForm} />
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => closeForm(true)} />
           <div className="relative w-full max-w-2xl bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
               <div className="flex items-center gap-3">
@@ -287,7 +315,7 @@ export default function SegurosAdminPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">{editingId !== null ? `Seguro #${editingId}` : 'Completa los datos de la póliza'}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={closeForm} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></Button>
+              <Button variant="ghost" size="icon-sm" onClick={() => closeForm(true)} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></Button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -314,21 +342,28 @@ export default function SegurosAdminPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">N° Póliza <span className="text-primary">*</span></label>
-                  <input type="text" placeholder="POL-2026-001" value={form.numero_poliza} onChange={(e) => setForm((p) => ({ ...p, numero_poliza: e.target.value }))}
-                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.numero_poliza ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">N° Póliza</label>
+                {editingId !== null && selectedSeguro ? (
+                  <input
+                    type="text"
+                    readOnly
+                    value={selectedSeguro.numero_poliza}
+                    className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2.5 text-sm text-foreground font-mono"
                   />
-                  {errs.numero_poliza && <p className="text-xs text-destructive">{errs.numero_poliza}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cobertura <span className="text-primary">*</span></label>
-                  <input type="text" placeholder="Todo Riesgo / Básica / Terceros" value={form.tipo_cobertura} onChange={(e) => setForm((p) => ({ ...p, tipo_cobertura: e.target.value }))}
-                    className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.tipo_cobertura ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
-                  />
-                  {errs.tipo_cobertura && <p className="text-xs text-destructive">{errs.tipo_cobertura}</p>}
-                </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground rounded-lg border border-border/30 bg-muted/20 px-3 py-2.5">
+                    El número de póliza se generará automáticamente.
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cobertura <span className="text-primary">*</span></label>
+                <input type="text" placeholder="Todo Riesgo / Básica / Terceros" value={form.tipo_cobertura} onChange={(e) => setForm((p) => ({ ...p, tipo_cobertura: e.target.value }))}
+                  className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${errs.tipo_cobertura ? 'border-destructive' : 'border-border/30 focus:border-primary'}`}
+                />
+                {errs.tipo_cobertura && <p className="text-xs text-destructive">{errs.tipo_cobertura}</p>}
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -369,7 +404,7 @@ export default function SegurosAdminPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={closeForm} className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider">Cancelar</Button>
+                <Button type="button" variant="outline" onClick={() => closeForm(true)} className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider">Cancelar</Button>
                 <Button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider gap-2">
                   {isSaving ? <span className="animate-pulse">Guardando…</span> : <><CheckCircle2 className="size-4" />{editingId !== null ? 'Actualizar' : 'Registrar Seguro'}</>}
                 </Button>

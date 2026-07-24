@@ -53,6 +53,18 @@ export function StatusBadge({ status }: StatusBadgeProps) {
           label: 'Anulada',
         };
 
+      // Garantía
+      case 'activa':
+        return {
+          style: 'bg-green-500/10 text-green-500 border-green-500/20',
+          label: 'Activa',
+        };
+      case 'vencida':
+        return {
+          style: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          label: 'Vencida',
+        };
+
       // Financiamiento / Financing
       case 'activo':
         return {
@@ -73,6 +85,23 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         return {
           style: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
           label: 'Cancelado',
+        };
+
+      // Devolución (backend: solicitada ≈ pendiente de revisión)
+      case 'solicitada':
+        return {
+          style: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          label: 'Pendiente',
+        };
+      case 'aprobada':
+        return {
+          style: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+          label: 'Aprobada',
+        };
+      case 'rechazada':
+        return {
+          style: 'bg-red-500/10 text-red-500 border-red-500/20',
+          label: 'Rechazada',
         };
 
       default:

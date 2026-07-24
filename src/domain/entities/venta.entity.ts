@@ -64,7 +64,7 @@ export interface VentaResumen {
   pedido: unknown;
   pagos: unknown[];
   financiamiento: unknown | null;
-  factura: unknown | null;
+  facturas: unknown[];
   garantias: unknown[];
   seguros: unknown[];
   documentos: unknown[];

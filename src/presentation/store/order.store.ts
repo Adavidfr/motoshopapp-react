@@ -1,21 +1,40 @@
 // src/presentation/store/order.store.ts
 import { create } from 'zustand';
-import type { Pedido, OrderListFilters } from '../../domain/entities/order.entity';
-import { createOrderUseCase, listOrdersUseCase, getOrderUseCase, confirmOrderUseCase } from '../../infrastructure/factories/order.factory';
+import type { Pedido, PedidoEstado, OrderListFilters } from '../../domain/entities/order.entity';
+import {
+  createOrderUseCase,
+  listOrdersUseCase,
+  getOrderUseCase,
+  confirmOrderUseCase,
+  updateOrderStatusUseCase,
+} from '../../infrastructure/factories/order.factory';
 import { parseApiError } from '../../infrastructure/http/api-error';
+
+/** Transiciones logísticas alineadas con PEDIDO_TRANSICIONES del backend. */
+const PEDIDO_TRANSICIONES: Record<PedidoEstado, PedidoEstado[]> = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['shipped', 'cancelled'],
+  shipped: ['delivered'],
+  delivered: [],
+  cancelled: [],
+};
 
 interface OrderState {
   orders: Pedido[];
   selectedOrder: Pedido | null;
   isLoading: boolean;
   isConfirming: boolean;
+  isUpdatingStatus: boolean;
   error: string | null;
+  successMessage: string | null;
   createOrder: (cartId: number) => Promise<Pedido>;
   fetchOrders: (filters?: OrderListFilters) => Promise<void>;
   fetchOrderById: (id: number) => Promise<void>;
   confirmOrder: (id: number) => Promise<Pedido>;
+  updateOrderStatus: (id: number, estado: PedidoEstado) => Promise<Pedido>;
   clearSelectedOrder: () => void;
   clearError: () => void;
+  clearMessages: () => void;
 }
 
 export const useOrderStore = create<OrderState>((set, get) => ({
@@ -23,7 +42,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   selectedOrder: null,
   isLoading: false,
   isConfirming: false,
+  isUpdatingStatus: false,
   error: null,
+  successMessage: null,
 
   createOrder: async (cartId) => {
     set({ isLoading: true, error: null });
@@ -92,6 +113,41 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     }
   },
 
+  updateOrderStatus: async (id, estado) => {
+    const current =
+      get().orders.find((o) => o.idPedido === id) ??
+      (get().selectedOrder?.idPedido === id ? get().selectedOrder : null);
+
+    if (current) {
+      const permitidos = PEDIDO_TRANSICIONES[current.estado] ?? [];
+      if (!permitidos.includes(estado)) {
+        const message = `Transición inválida: "${current.estado}" → "${estado}".`;
+        set({ error: message, successMessage: null });
+        throw new Error(message);
+      }
+    }
+
+    set({ isUpdatingStatus: true, error: null, successMessage: null });
+    try {
+      const updated = await updateOrderStatusUseCase.execute(id, estado);
+      set((state) => ({
+        orders: state.orders.map((o) => (o.idPedido === id ? updated : o)),
+        selectedOrder:
+          state.selectedOrder?.idPedido === id ? updated : state.selectedOrder,
+        isUpdatingStatus: false,
+        successMessage: `Pedido #${id} actualizado a ${estado}.`,
+      }));
+      return updated;
+    } catch (err: unknown) {
+      set({
+        error: parseApiError(err, 'Error al actualizar el estado del pedido'),
+        isUpdatingStatus: false,
+      });
+      throw err;
+    }
+  },
+
   clearSelectedOrder: () => set({ selectedOrder: null }),
   clearError: () => set({ error: null }),
+  clearMessages: () => set({ error: null, successMessage: null }),
 }));

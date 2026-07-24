@@ -1,5 +1,5 @@
 // src/presentation/pages/admin/AdminDashboardPage.tsx
-import { useEffect } from 'react';
+import { useEffect, type ElementType, type KeyboardEvent, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bike, Tag, Bookmark, Archive,
@@ -13,29 +13,83 @@ import { useVentaStore } from '../../store/venta.store';
 import { usePagoStore } from '../../store/pago.store';
 import { useNotificacionStore } from '../../store/notificacion.store';
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
+// ─── Stat Card (acceso rápido) ────────────────────────────────────────────────
 interface StatCardProps {
   title: string;
   value: string | number;
-  icon: React.ElementType;
+  icon: ElementType;
   color: string;
-  trend?: string;
+  /** Texto del pie (CTA). */
+  cta: string;
+  /** Ruta SPA existente. */
+  to?: string;
+  /** Módulo aún no disponible. */
+  disabled?: boolean;
+  ariaLabel: string;
 }
 
-function StatCard({ title, value, icon: Icon, color, trend }: StatCardProps) {
-  return (
-    <div className={`relative overflow-hidden rounded-2xl border border-border/50 bg-neutral-200/50 dark:bg-muted/30 backdrop-blur-md p-5 flex items-center gap-4 ${color}`}>
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+  cta,
+  to,
+  disabled = false,
+  ariaLabel,
+}: StatCardProps) {
+  const baseClass = [
+    'relative overflow-hidden rounded-2xl border border-border/50',
+    'bg-neutral-200/50 dark:bg-muted/30 backdrop-blur-md p-5',
+    'flex items-center gap-4 transition-all duration-200',
+    color,
+  ].join(' ');
+
+  const interactiveClass = disabled
+    ? 'opacity-60 cursor-not-allowed'
+    : [
+        'cursor-pointer',
+        'hover:-translate-y-0.5 hover:shadow-lg hover:border-border',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+      ].join(' ');
+
+  const content = (
+    <>
       <div className="shrink-0 size-12 flex items-center justify-center rounded-xl bg-current/10 border border-current/20">
-        <Icon className="size-5 text-current" />
+        <Icon className="size-5 text-current" aria-hidden />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{title}</p>
         <p className="text-2xl font-black text-foreground mt-0.5">{value}</p>
-        {trend && <p className="text-[10px] text-neutral-500 mt-0.5">{trend}</p>}
+        <p className="text-[10px] text-neutral-500 mt-0.5 font-semibold uppercase tracking-wider">
+          {disabled ? 'No disponible' : cta}
+        </p>
       </div>
-      {/* Decorative glow */}
-      <div className="absolute -right-4 -top-4 size-20 rounded-full bg-current opacity-5 blur-xl" />
-    </div>
+      <div className="absolute -right-4 -top-4 size-20 rounded-full bg-current opacity-5 blur-xl" aria-hidden />
+    </>
+  );
+
+  if (disabled || !to) {
+    return (
+      <div
+        className={`${baseClass} ${interactiveClass}`}
+        aria-disabled={disabled || undefined}
+        aria-label={ariaLabel}
+        role="status"
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to={to}
+      className={`${baseClass} ${interactiveClass} block no-underline`}
+      aria-label={ariaLabel}
+    >
+      {content}
+    </Link>
   );
 }
 
@@ -44,7 +98,7 @@ interface ModuleCardProps {
   title: string;
   description: string;
   path: string;
-  icon: React.ElementType;
+  icon: ElementType;
   accent: string;
   badge?: string;
 }
@@ -80,7 +134,7 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
 }
 
 // ─── Section header ───────────────────────────────────────────────────────────
-function SectionHeader({ title, icon: Icon }: { title: string; icon: React.ElementType }) {
+function SectionHeader({ title, icon: Icon }: { title: string; icon: ElementType }) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
@@ -97,7 +151,7 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: React.Eleme
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   const { user } = useAuthStore();
-  
+
   const { count: ventasCount, fetchVentas } = useVentaStore();
   const { count: pagosCount, fetchPagos } = usePagoStore();
   const { count: notificacionesCount, fetchNotificaciones } = useNotificacionStore();
@@ -111,6 +165,14 @@ export default function AdminDashboardPage() {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+
+  const scrollToCatalogo = (e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
+    if ('key' in e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+    }
+    document.getElementById('catalogo-productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto">
@@ -133,16 +195,68 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Quick stats */}
+      {/* Quick stats — accesos rápidos reales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Módulos activos" value="18" icon={Settings} color="text-primary" trend="Sistema completo" />
-        <StatCard title="Ventas" value={ventasCount ?? '—'} icon={TrendingUp} color="text-green-400" trend="Ver módulo" />
-        <StatCard title="Pagos" value={pagosCount ?? '—'} icon={DollarSign} color="text-blue-400" trend="Ver módulo" />
-        <StatCard title="Notificaciones" value={notificacionesCount ?? '—'} icon={Bell} color="text-yellow-400" trend="Ver módulo" />
+        {/* Sin página de módulos: scroll al primer bloque del panel. */}
+        <div
+          role="link"
+          tabIndex={0}
+          className={[
+            'relative overflow-hidden rounded-2xl border border-border/50',
+            'bg-neutral-200/50 dark:bg-muted/30 backdrop-blur-md p-5',
+            'flex items-center gap-4 text-primary',
+            'cursor-pointer transition-all duration-200',
+            'hover:-translate-y-0.5 hover:shadow-lg hover:border-border',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          ].join(' ')}
+          aria-label="Ir al resumen del sistema: catálogo de productos"
+          onClick={scrollToCatalogo}
+          onKeyDown={scrollToCatalogo}
+        >
+          <div className="shrink-0 size-12 flex items-center justify-center rounded-xl bg-current/10 border border-current/20">
+            <Settings className="size-5 text-current" aria-hidden />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Módulos activos</p>
+            <p className="text-2xl font-black text-foreground mt-0.5">18</p>
+            <p className="text-[10px] text-neutral-500 mt-0.5 font-semibold uppercase tracking-wider">
+              Resumen del sistema
+            </p>
+          </div>
+          <div className="absolute -right-4 -top-4 size-20 rounded-full bg-current opacity-5 blur-xl" aria-hidden />
+        </div>
+
+        <StatCard
+          title="Ventas"
+          value={ventasCount ?? '—'}
+          icon={TrendingUp}
+          color="text-green-400"
+          cta="Ver módulo"
+          to="/admin/ventas"
+          ariaLabel="Ir al módulo de ventas"
+        />
+        <StatCard
+          title="Pagos"
+          value={pagosCount ?? '—'}
+          icon={DollarSign}
+          color="text-blue-400"
+          cta="Ver módulo"
+          to="/admin/pagos"
+          ariaLabel="Ir al módulo de pagos"
+        />
+        <StatCard
+          title="Notificaciones"
+          value={notificacionesCount ?? '—'}
+          icon={Bell}
+          color="text-yellow-400"
+          cta="Ver módulo"
+          to="/admin/notificaciones"
+          ariaLabel="Ir al módulo de notificaciones"
+        />
       </div>
 
       {/* Catalogo */}
-      <section>
+      <section id="catalogo-productos">
         <SectionHeader title="Catálogo de productos" icon={Bike} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <ModuleCard

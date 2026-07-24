@@ -1,8 +1,12 @@
 // src/presentation/pages/admin/FacturasAdminPage.tsx
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useFacturaStore } from '../../store/factura.store';
+import { usePagoStore } from '../../store/pago.store';
 import { useVentaStore } from '../../store/venta.store';
+import type { Pago } from '../../../domain/entities/pago.entity';
 import type { Venta } from '../../../domain/entities/venta.entity';
+import type { Factura } from '../../../domain/entities/factura.entity';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import {
@@ -13,64 +17,120 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { formatPrice, formatDate } from '../../utils/formatters';
 import {
   AlertCircle, CheckCircle2, DollarSign, FileText,
-  Plus, Receipt, Search, X,
+  Plus, Receipt, Search, X, Eye, Download, Printer,
 } from 'lucide-react';
 
 interface FormData {
-  id_venta: string;
+  id_pago: string;
 }
 
-const EMPTY: FormData = { id_venta: '' };
+const EMPTY: FormData = { id_pago: '' };
 
-function ventaTieneFacturaEnLista(ventaId: number, facturas: { id_venta: number }[]): boolean {
-  return facturas.some((f) => f.id_venta === ventaId);
+function pagoTieneFacturaEnLista(pagoId: number, facturas: { id_pago: number }[]): boolean {
+  return facturas.some((f) => f.id_pago === pagoId);
 }
 
-function isVentaFacturable(venta: Venta, facturas: { id_venta: number }[]): boolean {
-  if (venta.estado === 'anulada') return false;
-  if (ventaTieneFacturaEnLista(venta.id_venta, facturas)) return false;
+function isPagoFacturable(pago: Pago, facturas: { id_pago: number }[]): boolean {
+  if (pago.estado !== 'completado') return false;
+  if (pago.tipo_pago === 'reembolso') return false;
+  if (pago.factura) return false;
+  if (pagoTieneFacturaEnLista(pago.id_pago, facturas)) return false;
   return true;
 }
 
 export default function FacturasAdminPage() {
+  const [searchParams] = useSearchParams();
+  const idPagoFromUrl = searchParams.get('id_pago');
   const {
-    facturas, count, filters, isLoading, isSaving, error, successMessage,
-    fetchFacturas, createFactura, setFilters, clearMessages,
-    ventaTieneFactura,
+    facturas, count, filters, isLoading, isSaving, isDownloadingPdf,
+    selectedFactura, error, successMessage,
+    fetchFacturas, fetchFacturaById, createFactura,
+    downloadFacturaPdf, printFacturaPdf,
+    setFilters, clearMessages, clearSelectedFactura,
+    pagoTieneFactura,
   } = useFacturaStore();
 
+  const { pagos, fetchPagos } = usePagoStore();
   const { ventas, fetchVentas } = useVentaStore();
 
   const [search, setSearch] = useState(filters.search ?? '');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errs, setErrs] = useState<Partial<FormData>>({});
+  const [viewFacturaId, setViewFacturaId] = useState<number | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(count / pageSize));
 
-  const ventasFacturables = useMemo(
-    () => ventas.filter((v) => isVentaFacturable(v, facturas)),
-    [ventas, facturas],
+  const ventasById = useMemo(
+    () => new Map(ventas.map((v) => [v.id_venta, v])),
+    [ventas],
   );
 
-  const selectedVenta = useMemo(
-    () => ventas.find((v) => v.id_venta === Number(form.id_venta)),
-    [ventas, form.id_venta],
+  const pagosFacturables = useMemo(
+    () => pagos.filter((p) => isPagoFacturable(p, facturas)),
+    [pagos, facturas],
   );
+
+  const selectedPago = useMemo(
+    () => pagos.find((p) => p.id_pago === Number(form.id_pago)),
+    [pagos, form.id_pago],
+  );
+
+  const selectedVenta = useMemo((): Venta | undefined => {
+    if (!selectedPago) return undefined;
+    return ventasById.get(selectedPago.id_venta);
+  }, [selectedPago, ventasById]);
 
   const load = useCallback(async () => {
+    const idPago = idPagoFromUrl ? Number(idPagoFromUrl) : undefined;
+    const facturaFilters = idPago && !Number.isNaN(idPago)
+      ? { id_pago: idPago, page: 1, pageSize: 100 }
+      : { pageSize: 100 };
+
     await Promise.all([
-      fetchFacturas(),
+      fetchFacturas(facturaFilters),
+      fetchPagos({ pageSize: 100, estado: 'completado' }),
       fetchVentas({ pageSize: 100 }),
     ]);
-  }, [fetchFacturas, fetchVentas]);
+
+    if (idPago && !Number.isNaN(idPago)) {
+      setFilters({ id_pago: idPago, page: 1 });
+    }
+  }, [fetchFacturas, fetchPagos, fetchVentas, idPagoFromUrl, setFilters]);
 
   useEffect(() => {
     load();
-    return () => { clearMessages(); };
-  }, [load, clearMessages]);
+    return () => {
+      clearMessages();
+      clearSelectedFactura();
+    };
+  }, [load, clearMessages, clearSelectedFactura]);
+
+  const handleOpenView = async (factura: Factura) => {
+    clearMessages();
+    setViewFacturaId(factura.id_factura);
+    setIsLoadingDetail(true);
+    await fetchFacturaById(factura.id_factura);
+    setIsLoadingDetail(false);
+  };
+
+  const handleCloseView = () => {
+    setViewFacturaId(null);
+    clearSelectedFactura();
+  };
+
+  const handleDownloadPdf = async (factura: Factura) => {
+    clearMessages();
+    await downloadFacturaPdf(factura.id_factura, factura.numero_factura);
+  };
+
+  const handlePrintPdf = async (factura: Factura) => {
+    clearMessages();
+    await printFacturaPdf(factura.id_factura);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,17 +161,17 @@ export default function FacturasAdminPage() {
 
   const validate = (): boolean => {
     const e: Partial<FormData> = {};
-    const idVenta = Number(form.id_venta);
+    const idPago = Number(form.id_pago);
 
-    if (!form.id_venta || Number.isNaN(idVenta)) {
-      e.id_venta = 'Seleccione una venta válida.';
+    if (!form.id_pago || Number.isNaN(idPago)) {
+      e.id_pago = 'Seleccione un pago válido.';
     } else {
-      const venta = ventas.find((v) => v.id_venta === idVenta);
-      if (!venta || !isVentaFacturable(venta, facturas)) {
-        e.id_venta = 'La venta no puede facturarse (anulada o ya facturada).';
+      const pago = pagos.find((p) => p.id_pago === idPago);
+      if (!pago || !isPagoFacturable(pago, facturas)) {
+        e.id_pago = 'El pago no puede facturarse (incompleto, reembolso o ya facturado).';
       }
-      if (ventaTieneFactura(idVenta)) {
-        e.id_venta = 'Esta venta ya tiene una factura emitida.';
+      if (pagoTieneFactura(idPago)) {
+        e.id_pago = 'Este pago ya tiene una factura emitida.';
       }
     }
 
@@ -124,11 +184,11 @@ export default function FacturasAdminPage() {
     if (isSaving) return;
     if (!validate()) return;
 
-    const ok = await createFactura({
-      id_venta: Number(form.id_venta),
+    const factura = await createFactura({
+      id_pago: Number(form.id_pago),
     });
 
-    if (ok) closeForm();
+    if (factura) closeForm();
   };
 
   return (
@@ -139,7 +199,7 @@ export default function FacturasAdminPage() {
             Módulo de Facturas
           </h1>
           <p className="text-muted-foreground text-sm">
-            Emisión manual de facturas (1:1 con venta). Los totales los calcula el servidor; no son editables.
+            Emisión manual de facturas (1 por pago recibido). Los totales los calcula el servidor según el monto del pago.
           </p>
         </div>
         <Button
@@ -177,7 +237,7 @@ export default function FacturasAdminPage() {
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Reglas de emisión</p>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Una factura por venta. El número se genera automáticamente (FAC-AÑO-SECUENCIAL). Subtotal, IVA y total los calcula Django.
+                Una factura por cada pago completado. No existe factura global por venta. El número se genera automáticamente (FAC-AÑO-SECUENCIAL).
               </p>
             </div>
           </CardContent>
@@ -210,7 +270,7 @@ export default function FacturasAdminPage() {
         <div className="text-center py-16 bg-muted/10 border border-border/30 rounded-2xl">
           <FileText className="size-12 mx-auto text-neutral-500 mb-4 animate-pulse" />
           <h3 className="text-lg font-bold text-foreground">No se encontraron facturas</h3>
-          <p className="text-muted-foreground text-sm mt-1">Emita la primera factura para comenzar</p>
+          <p className="text-muted-foreground text-sm mt-1">Emita la primera factura para un pago recibido</p>
           <Button onClick={openCreate} className="mt-6 bg-primary/90 hover:bg-primary text-primary-foreground gap-2 text-xs font-bold uppercase">
             <Plus className="size-4" /> Emitir Factura
           </Button>
@@ -222,24 +282,63 @@ export default function FacturasAdminPage() {
               <TableHeader className="bg-background">
                 <TableRow>
                   <TableHead className="w-[70px]">ID</TableHead>
+                  <TableHead>Pago</TableHead>
                   <TableHead>Venta</TableHead>
                   <TableHead>N° Factura</TableHead>
                   <TableHead className="text-right">Subtotal</TableHead>
                   <TableHead className="text-right">IVA</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead>Emisión</TableHead>
+                  <TableHead className="text-right min-w-[220px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {facturas.map((f) => (
                   <TableRow key={f.id_factura} className="hover:bg-muted/20 border-b border-border/20">
                     <TableCell className="font-mono font-bold text-muted-foreground">#{f.id_factura}</TableCell>
+                    <TableCell className="font-mono">#{f.id_pago}</TableCell>
                     <TableCell className="font-mono">#{f.id_venta}</TableCell>
                     <TableCell className="font-bold text-foreground">{f.numero_factura}</TableCell>
                     <TableCell className="text-right text-muted-foreground">{formatPrice(f.subtotal)}</TableCell>
                     <TableCell className="text-right text-muted-foreground">{formatPrice(f.iva)}</TableCell>
                     <TableCell className="text-right font-black text-primary">{formatPrice(f.total)}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">{formatDate(f.fecha_emision)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenView(f)}
+                          className="h-7 text-[10px] font-bold uppercase tracking-wider gap-1 px-2"
+                        >
+                          <Eye className="size-3" />
+                          Ver
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadPdf(f)}
+                          disabled={isDownloadingPdf}
+                          className="h-7 text-[10px] font-bold uppercase tracking-wider gap-1 px-2"
+                        >
+                          <Download className="size-3" />
+                          PDF
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePrintPdf(f)}
+                          disabled={isDownloadingPdf}
+                          className="h-7 text-[10px] font-bold uppercase tracking-wider gap-1 px-2"
+                        >
+                          <Printer className="size-3" />
+                          Imprimir
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -271,7 +370,7 @@ export default function FacturasAdminPage() {
                 <div>
                   <h2 className="text-lg font-extrabold text-foreground tracking-tight">Emitir Nueva Factura</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Solo `id_venta`. El número y los totales los calcula Django.
+                    Solo `id_pago`. El número y los totales los calcula Django según el monto del pago.
                   </p>
                 </div>
               </div>
@@ -283,44 +382,64 @@ export default function FacturasAdminPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Venta a facturar <span className="text-primary">*</span>
+                  Pago a facturar <span className="text-primary">*</span>
                 </label>
                 <select
-                  value={form.id_venta}
-                  onChange={(e) => setForm((p) => ({ ...p, id_venta: e.target.value }))}
+                  value={form.id_pago}
+                  onChange={(e) => setForm((p) => ({ ...p, id_pago: e.target.value }))}
                   className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${
-                    errs.id_venta ? 'border-destructive' : 'border-border/30 focus:border-primary'
+                    errs.id_pago ? 'border-destructive' : 'border-border/30 focus:border-primary'
                   }`}
                 >
-                  <option value="">— Seleccione una venta —</option>
-                  {ventasFacturables.map((v) => (
-                    <option key={v.id_venta} value={v.id_venta}>
-                      Venta #{v.id_venta} — {v.username_cliente} — {formatPrice(v.total_venta)}
-                    </option>
-                  ))}
+                  <option value="">— Seleccione un pago —</option>
+                  {pagosFacturables.map((p) => {
+                    const venta = ventasById.get(p.id_venta);
+                    const cliente = venta?.username_cliente ?? `Venta #${p.id_venta}`;
+                    return (
+                      <option key={p.id_pago} value={p.id_pago}>
+                        Pago #{p.id_pago} — Venta #{p.id_venta} — {cliente} — {formatPrice(p.monto)} ({p.tipo_pago})
+                      </option>
+                    );
+                  })}
                 </select>
-                {ventasFacturables.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No hay ventas disponibles para facturar.</p>
+                {pagosFacturables.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No hay pagos completados pendientes de facturar.</p>
                 )}
-                {errs.id_venta && <p className="text-xs text-destructive">{errs.id_venta}</p>}
+                {errs.id_pago && <p className="text-xs text-destructive">{errs.id_pago}</p>}
               </div>
 
-              {selectedVenta && (
+              {selectedPago && (
                 <div className="rounded-lg border border-border/30 bg-muted/30 p-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Cliente</span>
-                    <span className="font-bold">{selectedVenta.username_cliente}</span>
+                    <span className="text-muted-foreground">Venta</span>
+                    <span className="font-mono font-bold">#{selectedPago.id_venta}</span>
+                  </div>
+                  {selectedVenta && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Cliente</span>
+                      <span className="font-bold">{selectedVenta.username_cliente}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tipo de pago</span>
+                    <span className="font-bold capitalize">{selectedPago.tipo_pago}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Estado venta</span>
-                    <StatusBadge status={selectedVenta.estado} />
+                    <span className="text-muted-foreground">Estado</span>
+                    <StatusBadge status={selectedPago.estado} />
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total comercial (base del cálculo)</span>
-                    <span className="font-mono font-black text-primary">{formatPrice(selectedVenta.total_venta)}</span>
+                    <span className="text-muted-foreground">Monto del pago (base del cálculo)</span>
+                    <span className="font-mono font-black text-primary">{formatPrice(selectedPago.monto)}</span>
                   </div>
+                  {selectedVenta && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Total venta</span>
+                      <span className="font-mono text-muted-foreground">{formatPrice(selectedVenta.total_venta)}</span>
+                    </div>
+                  )}
                   <p className="text-[11px] text-muted-foreground">
-                    Subtotal, IVA y total de la factura se calcularán al emitir según la tasa configurada en el servidor.
+                    Subtotal, IVA y total de la factura se calcularán al emitir según el monto del pago y la tasa IVA del servidor.
                     El número será asignado automáticamente (ej. FAC-2026-000001).
                   </p>
                 </div>
@@ -337,7 +456,7 @@ export default function FacturasAdminPage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSaving || ventasFacturables.length === 0}
+                  disabled={isSaving || pagosFacturables.length === 0}
                   className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider gap-2"
                 >
                   {isSaving ? (
@@ -351,6 +470,103 @@ export default function FacturasAdminPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {viewFacturaId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseView} />
+          <div className="relative w-full max-w-lg bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                  <FileText className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground tracking-tight">Detalle de Factura</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {selectedFactura?.numero_factura ?? 'Cargando…'}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon-sm" onClick={handleCloseView} className="text-muted-foreground hover:text-foreground">
+                <X className="size-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {isLoadingDetail || !selectedFactura ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-lg border border-border/30 bg-muted/30 p-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">N° Factura</span>
+                      <span className="font-bold">{selectedFactura.numero_factura}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Pago</span>
+                      <span className="font-mono">#{selectedFactura.id_pago}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Venta</span>
+                      <span className="font-mono">#{selectedFactura.id_venta}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Emisión</span>
+                      <span>{formatDate(selectedFactura.fecha_emision)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-mono">{formatPrice(selectedFactura.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">IVA</span>
+                      <span className="font-mono">{formatPrice(selectedFactura.iva)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-border/20 pt-2">
+                      <span className="text-muted-foreground font-bold">Total</span>
+                      <span className="font-mono font-black text-primary">{formatPrice(selectedFactura.total)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleDownloadPdf(selectedFactura)}
+                      disabled={isDownloadingPdf}
+                      className="flex-1 min-w-[120px] text-xs font-bold uppercase tracking-wider gap-1"
+                    >
+                      <Download className="size-3.5" />
+                      Descargar PDF
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handlePrintPdf(selectedFactura)}
+                      disabled={isDownloadingPdf}
+                      className="flex-1 min-w-[120px] text-xs font-bold uppercase tracking-wider gap-1"
+                    >
+                      <Printer className="size-3.5" />
+                      Imprimir
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCloseView}
+                      className="flex-1 min-w-[120px] bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold uppercase tracking-wider"
+                    >
+                      Cerrar
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

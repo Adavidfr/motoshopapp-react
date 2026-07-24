@@ -1,9 +1,12 @@
 // src/presentation/pages/admin/PagosAdminPage.tsx
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePagoStore } from '../../store/pago.store';
+import { useFacturaStore } from '../../store/factura.store';
 import { useVentaStore } from '../../store/venta.store';
 import type { Venta } from '../../../domain/entities/venta.entity';
-import type { PagoMetodo, PagoTipo } from '../../../domain/entities/pago.entity';
+import type { Pago, PagoMetodo, PagoTipo } from '../../../domain/entities/pago.entity';
+import type { Factura } from '../../../domain/entities/factura.entity';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import {
@@ -31,6 +34,9 @@ import {
   ArrowLeftRight,
   Coins,
   HelpCircle,
+  Receipt,
+  FileText,
+  Eye,
 } from 'lucide-react';
 
 const METODO_LABELS: Record<string, string> = {
@@ -68,6 +74,17 @@ function isVentaPagable(venta: Venta): boolean {
   return getSaldoPendiente(venta) > 0;
 }
 
+function pagoEstaFacturado(pago: Pago): boolean {
+  return pago.factura !== null;
+}
+
+function puedeEmitirFactura(pago: Pago): boolean {
+  if (pago.estado !== 'completado') return false;
+  if (pago.tipo_pago === 'reembolso') return false;
+  if (pagoEstaFacturado(pago)) return false;
+  return true;
+}
+
 interface PagoFormData {
   id_venta: string;
   monto: string;
@@ -87,6 +104,8 @@ const EMPTY_FORM: PagoFormData = {
 };
 
 export default function PagosAdminPage() {
+  const navigate = useNavigate();
+
   const {
     pagos,
     stats,
@@ -99,9 +118,21 @@ export default function PagosAdminPage() {
     fetchPagos,
     fetchStats,
     createPago,
+    patchPagoFactura,
     setFilters,
     clearMessages,
   } = usePagoStore();
+
+  const {
+    selectedFactura,
+    isSaving: isSavingFactura,
+    error: facturaError,
+    createFactura,
+    fetchFacturaById,
+    fetchFacturas,
+    clearSelectedFactura,
+    clearMessages: clearFacturaMessages,
+  } = useFacturaStore();
 
   const { ventas, fetchVentas, fetchStats: fetchVentaStats } = useVentaStore();
 
@@ -109,6 +140,10 @@ export default function PagosAdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<PagoFormData>(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof PagoFormData, string>>>({});
+  const [emitTarget, setEmitTarget] = useState<Pago | null>(null);
+  const [viewFacturaId, setViewFacturaId] = useState<number | null>(null);
+  const [invoiceSuccessMessage, setInvoiceSuccessMessage] = useState<string | null>(null);
+  const [isLoadingFacturaDetail, setIsLoadingFacturaDetail] = useState(false);
 
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 10;
@@ -136,8 +171,58 @@ export default function PagosAdminPage() {
 
   useEffect(() => {
     loadData();
-    return () => { clearMessages(); };
-  }, [loadData, clearMessages]);
+    return () => {
+      clearMessages();
+      clearFacturaMessages();
+      clearSelectedFactura();
+    };
+  }, [loadData, clearMessages, clearFacturaMessages, clearSelectedFactura]);
+
+  const handleOpenEmitDialog = (pago: Pago) => {
+    clearFacturaMessages();
+    setInvoiceSuccessMessage(null);
+    setEmitTarget(pago);
+  };
+
+  const handleCloseEmitDialog = () => {
+    setEmitTarget(null);
+  };
+
+  const handleConfirmEmit = async () => {
+    if (!emitTarget || isSavingFactura) return;
+
+    const factura: Factura | null = await createFactura({ id_pago: emitTarget.id_pago });
+    if (!factura) return;
+
+    patchPagoFactura(emitTarget.id_pago, {
+      id_factura: factura.id_factura,
+      numero_factura: factura.numero_factura,
+    });
+    await fetchFacturas({ pageSize: 100 });
+    setInvoiceSuccessMessage(
+      `Factura ${factura.numero_factura} emitida correctamente por ${formatPrice(factura.total)}`,
+    );
+    setEmitTarget(null);
+  };
+
+  const handleOpenViewFactura = async (pago: Pago) => {
+    if (!pago.factura) return;
+    clearFacturaMessages();
+    setViewFacturaId(pago.factura.id_factura);
+    setIsLoadingFacturaDetail(true);
+    await fetchFacturaById(pago.factura.id_factura);
+    setIsLoadingFacturaDetail(false);
+  };
+
+  const handleCloseViewFactura = () => {
+    setViewFacturaId(null);
+    clearSelectedFactura();
+  };
+
+  const handleGoToFacturasModule = () => {
+    if (!selectedFactura) return;
+    navigate(`/admin/facturas?id_pago=${selectedFactura.id_pago}`);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,10 +335,22 @@ export default function PagosAdminPage() {
           {error}
         </div>
       )}
+      {facturaError && (
+        <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
+          <AlertCircle className="size-4 shrink-0" />
+          {facturaError}
+        </div>
+      )}
       {successMessage && (
         <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
           <CheckCircle2 className="size-4 shrink-0" />
           {successMessage}
+        </div>
+      )}
+      {invoiceSuccessMessage && (
+        <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
+          <CheckCircle2 className="size-4 shrink-0" />
+          {invoiceSuccessMessage}
         </div>
       )}
 
@@ -390,6 +487,7 @@ export default function PagosAdminPage() {
                   <TableHead>Fecha</TableHead>
                   <TableHead>Referencia</TableHead>
                   <TableHead>Procesado por</TableHead>
+                  <TableHead>Factura</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -416,6 +514,49 @@ export default function PagosAdminPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {pago.procesado_por_info?.username ?? '—'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1.5 min-w-[130px]">
+                        {pagoEstaFacturado(pago) ? (
+                          <>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-green-500">
+                              <CheckCircle2 className="size-3" />
+                              Facturado
+                            </span>
+                            <span className="text-[11px] text-muted-foreground font-mono truncate">
+                              {pago.factura?.numero_factura}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenViewFactura(pago)}
+                              className="h-7 text-[10px] font-bold uppercase tracking-wider gap-1 px-2"
+                            >
+                              <Eye className="size-3" />
+                              Ver factura
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Sin factura
+                            </span>
+                            {puedeEmitirFactura(pago) && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenEmitDialog(pago)}
+                                className="h-7 text-[10px] font-bold uppercase tracking-wider gap-1 px-2 border-primary/30 text-primary hover:bg-primary/10"
+                              >
+                                <Receipt className="size-3" />
+                                Emitir factura
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -625,6 +766,162 @@ export default function PagosAdminPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {emitTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseEmitDialog} />
+          <div className="relative w-full max-w-md bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                  <Receipt className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground tracking-tight">
+                    Emitir factura para este pago
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Django calculará número, subtotal, IVA y total.
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon-sm" onClick={handleCloseEmitDialog} className="text-muted-foreground hover:text-foreground">
+                <X className="size-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-3">
+              <div className="rounded-lg border border-border/30 bg-muted/30 p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Pago</span>
+                  <span className="font-mono font-bold">#{emitTarget.id_pago}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Venta</span>
+                  <span className="font-mono font-bold">#{emitTarget.id_venta}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Monto</span>
+                  <span className="font-mono font-black text-primary">{formatPrice(emitTarget.monto)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Método</span>
+                  <span className="font-bold">{METODO_LABELS[emitTarget.metodo_pago] ?? emitTarget.metodo_pago}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseEmitDialog}
+                  className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleConfirmEmit}
+                  disabled={isSavingFactura}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider gap-2"
+                >
+                  {isSavingFactura ? (
+                    <span className="animate-pulse">Emitiendo…</span>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="size-4" />
+                      Emitir factura
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewFacturaId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseViewFactura} />
+          <div className="relative w-full max-w-lg bg-card border border-border/40 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/30 bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                  <FileText className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground tracking-tight">Detalle de Factura</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Factura vinculada al pago</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon-sm" onClick={handleCloseViewFactura} className="text-muted-foreground hover:text-foreground">
+                <X className="size-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {isLoadingFacturaDetail || !selectedFactura ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-lg border border-border/30 bg-muted/30 p-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">N° Factura</span>
+                      <span className="font-bold">{selectedFactura.numero_factura}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Pago</span>
+                      <span className="font-mono">#{selectedFactura.id_pago}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Venta</span>
+                      <span className="font-mono">#{selectedFactura.id_venta}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Emisión</span>
+                      <span>{formatDate(selectedFactura.fecha_emision)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-mono">{formatPrice(selectedFactura.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">IVA</span>
+                      <span className="font-mono">{formatPrice(selectedFactura.iva)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-border/20 pt-2">
+                      <span className="text-muted-foreground font-bold">Total</span>
+                      <span className="font-mono font-black text-primary">{formatPrice(selectedFactura.total)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGoToFacturasModule}
+                      className="flex-1 border-border/40 text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider"
+                    >
+                      Ir a Facturas
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCloseViewFactura}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider"
+                    >
+                      Cerrar
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

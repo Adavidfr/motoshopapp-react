@@ -1,18 +1,50 @@
 // src/presentation/pages/orders/OrderDetailPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderStore } from '../../store/order.store';
+import { useVentaStore } from '../../store/venta.store';
+import { useDevolucionStore } from '../../store/devolucion.store';
+import { useAuthStore } from '../../store/auth.store';
 import { useLineItemProducts } from '../../hooks/use-line-item-products';
 import { CartLineItem } from '../../components/cart/CartLineItem';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice, formatDate } from '../../utils/formatters';
-import { ArrowLeft, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import {
+  ArrowLeft, CheckCircle, CreditCard, AlertCircle, Undo2, X,
+} from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
+import type { PedidoEstado } from '../../../domain/entities/order.entity';
+import { DEVOLUCION_PLAZO_DIAS } from '../../../domain/entities/devolucion.entity';
+
+function statusMessage(estado: PedidoEstado): string {
+  switch (estado) {
+    case 'pending':
+      return 'Tu pedido está pendiente de confirmación.';
+    case 'confirmed':
+      return 'Tu pedido fue confirmado y está en preparación.';
+    case 'shipped':
+      return 'Tu pedido fue enviado.';
+    case 'delivered':
+      return 'Tu pedido fue entregado.';
+    case 'cancelled':
+      return 'Tu pedido fue cancelado.';
+    default:
+      return '';
+  }
+}
+
+function isWithinDevolucionPlazo(fechaVenta: string): boolean {
+  const inicio = new Date(fechaVenta).getTime();
+  if (Number.isNaN(inicio)) return false;
+  const limite = inicio + DEVOLUCION_PLAZO_DIAS * 24 * 60 * 60 * 1000;
+  return Date.now() <= limite;
+}
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const user = useAuthStore((s) => s.user);
   const {
     selectedOrder,
     fetchOrderById,
@@ -23,19 +55,73 @@ export default function OrderDetailPage() {
     clearSelectedOrder,
     clearError,
   } = useOrderStore();
+  const { ventas, fetchVentas } = useVentaStore();
+  const {
+    fetchDevoluciones,
+    createDevolucion,
+    ventaTieneDevolucionAbierta,
+    isSaving: isSavingDevolucion,
+    error: devolucionError,
+    successMessage: devolucionSuccess,
+    clearMessages: clearDevolucionMessages,
+  } = useDevolucionStore();
+
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [motivo, setMotivo] = useState('');
+  const [montoDevolucion, setMontoDevolucion] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
   const orderItems = selectedOrder?.carrito?.items ?? [];
   const lineItemProducts = useLineItemProducts(orderItems);
 
   useEffect(() => {
     if (id) {
-      fetchOrderById(Number(id));
+      void fetchOrderById(Number(id));
     }
+    void fetchVentas({ pageSize: 100 });
+    void fetchDevoluciones({ pageSize: 100 });
     return () => {
       clearSelectedOrder();
       clearError();
+      clearDevolucionMessages();
     };
-  }, [id, fetchOrderById, clearSelectedOrder, clearError]);
+  }, [
+    id,
+    fetchOrderById,
+    fetchVentas,
+    fetchDevoluciones,
+    clearSelectedOrder,
+    clearError,
+    clearDevolucionMessages,
+  ]);
+
+  const ventaDelPedido = useMemo(() => {
+    if (!selectedOrder) return null;
+    return (
+      ventas.find(
+        (v) =>
+          v.id_pedido === selectedOrder.idPedido &&
+          v.estado !== 'anulada' &&
+          (user ? v.id_usuario_cliente === user.id : true),
+      ) ?? null
+    );
+  }, [ventas, selectedOrder, user]);
+
+  const hasOpenReturn = ventaDelPedido
+    ? ventaTieneDevolucionAbierta(ventaDelPedido.id_venta)
+    : false;
+
+  const productosElegibles = (selectedOrder?.carrito?.items?.length ?? 0) > 0;
+
+  const canRequestReturn =
+    selectedOrder?.estado === 'delivered' &&
+    !!ventaDelPedido &&
+    !!user &&
+    ventaDelPedido.id_usuario_cliente === user.id &&
+    productosElegibles &&
+    isWithinDevolucionPlazo(ventaDelPedido.fecha_venta) &&
+    !hasOpenReturn;
 
   const canConfirm = selectedOrder?.estado === 'pending';
 
@@ -48,6 +134,46 @@ export default function OrderDetailPage() {
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch {
       // Error manejado en el store
+    }
+  };
+
+  const openReturnForm = () => {
+    if (!ventaDelPedido) return;
+    setFormError(null);
+    clearDevolucionMessages();
+    setMotivo('');
+    setMontoDevolucion(String(ventaDelPedido.total_venta));
+    setShowReturnForm(true);
+  };
+
+  const handleSubmitReturn = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!ventaDelPedido || isSavingDevolucion) return;
+
+    const motivoTrim = motivo.trim();
+    if (!motivoTrim) {
+      setFormError('El motivo es obligatorio.');
+      return;
+    }
+
+    const monto = Number(montoDevolucion);
+    if (Number.isNaN(monto) || monto < 0) {
+      setFormError('El monto solicitado no puede ser negativo.');
+      return;
+    }
+
+    setFormError(null);
+    const ok = await createDevolucion({
+      id_venta: ventaDelPedido.id_venta,
+      motivo: motivoTrim,
+      monto_devolucion: monto,
+    });
+
+    if (ok) {
+      setShowReturnForm(false);
+      setSuccessMsg('Solicitud de devolución registrada (pendiente de revisión).');
+      setTimeout(() => setSuccessMsg(null), 5000);
+      void fetchDevoluciones({ pageSize: 100 });
     }
   };
 
@@ -106,17 +232,17 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {error && (
+      {(error || devolucionError || formError) && (
         <div className="p-3 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-lg flex items-center gap-2 font-medium">
           <AlertCircle className="size-4 shrink-0" />
-          {error}
+          {formError || devolucionError || error}
         </div>
       )}
 
-      {successMsg && (
+      {(successMsg || devolucionSuccess) && (
         <div className="p-3 text-sm bg-green-500/10 border border-green-500/25 text-green-500 rounded-lg flex items-center gap-2 font-medium">
           <CheckCircle className="size-4" />
-          {successMsg}
+          {successMsg || devolucionSuccess}
         </div>
       )}
 
@@ -174,29 +300,134 @@ export default function OrderDetailPage() {
                 <span className="text-primary text-lg">{formatPrice(selectedOrder.total)}</span>
               </div>
             </CardContent>
-            {canConfirm && (
-              <CardFooter className="flex-col gap-4 pt-4 border-t border-border/40">
-                <p className="text-sm text-muted-foreground w-full">
-                  Confirma tu pedido para que el equipo lo procese. El pago se registrará posteriormente.
-                </p>
+
+            <CardFooter className="flex-col gap-3 pt-4 border-t border-border/40 items-stretch">
+              <p className="text-sm text-muted-foreground w-full">
+                {statusMessage(selectedOrder.estado)}
+              </p>
+
+              {canConfirm && (
+                <>
+                  <p className="text-sm text-muted-foreground w-full">
+                    Confirma tu pedido para que el equipo lo procese. El pago se registrará posteriormente.
+                  </p>
+                  <Button
+                    className="w-full gap-2 font-semibold shadow-xs"
+                    onClick={() => void handleConfirm()}
+                    disabled={isConfirming}
+                  >
+                    <CreditCard className="size-4" />
+                    {isConfirming ? 'Confirmando...' : 'Confirmar Pedido'}
+                  </Button>
+                </>
+              )}
+
+              {canRequestReturn && !showReturnForm && (
                 <Button
-                  className="w-full gap-2 font-semibold shadow-xs"
-                  onClick={handleConfirm}
-                  disabled={isConfirming}
+                  variant="outline"
+                  className="w-full gap-2 font-semibold"
+                  onClick={openReturnForm}
                 >
-                  <CreditCard className="size-4" />
-                  {isConfirming ? 'Confirmando...' : 'Confirmar Pedido'}
+                  <Undo2 className="size-4" />
+                  Solicitar devolución
                 </Button>
-              </CardFooter>
-            )}
-            {selectedOrder.estado === 'confirmed' && (
-              <CardFooter className="pt-4 border-t border-border/40">
-                <p className="text-sm text-muted-foreground">
-                  Pedido confirmado. Espera actualizaciones de envío.
+              )}
+
+              {selectedOrder.estado === 'delivered' && !canRequestReturn && hasOpenReturn && (
+                <p className="text-xs text-muted-foreground">
+                  Ya existe una devolución pendiente o en proceso para esta venta.
                 </p>
-              </CardFooter>
-            )}
+              )}
+
+              {selectedOrder.estado === 'delivered' && !canRequestReturn && !ventaDelPedido && (
+                <p className="text-xs text-muted-foreground">
+                  No hay una venta válida asociada para solicitar devolución.
+                </p>
+              )}
+            </CardFooter>
           </Card>
+
+          {showReturnForm && ventaDelPedido && (
+            <Card className="border-border/40">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-base font-bold">Solicitar devolución</CardTitle>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    setShowReturnForm(false);
+                    setFormError(null);
+                  }}
+                >
+                  <X className="size-4" />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4" onSubmit={(e) => void handleSubmitReturn(e)}>
+                  <p className="text-xs text-muted-foreground">
+                    Devolución total de la venta #{ventaDelPedido.id_venta}. El stock y el reembolso se procesan al aprobar en admin.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Venta
+                    </label>
+                    <input
+                      type="text"
+                      readOnly
+                      value={`#${ventaDelPedido.id_venta} — ${formatPrice(ventaDelPedido.total_venta)}`}
+                      className="w-full rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="motivo" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Motivo
+                    </label>
+                    <textarea
+                      id="motivo"
+                      required
+                      rows={3}
+                      value={motivo}
+                      onChange={(e) => setMotivo(e.target.value)}
+                      className="w-full rounded-md border border-border/50 bg-background px-3 py-2 text-sm"
+                      placeholder="Describe el motivo de la devolución"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="monto" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Monto solicitado
+                    </label>
+                    <input
+                      id="monto"
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      required
+                      value={montoDevolucion}
+                      onChange={(e) => setMontoDevolucion(e.target.value)}
+                      className="w-full rounded-md border border-border/50 bg-background px-3 py-2 text-sm"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Usa 0 para devolución física sin reembolso. Máximo: lo pagado / total de venta.
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full gap-2"
+                    disabled={isSavingDevolucion}
+                  >
+                    <Undo2 className="size-4" />
+                    {isSavingDevolucion ? 'Enviando...' : 'Enviar solicitud'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,11 @@
 // src/presentation/store/seguro.store.ts
 import { create } from 'zustand';
-import type { Seguro, SeguroEstado } from '../../domain/entities/seguro.entity';
+import type {
+  Seguro,
+  SeguroEstado,
+  SeguroCreatePayload,
+  SeguroUpdatePayload,
+} from '../../domain/entities/seguro.entity';
 import type { SeguroFilters } from '../../domain/ports/seguro.repository';
 import {
   getSegurosUseCase,
@@ -9,6 +14,7 @@ import {
   updateSeguroUseCase,
   deleteSeguroUseCase,
 } from '../../infrastructure/factories/seguro.factory';
+import { parseApiError } from '../../infrastructure/http/api-error';
 
 interface SeguroState {
   seguros: Seguro[];
@@ -24,29 +30,14 @@ interface SeguroState {
 
   fetchSeguros: (filters?: SeguroFilters) => Promise<void>;
   fetchSeguroById: (id: number) => Promise<void>;
-  createSeguro: (payload: Omit<Seguro, 'id_seguro'>) => Promise<boolean>;
+  createSeguro: (payload: SeguroCreatePayload) => Promise<boolean>;
   updateSeguroStatus: (id: number, estado: SeguroEstado) => Promise<boolean>;
-  updateSeguro: (id: number, payload: Partial<Seguro>) => Promise<boolean>;
+  updateSeguro: (id: number, payload: SeguroUpdatePayload) => Promise<boolean>;
   deleteSeguro: (id: number) => Promise<boolean>;
   setFilters: (filters: Partial<SeguroFilters>) => void;
   clearSelectedSeguro: () => void;
   clearMessages: () => void;
 }
-
-const getErr = (error: unknown): string => {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const e = error as any;
-    const d = e.response?.data;
-    if (typeof d === 'string') return d;
-    if (d && typeof d === 'object') {
-      if (d.error) return String(d.error);
-      if (d.detail) return String(d.detail);
-      const k = Object.keys(d);
-      if (k.length > 0) { const v = d[k[0]]; return Array.isArray(v) ? String(v[0]) : String(v); }
-    }
-  }
-  return error instanceof Error ? error.message : 'Ocurrió un error inesperado';
-};
 
 export const useSeguroStore = create<SeguroState>((set, get) => ({
   seguros: [],
@@ -65,8 +56,17 @@ export const useSeguroStore = create<SeguroState>((set, get) => ({
     const f = { ...get().filters, ...filters };
     try {
       const r = await getSegurosUseCase.execute(f);
-      set({ seguros: r.results, count: r.count, next: r.next, previous: r.previous, filters: f, isLoading: false });
-    } catch (err) { set({ error: getErr(err), isLoading: false }); }
+      set({
+        seguros: r.results,
+        count: r.count,
+        next: r.next,
+        previous: r.previous,
+        filters: f,
+        isLoading: false,
+      });
+    } catch (err) {
+      set({ error: parseApiError(err), isLoading: false });
+    }
   },
 
   fetchSeguroById: async (id) => {
@@ -74,17 +74,25 @@ export const useSeguroStore = create<SeguroState>((set, get) => ({
     try {
       const s = await getSeguroUseCase.execute(id);
       set({ selectedSeguro: s, isLoading: false });
-    } catch (err) { set({ error: getErr(err), isLoading: false }); }
+    } catch (err) {
+      set({ error: parseApiError(err), isLoading: false });
+    }
   },
 
   createSeguro: async (payload) => {
     set({ isSaving: true, error: null, successMessage: null });
     try {
-      await createSeguroUseCase.execute(payload);
-      set({ successMessage: 'Seguro registrado con éxito', isSaving: false });
-      get().fetchSeguros();
+      const created = await createSeguroUseCase.execute(payload);
+      set({
+        successMessage: `Seguro registrado correctamente.\nPóliza: ${created.numero_poliza}`,
+        isSaving: false,
+      });
+      void get().fetchSeguros();
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
   updateSeguroStatus: async (id, estado) => {
@@ -98,7 +106,10 @@ export const useSeguroStore = create<SeguroState>((set, get) => ({
         isSaving: false,
       }));
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
   updateSeguro: async (id, payload) => {
@@ -112,7 +123,10 @@ export const useSeguroStore = create<SeguroState>((set, get) => ({
         isSaving: false,
       }));
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
   deleteSeguro: async (id) => {
@@ -126,7 +140,10 @@ export const useSeguroStore = create<SeguroState>((set, get) => ({
         isSaving: false,
       }));
       return true;
-    } catch (err) { set({ error: getErr(err), isSaving: false }); return false; }
+    } catch (err) {
+      set({ error: parseApiError(err), isSaving: false });
+      return false;
+    }
   },
 
   setFilters: (filters) => set((s) => ({ filters: { ...s.filters, ...filters } })),

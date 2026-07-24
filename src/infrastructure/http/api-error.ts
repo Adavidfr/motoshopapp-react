@@ -41,8 +41,10 @@ export function parseApiError(error: unknown, fallback = 'Ocurrió un error ines
     }
   }
 
+  if (status === 401) return 'Sesión expirada. Inicie sesión nuevamente.';
   if (status === 403) return 'No tienes permiso para realizar esta acción.';
   if (status === 404) return 'Recurso no encontrado.';
+  if (status === 409) return 'Conflicto: el recurso ya existe o fue modificado.';
   if (status === 500) return 'Error interno del servidor. Intenta más tarde.';
 
   if (error instanceof Error && error.message) {

@@ -1,6 +1,8 @@
 // src/infrastructure/adapters/api-pago.repository.ts
 import type { PagoRepository, PagoFilters } from '../../domain/ports/pago.repository';
-import type { Pago, PagoCreatePayload, PagoStats, PaginatedPagos } from '../../domain/entities/pago.entity';
+import type {
+  Pago, PagoCreatePayload, PagoFacturaResumen, PagoStats, PaginatedPagos,
+} from '../../domain/entities/pago.entity';
 import { httpClient } from '../http/axios-client';
 
 interface ApiPago {
@@ -16,6 +18,7 @@ interface ApiPago {
   comprobante?: string | null;
   procesado_por: number | null;
   procesado_por_info: Pago['procesado_por_info'];
+  factura?: PagoFacturaResumen | null;
 }
 
 function parseDecimal(value: string | number): number {
@@ -41,6 +44,7 @@ export class ApiPagoRepository implements PagoRepository {
       comprobante: data.comprobante ?? null,
       procesado_por: data.procesado_por,
       procesado_por_info: data.procesado_por_info,
+      factura: data.factura ?? null,
     };
   }
 
