@@ -39,9 +39,9 @@ function StatCard({
   ariaLabel,
 }: StatCardProps) {
   const baseClass = [
-    'relative overflow-hidden rounded-2xl border border-border/50',
-    'bg-neutral-200/50 dark:bg-muted/30 backdrop-blur-md p-5',
-    'flex items-center gap-4 transition-all duration-200',
+    'relative overflow-hidden border border-white/[0.07]',
+    'bg-white/[0.03] backdrop-blur-md p-5',
+    'flex items-center gap-4 transition-all duration-500',
     color,
   ].join(' ');
 
@@ -49,8 +49,8 @@ function StatCard({
     ? 'opacity-60 cursor-not-allowed'
     : [
         'cursor-pointer',
-        'hover:-translate-y-0.5 hover:shadow-lg hover:border-border',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)] hover:border-white/15',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]',
       ].join(' ');
 
   const content = (
@@ -107,25 +107,25 @@ function ModuleCard({ title, description, path, icon: Icon, accent, badge }: Mod
   return (
     <Link
       to={path}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-neutral-300 dark:border-border/60 bg-neutral-100 dark:bg-muted/20 p-5 hover:border-neutral-400 dark:hover:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-muted/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+      className="group relative flex flex-col gap-3 border border-white/[0.07] bg-white/[0.03] p-5 hover:border-white/15 hover:bg-white/[0.05] transition-all duration-500 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)] hover:-translate-y-0.5"
     >
       <div className="flex items-start justify-between">
-        <div className={`flex size-10 items-center justify-center rounded-xl border ${accent} transition-all duration-200 group-hover:scale-110`}>
+        <div className={`flex size-10 items-center justify-center border ${accent} transition-transform duration-500 group-hover:scale-105`}>
           <Icon className="size-5" />
         </div>
         {badge && (
-          <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
+          <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary">
             {badge}
           </span>
         )}
       </div>
       <div>
-        <p className="text-sm font-black text-foreground uppercase tracking-wide group-hover:text-primary transition-colors">
+        <p className="text-sm font-semibold text-white uppercase tracking-wide group-hover:text-primary transition-colors">
           {title}
         </p>
-        <p className="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">{description}</p>
+        <p className="text-[11px] text-white/40 mt-0.5 leading-relaxed font-light">{description}</p>
       </div>
-      <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-muted-foreground transition-colors">
+      <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white/35 group-hover:text-white/60 transition-colors">
         Gestionar
         <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
       </div>

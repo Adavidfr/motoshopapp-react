@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
+import BrandWordmark from './BrandWordmark';
 import {
   LayoutDashboard,
   Bike,
@@ -140,24 +141,22 @@ function Sidebar({ onClose }: SidebarProps) {
   };
 
   return (
-    <aside className="admin-sidebar flex h-full flex-col bg-white dark:bg-[#080809] border-r border-neutral-200 dark:border-neutral-900 transition-colors duration-300">
+    <aside className="admin-sidebar flex h-full flex-col bg-[#080808] border-r border-white/[0.06]">
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-neutral-200 dark:border-neutral-900 transition-colors duration-300">
+      <div className="flex items-center justify-between px-5 py-6 border-b border-white/[0.06]">
         <Link to="/admin" className="flex items-center gap-3">
           <img
             src="/logo.png"
-            alt="Aura Rider Logo"
-            className="h-9 w-9 rounded-full border border-neutral-700/50 object-cover"
+            alt=""
+            className="h-9 w-9 object-contain"
           />
-          <span className="text-sm font-black uppercase tracking-tighter text-foreground">
-            AURA<span className="text-primary">RIDER</span>
-          </span>
+          <BrandWordmark />
         </Link>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-500 hover:text-foreground dark:hover:text-white transition-colors lg:hidden"
+            className="text-white/40 hover:text-white transition-colors lg:hidden"
           >
             <X className="size-5" />
           </button>
@@ -165,15 +164,15 @@ function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-thin">
+      <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-1 scrollbar-thin">
         {/* Dashboard link */}
         <Link
           to="/admin"
           onClick={onClose}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+          className={`flex items-center gap-3 px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.16em] transition-all duration-300 border ${
             location.pathname === '/admin'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-foreground dark:hover:text-white border border-transparent'
+              ? 'bg-primary/10 text-primary border-primary/25'
+              : 'text-white/45 hover:bg-white/[0.04] hover:text-white border-transparent'
           }`}
         >
           <LayoutDashboard className="size-4 shrink-0" />
@@ -191,23 +190,23 @@ function Sidebar({ onClose }: SidebarProps) {
               <button
                 type="button"
                 onClick={() => toggleGroup(group.label)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.16em] transition-all duration-300 border border-transparent ${
                   hasActive && !isOpen
-                    ? 'text-primary border border-transparent'
-                    : 'text-neutral-500 hover:text-neutral-200 border border-transparent'
+                    ? 'text-primary'
+                    : 'text-white/40 hover:text-white/80'
                 }`}
               >
                 <GroupIcon className="size-4 shrink-0" />
                 <span className="flex-1 text-left">{group.label}</span>
                 {isOpen ? (
-                  <ChevronDown className="size-3.5 text-neutral-600" />
+                  <ChevronDown className="size-3.5 text-white/30" />
                 ) : (
-                  <ChevronRight className="size-3.5 text-neutral-600" />
+                  <ChevronRight className="size-3.5 text-white/30" />
                 )}
               </button>
 
               {isOpen && (
-                <div className="ml-4 mt-1 space-y-0.5 border-l border-neutral-200 dark:border-neutral-800 pl-3 transition-colors duration-300">
+                <div className="ml-4 mt-1 space-y-0.5 border-l border-white/[0.08] pl-3">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     const active = isActive(item.path);
@@ -216,10 +215,10 @@ function Sidebar({ onClose }: SidebarProps) {
                         key={item.path}
                         to={item.path}
                         onClick={onClose}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all duration-150 ${
+                        className={`flex items-center gap-2.5 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-200 border ${
                           active
-                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_12px_rgba(239,68,68,0.08)]'
-                            : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900/60 hover:text-foreground dark:hover:text-white border border-transparent'
+                            ? 'bg-primary/10 text-primary border-primary/20'
+                            : 'text-white/40 hover:bg-white/[0.04] hover:text-white border-transparent'
                         }`}
                       >
                         <ItemIcon className="size-3.5 shrink-0" />
@@ -238,27 +237,27 @@ function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* User section */}
-      <div className="border-t border-neutral-200 dark:border-neutral-900 p-4 space-y-3 transition-colors duration-300">
+      <div className="border-t border-white/[0.06] p-4 space-y-3">
         <Link
           to="/"
-          className="flex items-center gap-2 text-xs text-neutral-500 hover:text-foreground dark:hover:text-white transition-colors font-semibold"
+          className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-white/40 hover:text-white transition-colors"
         >
           <ToggleRight className="size-4" />
           Volver al sitio
         </Link>
         <div className="flex items-center gap-3 px-1">
-          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-xs uppercase shrink-0">
+          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary font-semibold text-xs uppercase shrink-0">
             {user?.username?.[0] ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-foreground truncate">{user?.username ?? 'Admin'}</p>
-            <p className="text-[10px] text-neutral-500 truncate">{user?.email ?? ''}</p>
+            <p className="text-xs font-semibold text-white truncate">{user?.username ?? 'Admin'}</p>
+            <p className="text-[10px] text-white/35 truncate">{user?.email ?? ''}</p>
           </div>
           <button
             type="button"
             onClick={handleLogout}
             title="Cerrar sesión"
-            className="text-neutral-500 hover:text-red-400 transition-colors"
+            className="text-white/40 hover:text-primary transition-colors"
           >
             <LogOut className="size-4" />
           </button>
@@ -304,7 +303,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pageTitle = location.pathname === '/admin' ? 'Dashboard' : (currentItem?.label ?? 'Admin');
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground transition-colors duration-500">
+    <div className="flex h-screen overflow-hidden bg-[#080808] text-white">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:w-60 xl:w-64 shrink-0">
         <Sidebar />
@@ -314,7 +313,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
           <div className="absolute left-0 top-0 h-full w-72 animate-in slide-in-from-left duration-300">
@@ -325,20 +324,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        <header className="shrink-0 flex items-center gap-4 px-5 py-4 bg-card border-b border-border transition-colors duration-300 lg:px-7">
+        <header className="shrink-0 flex items-center gap-4 px-5 py-5 bg-[#080808] border-b border-white/[0.06] lg:px-8">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-neutral-400 hover:text-card-foreground transition-colors"
+            className="lg:hidden text-white/45 hover:text-white transition-colors"
           >
             <Menu className="size-5" />
           </button>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-              Panel Administrativo
+            <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-primary">
+              Panel ejecutivo
             </p>
-            <h1 className="text-base font-black uppercase tracking-tight text-card-foreground">
+            <h1 className="font-display text-xl font-medium tracking-tight text-white">
               {pageTitle}
             </h1>
           </div>
@@ -347,21 +346,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Cambiar tema"
-            className="flex items-center justify-center size-9 rounded-full bg-neutral-100/10 hover:bg-neutral-100/20 dark:bg-neutral-900/50 dark:hover:bg-neutral-900 border border-neutral-700/30 dark:border-neutral-800 text-neutral-400 hover:text-white hover:scale-105 hover:rotate-12 transition-all duration-300 cursor-pointer"
+            className="flex items-center justify-center size-9 border border-white/10 text-white/45 hover:text-white hover:border-white/25 transition-all duration-300"
           >
-            {theme === 'dark' ? <Sun className="size-4 text-amber-500" /> : <Moon className="size-4 text-indigo-400" />}
+            {theme === 'dark' ? <Sun className="size-4 text-amber-500" /> : <Moon className="size-4" />}
           </button>
 
           <Link
             to="/"
-            className="hidden sm:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors border border-neutral-800 rounded-full px-3 py-1.5 hover:border-neutral-700"
+            className="hidden sm:flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/40 hover:text-white transition-colors border border-white/10 px-3 py-2 hover:border-white/25"
           >
             ← Sitio web
           </Link>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-5 lg:p-7 xl:p-8">
+        <main className="flex-1 overflow-y-auto p-5 lg:p-8 xl:p-10 bg-[#080808]">
           {children}
         </main>
       </div>

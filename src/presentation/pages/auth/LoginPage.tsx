@@ -7,6 +7,7 @@ import type { LoginDto } from '../../../application/dtos/auth.dto';
 import { useAuthStore } from '../../store/auth.store';
 import { User, Lock, ShieldAlert, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BrandWordmark from '../../components/BrandWordmark';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -76,8 +77,9 @@ export default function LoginPage() {
         >
           <div className="relative group cursor-pointer">
             <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
-            <img src="/logo.png" alt="Aura Rider Logo" className="relative h-14 w-14 object-contain drop-shadow-[0_0_15px_rgba(255,26,26,0.6)]" />
+            <img src="/logo.png" alt="" className="relative h-14 w-14 object-contain drop-shadow-[0_0_15px_rgba(255,26,26,0.6)]" />
           </div>
+          <BrandWordmark size="md" />
           <div>
             <h2 className="text-3xl font-black text-white uppercase tracking-[0.1em] drop-shadow-md">Bienvenido</h2>
             <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mt-2">Plataforma Premium de Pilotos</p>

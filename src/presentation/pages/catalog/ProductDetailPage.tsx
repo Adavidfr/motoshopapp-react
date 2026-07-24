@@ -7,24 +7,33 @@ import { useAuthStore } from '../../store/auth.store';
 import { canUseCart } from '../../utils/can-use-cart';
 import { parseApiError } from '../../../infrastructure/http/api-error';
 import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatPrice } from '../../utils/formatters';
 import {
   getMotoAvailabilityInfo,
   formatMotoEstadoLabel,
 } from '../../utils/moto-availability';
-import { ShoppingCart, ArrowLeft, Shield, Sparkles, CheckCircle, Minus, Plus, AlertCircle, Info } from 'lucide-react';
+import {
+  ShoppingCart,
+  ArrowLeft,
+  CheckCircle,
+  Minus,
+  Plus,
+  AlertCircle,
+  Info,
+} from 'lucide-react';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { selectedMoto, fetchMotoById, isLoading, error, clearSelectedMoto } = useMotoStore();
+  const { selectedMoto, fetchMotoById, isLoading, error, clearSelectedMoto } =
+    useMotoStore();
   const { addToCart, isLoading: isCartLoading } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [buying, setBuying] = useState(false);
 
   const clientCanUseCart = canUseCart(isAuthenticated, user);
   const isStaffUser = isAuthenticated && user?.isStaff === true;
@@ -41,9 +50,7 @@ export default function ProductDetailPage() {
     };
   }, [id, fetchMotoById, clearSelectedMoto]);
 
-  const availability = selectedMoto
-    ? getMotoAvailabilityInfo(selectedMoto)
-    : null;
+  const availability = selectedMoto ? getMotoAvailabilityInfo(selectedMoto) : null;
   const isAvailable = availability?.isAvailable ?? false;
 
   const handleAddToCart = async () => {
@@ -65,17 +72,37 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleBuy = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    if (!clientCanUseCart || !selectedMoto) {
+      return;
+    }
+
+    setBuying(true);
+    setActionError(null);
+    try {
+      await addToCart(selectedMoto.idMoto, null, quantity);
+      navigate('/cart');
+    } catch (err: unknown) {
+      setActionError(parseApiError(err, 'No se pudo iniciar la compra.'));
+    } finally {
+      setBuying(false);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-6 w-24" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Skeleton className="aspect-video w-full rounded-3xl" />
+      <div className="bg-[#080808] px-6 lg:px-12 py-8 space-y-6">
+        <Skeleton className="h-6 w-40 bg-white/5" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Skeleton className="aspect-[16/10] w-full bg-white/5" />
           <div className="space-y-4">
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="h-6 w-1/3" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-2/3 bg-white/5" />
+            <Skeleton className="h-8 w-1/3 bg-white/5" />
+            <Skeleton className="h-40 w-full bg-white/5" />
           </div>
         </div>
       </div>
@@ -84,13 +111,11 @@ export default function ProductDetailPage() {
 
   if (error || !selectedMoto) {
     return (
-      <div className="text-center py-16 space-y-4">
-        <p className="text-destructive font-semibold">{error || 'Motocicleta no encontrada'}</p>
-        <Link to="/">
-          <Button variant="outline" className="gap-2 rounded-xl">
-            <ArrowLeft className="size-4" />
-            Volver al Catálogo
-          </Button>
+      <div className="bg-[#080808] text-center py-24 space-y-6 px-6">
+        <p className="font-display text-2xl text-white/80">{error || 'Motocicleta no encontrada'}</p>
+        <Link to="/catalog" className="premium-btn inline-flex">
+          <ArrowLeft className="size-4" />
+          Volver al catálogo
         </Link>
       </div>
     );
@@ -98,155 +123,157 @@ export default function ProductDetailPage() {
 
   const showPurchaseControls = isAvailable && (!isAuthenticated || clientCanUseCart);
 
+  const specs = [
+    { label: 'Cilindraje', value: `${selectedMoto.cilindraje} cc` },
+    { label: 'Color', value: selectedMoto.color },
+    { label: 'Año', value: String(selectedMoto.anio) },
+    { label: 'Marca', value: selectedMoto.marca || '—' },
+    { label: 'Categoría', value: selectedMoto.categoria || '—' },
+    { label: 'Estado', value: formatMotoEstadoLabel(selectedMoto.estado) },
+    { label: 'Stock', value: String(selectedMoto.stock) },
+    {
+      label: 'Disponibilidad',
+      value: availability?.localLabel ?? 'No disponible',
+    },
+  ];
+
+  const secondaryInfo = [
+    selectedMoto.marca,
+    selectedMoto.modelo,
+    selectedMoto.categoria,
+    selectedMoto.anio ? String(selectedMoto.anio) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <Link to="/" className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-primary transition-colors font-medium">
-        <ArrowLeft className="size-4" />
-        Volver al Catálogo
-      </Link>
+    <div className="bg-[#080808] text-white">
+      <div className="container mx-auto max-w-screen-2xl px-6 lg:px-14 py-8 lg:py-10 space-y-8">
+        <Link
+          to="/catalog"
+          className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-white/45 hover:text-primary transition-colors duration-500"
+        >
+          <ArrowLeft className="size-3.5" />
+          Volver al catálogo
+        </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        <div className="bg-white dark:bg-neutral-900/40 aspect-video w-full rounded-3xl overflow-hidden relative flex items-center justify-center border border-neutral-200 dark:border-primary/10 shadow-[0_15px_30px_rgba(255,107,0,0.05)] transition-colors duration-300">
-          {selectedMoto.imagen ? (
-            <img
-              src={selectedMoto.imagen}
-              alt={selectedMoto.modelo}
-              className="object-contain w-full h-full mix-blend-multiply dark:mix-blend-normal"
-            />
-          ) : (
-            <span className="text-8xl animate-bounce">🏍️</span>
-          )}
-        </div>
-
-        <div className="space-y-6 flex flex-col justify-between">
-          <div className="space-y-6">
-            <div>
-              <span className="bg-primary/10 text-primary border border-primary/25 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-md">
-                Modelo {selectedMoto.anio}
-              </span>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mt-3">
-                {selectedMoto.modelo}
-              </h1>
-            </div>
-
-            <p className="text-3xl font-black text-primary">{formatPrice(selectedMoto.precio)}</p>
-
-            <Card className="border-border/30 bg-neutral-100 dark:bg-neutral-900/30 backdrop-blur-md rounded-2xl transition-colors duration-300">
-              <CardContent className="p-5 space-y-3.5 text-sm">
-                <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Cilindraje</span>
-                  <span className="font-bold text-foreground">{selectedMoto.cilindraje} cc</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          <div className="lg:col-span-7">
+            <div className="relative flex h-[280px] sm:h-[340px] lg:h-[420px] items-center justify-center overflow-hidden bg-[#0a0a0a] p-4 sm:p-6">
+              {selectedMoto.imagen ? (
+                <img
+                  src={selectedMoto.imagen}
+                  alt={selectedMoto.modelo}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center font-display text-4xl text-white/20">
+                  {selectedMoto.modelo}
                 </div>
-                <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Color Exterior</span>
-                  <span className="font-bold text-foreground">{selectedMoto.color}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/20 pb-2">
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Estado General</span>
-                  <span className="font-bold text-primary">
-                    {formatMotoEstadoLabel(selectedMoto.estado)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">Disponibilidad en Local</span>
-                  <span
-                    className={`font-bold text-right max-w-[60%] ${
-                      isAvailable ? 'text-green-500 dark:text-green-400' : 'text-destructive'
-                    }`}
-                  >
-                    {availability?.localLabel ?? 'No disponible'}
-                  </span>
-                </div>
-                {availability?.unavailableHint && (
-                  <p className="text-xs text-muted-foreground pt-1 border-t border-border/20">
-                    {availability.unavailableHint}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-900/30 rounded-xl border border-border/20 transition-colors duration-300">
-                <Shield className="size-5 text-primary shrink-0" />
-                <div className="text-xs">
-                  <p className="font-bold text-foreground">Garantía Directa</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">Cobertura de fábrica</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-900/30 rounded-xl border border-border/20 transition-colors duration-300">
-                <Sparkles className="size-5 text-primary shrink-0" />
-                <div className="text-xs">
-                  <p className="font-bold text-foreground">Certificación</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">Inspeccionado al 100%</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-4 pt-4">
+          <div className="lg:col-span-5 space-y-6">
+            <div className="space-y-3">
+              <p className="text-sm text-white/55">
+                {selectedMoto.marca || 'Sin marca'}
+              </p>
+              <h1 className="font-display text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
+                {selectedMoto.modelo}
+              </h1>
+              <p className="font-sans text-2xl font-semibold text-white">
+                {formatPrice(selectedMoto.precio)}
+              </p>
+              <p className="text-sm text-white/70">
+                {availability?.localLabel ?? formatMotoEstadoLabel(selectedMoto.estado)}
+              </p>
+              {secondaryInfo ? (
+                <p className="text-sm text-white/45">
+                  {secondaryInfo}
+                </p>
+              ) : null}
+            </div>
+
+            {availability?.unavailableHint && (
+              <p className="text-xs text-white/45 border-t border-white/10 pt-3">
+                {availability.unavailableHint}
+              </p>
+            )}
+
             {successMsg && (
-              <div className="p-3.5 text-sm bg-green-500/10 border border-green-500/25 text-green-400 rounded-xl flex items-center gap-2 font-semibold">
+              <div className="p-3.5 text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center gap-2">
                 <CheckCircle className="size-4.5" />
                 {successMsg}
               </div>
             )}
 
             {actionError && (
-              <div className="p-3.5 text-sm bg-destructive/10 border border-destructive/25 text-destructive rounded-xl flex items-center gap-2 font-semibold">
+              <div className="p-3.5 text-sm bg-destructive/10 border border-destructive/25 text-destructive flex items-center gap-2">
                 <AlertCircle className="size-4.5 shrink-0" />
                 {actionError}
               </div>
             )}
 
             {isStaffUser && isAvailable && (
-              <div className="p-3.5 text-sm bg-muted/50 border border-border/40 text-muted-foreground rounded-xl flex items-start gap-2 font-medium">
+              <div className="p-3.5 text-sm bg-white/[0.03] border border-white/10 text-white/55 flex items-start gap-2">
                 <Info className="size-4.5 shrink-0 mt-0.5 text-primary" />
                 El carrito de compras está disponible únicamente para clientes.
               </div>
             )}
 
             {showPurchaseControls ? (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <div className="flex items-center justify-between rounded-lg border border-border bg-neutral-100 dark:bg-neutral-900/30 shrink-0 transition-colors duration-300">
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center border border-white/10 w-fit">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-12 w-12 rounded-none rounded-l-lg border-r border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                    className="h-12 w-12 rounded-none border-r border-white/10 hover:bg-white/5"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
                     type="button"
                   >
-                    <Minus className="size-4 text-neutral-500 dark:text-neutral-400" />
+                    <Minus className="size-4 text-white/50" />
                   </Button>
-                  <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-foreground tabular-nums">
+                  <span className="flex h-12 w-12 items-center justify-center text-sm font-semibold tabular-nums">
                     {quantity}
                   </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-12 w-12 rounded-none rounded-r-lg border-l border-border hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                    className="h-12 w-12 rounded-none border-l border-white/10 hover:bg-white/5"
                     onClick={() => setQuantity(Math.min(selectedMoto.stock, quantity + 1))}
                     disabled={quantity >= selectedMoto.stock}
                     type="button"
                   >
-                    <Plus className="size-4 text-neutral-500 dark:text-neutral-400" />
+                    <Plus className="size-4 text-white/50" />
                   </Button>
                 </div>
 
-                <Button
-                  size="lg"
-                  className="flex-1 gap-2 text-xs font-bold uppercase tracking-widest bg-primary hover:bg-primary/95 text-white py-6 h-12 rounded-lg"
-                  disabled={isCartLoading}
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart className="size-4" />
-                  Agregar al Carrito
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    className="premium-btn flex-1 disabled:opacity-50"
+                    disabled={isCartLoading || buying}
+                    onClick={handleBuy}
+                  >
+                    Comprar ahora
+                  </button>
+                  <button
+                    type="button"
+                    className="racing-btn-outline flex-1 justify-center disabled:opacity-50"
+                    disabled={isCartLoading || buying}
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="size-4" />
+                    Agregar al carrito
+                  </button>
+                </div>
               </div>
             ) : !isStaffUser && !isAvailable ? (
               <Button
                 size="lg"
-                className="w-full gap-2 text-xs font-bold uppercase tracking-widest py-6 h-12 rounded-lg"
+                className="w-full gap-2 text-xs font-bold uppercase tracking-widest py-6 h-12 rounded-none"
                 disabled
               >
                 <ShoppingCart className="size-4" />
@@ -255,6 +282,24 @@ export default function ProductDetailPage() {
             ) : null}
           </div>
         </div>
+
+        <section className="space-y-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-primary mb-2">Especificaciones</p>
+            <h2 className="font-display text-2xl md:text-3xl font-medium">Ficha técnica</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06] border border-white/[0.06]">
+            {specs.map((spec) => (
+              <div key={spec.label} className="bg-[#080808] p-5">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2">{spec.label}</p>
+                <p className="font-sans text-sm font-medium text-white">{spec.value}</p>
+              </div>
+            ))}
+          </div>
+          {availability?.unavailableHint && (
+            <p className="text-xs text-white/40">{availability.unavailableHint}</p>
+          )}
+        </section>
       </div>
     </div>
   );
